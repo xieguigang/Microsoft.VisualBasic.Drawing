@@ -12,8 +12,11 @@ Namespace ImageFormat
         End Sub
 
         Public MustOverride Function LoadBuffer() As BitmapBuffer
-
         Public MustOverride Function SaveBuffer(img As BitmapBuffer) As Boolean
+
+        Public Shared Function GetEncoder(file As Stream) As Type
+
+        End Function
 
     End Class
 End Namespace
