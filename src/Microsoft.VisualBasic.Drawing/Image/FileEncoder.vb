@@ -13,5 +13,7 @@ Namespace ImageFormat
 
         Public MustOverride Function LoadBuffer() As BitmapBuffer
 
+        Public MustOverride Function SaveBuffer(img As BitmapBuffer) As Boolean
+
     End Class
 End Namespace

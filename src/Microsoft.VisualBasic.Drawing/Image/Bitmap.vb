@@ -12,5 +12,9 @@ Namespace ImageFormat
         Public Overrides Function LoadBuffer() As BitmapBuffer
             Throw New NotImplementedException()
         End Function
+
+        Public Overrides Function SaveBuffer(img As BitmapBuffer) As Boolean
+            Throw New NotImplementedException()
+        End Function
     End Class
 End Namespace
