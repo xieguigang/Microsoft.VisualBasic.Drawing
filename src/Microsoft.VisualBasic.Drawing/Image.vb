@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Drawing.ImageFormat
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
@@ -10,6 +11,11 @@ Public Class Image
     Sub New(file As FileEncoder)
         core = file.LoadBuffer
     End Sub
+
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Public Function GetUnsafeBuffer() As BitmapBuffer
+        Return core
+    End Function
 
     Public Function Save(file As Stream, Optional format As ImageFormats = ImageFormats.Png) As Boolean
         Select Case format
