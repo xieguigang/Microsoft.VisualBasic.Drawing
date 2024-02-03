@@ -18,12 +18,12 @@ Namespace ImageFormat
 
         Public Shared Function GetDefault() As BitmapFileHeader
             Return New BitmapFileHeader With {
-           .Type = &H4D42,
-    .Size = 0,
-  .Reserved1 = 0,
-  .Reserved2 = 0,
-  .OffBits = 0
-        }
+                .Type = &H4D42,
+                .Size = 0,
+                .Reserved1 = 0,
+                .Reserved2 = 0,
+                .OffBits = 0
+            }
         End Function
 
     End Structure

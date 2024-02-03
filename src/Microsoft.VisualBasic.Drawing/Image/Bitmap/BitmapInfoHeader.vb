@@ -30,18 +30,18 @@ Namespace ImageFormat
 
         Public Shared Function GetDefault() As BitmapInfoHeader
             Return New BitmapInfoHeader With {
-            .Size = 40,
-  .Width = 0,
-        .Height = 0,
-        .Planes = 1,
-        .BitCount = BitmapColorBit.Bit1,
-        .Compression = BitmapCompression.Rgb,
-        .SizeImage = 0,
-        .XPixPerMeter = 0,
-        .YPixPerMeter = 0,
-        .ClrUsed = 0,
-        .CirImportant = 0
-        }
+                .Size = 40,
+                .Width = 0,
+                .Height = 0,
+                .Planes = 1,
+                .BitCount = BitmapColorBit.Bit1,
+                .Compression = BitmapCompression.Rgb,
+                .SizeImage = 0,
+                .XPixPerMeter = 0,
+                .YPixPerMeter = 0,
+                .ClrUsed = 0,
+                .CirImportant = 0
+            }
         End Function
 
     End Structure

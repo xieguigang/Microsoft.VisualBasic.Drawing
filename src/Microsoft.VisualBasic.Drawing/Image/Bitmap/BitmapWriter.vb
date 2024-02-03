@@ -7,36 +7,11 @@ Imports std = System.Math
 
 Namespace ImageFormat
 
-    Public Class BitmapWriter
-        Implements IDisposable
+    Public Class BitmapWriter : Implements IDisposable
+
         Private fileHeader As BitmapFileHeader = BitmapFileHeader.GetDefault()
         Private infoHeader As BitmapInfoHeader = BitmapInfoHeader.GetDefault()
         Private bufferImage As Byte() = Array.Empty(Of Byte)()
-
-        Private Shared Function GetImageWidthSize(width As Integer, colorBit As BitmapColorBit) As Integer
-            Dim bitCount = width
-            Select Case colorBit
-                Case BitmapColorBit.Bit1
-                    bitCount *= 1
-                Case BitmapColorBit.Bit4
-                    bitCount *= 4
-                Case BitmapColorBit.Bit8
-                    bitCount *= 8
-                Case BitmapColorBit.Bit24
-                    bitCount *= 24
-                Case BitmapColorBit.Bit32
-                    bitCount *= 32
-                Case Else
-                    Throw New InvalidOperationException($"Invalid color bit. : {colorBit}")
-            End Select
-            ' 8 bit
-            Dim bitMod = bitCount Mod 8
-            Dim bitTotal = bitCount + If(bitMod = 0, 0, 8 - bitMod)
-            ' 4 byte
-            Dim byteCount = bitTotal / 8
-            Dim byteMod = byteCount Mod 4
-            Return byteCount + If(byteMod = 0, 0, 4 - byteMod)
-        End Function
 
         Public Sub New(width As Integer, height As Integer)
             infoHeader.Width = width
