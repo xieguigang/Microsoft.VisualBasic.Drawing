@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>16.9</LangVersion>
+    <Version>0.2.0</Version>
+    <Authors>Roy Triesscheijn, Wouter de Vries</Authors>
+    <Company />
+    <Product />
+    <Description>A TrueType parser for reading, glyphIds, names, descriptions, and kerning information from TrueType fonts.</Description>
+    <Copyright></Copyright>
+    <PackageLicenseUrl>https://github.com/roy-t/TrueType/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/roy-t/TrueType</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/roy-t/TrueType</RepositoryUrl>
+    <RepositoryType />
+    <PackageTags>truetype, ttf, opentype, font, fonts, parser</PackageTags>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(ProjectDir)**\*.cs</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
