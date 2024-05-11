@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
-Namespace RoyT.TrueType.Tables.Kern
+Namespace Tables.Kern
     Public NotInheritable Class KernSubtable
         Public Shared Function FromReader(reader As FontReader) As KernSubtable
             Dim version = reader.ReadUInt16BigEndian()
@@ -17,7 +17,7 @@ Namespace RoyT.TrueType.Tables.Kern
             ' The only format that is properly interpreted by Windows
             Dim format0 As Format0 = Nothing
             If format = 0 Then
-                format0 = Format0.FromReader(reader)
+                format0 = format0.FromReader(reader)
             End If
 
             Return New KernSubtable(version, length, format, direction, values, isCrossStream, isOverride, format0)

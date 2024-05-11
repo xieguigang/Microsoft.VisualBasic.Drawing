@@ -1,8 +1,8 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 Imports System
 Imports System.Collections.Generic
 
-Namespace RoyT.TrueType.Tables.Vmtx
+Namespace Tables.Vmtx
     ''' <summary>
     ''' Vertical Metrics Table
     ''' </summary>

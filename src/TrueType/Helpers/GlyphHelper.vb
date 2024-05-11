@@ -1,6 +1,6 @@
 ﻿Imports System.Linq
 
-Namespace RoyT.TrueType.Helpers
+Namespace Helpers
     Public Module GlyphHelper
         ''' <summary>
         ''' Returns the glyph index for the given character, or 0 if the character is not supported by this font

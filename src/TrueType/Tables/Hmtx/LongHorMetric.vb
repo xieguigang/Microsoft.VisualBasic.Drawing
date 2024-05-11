@@ -1,12 +1,15 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
-Namespace RoyT.TrueType.Tables.Hmtx
+Namespace Tables.Hmtx
     ''' <summary>
     ''' Horizontal layout metrics for a glyph
     ''' </summary>
     Public Class LongHorMetric
         Public Shared Function FromReader(reader As FontReader) As LongHorMetric
-            Return
+            Return New LongHorMetric With {
+             .AdvanceHeight = reader.ReadUInt16BigEndian(),
+                .Lsb = reader.ReadInt16BigEndian()
+            }
         End Function
 
         ''' <summary>

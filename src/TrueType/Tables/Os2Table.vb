@@ -1,7 +1,7 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 Imports System.Collections.Generic
 
-Namespace RoyT.TrueType.Tables
+Namespace Tables
     ''' <summary>
     ''' OS/2 and Windows Metrics Table
     ''' </summary>

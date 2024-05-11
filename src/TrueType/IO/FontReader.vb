@@ -3,7 +3,7 @@ Imports System.Collections
 Imports System.IO
 Imports System.Text
 
-Namespace RoyT.TrueType.IO
+Namespace IO
     ''' <summary>
     ''' Extended BinaryReader with helper methods for reading number and text formats
     ''' common in TrueType files

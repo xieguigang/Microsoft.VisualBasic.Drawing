@@ -1,7 +1,6 @@
-﻿Imports System.Collections.Generic
-Imports RoyT.TrueType.IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
-Namespace RoyT.TrueType.Tables.Cmap
+Namespace Tables.Cmap
     Public NotInheritable Class SegmentedCoverageTable
         Implements ICmapSubtable
         Public Shared Function FromReader(reader As FontReader) As SegmentedCoverageTable
@@ -38,7 +37,7 @@ Namespace RoyT.TrueType.Tables.Cmap
 
 
         Public Function GetGlyphIndex(c As Char) As UInteger Implements ICmapSubtable.GetGlyphIndex
-            Dim charCode = Microsoft.VisualBasic.AscW(c)
+            Dim charCode = Strings.AscW(c)
 
             For Each group In Groups
                 If group.StartCharCode <= charCode AndAlso charCode <= group.EndCharCode Then

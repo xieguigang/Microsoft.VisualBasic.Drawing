@@ -1,8 +1,8 @@
 ﻿Imports System
 Imports System.Globalization
-Imports RoyT.TrueType.IO
+Imports IO
 
-Namespace RoyT.TrueType.Tables.Name
+Namespace Tables.Name
     Public Class NameRecord
         Public Shared Function FromReader(reader As FontReader, storageStart As Long) As NameRecord
             ' Currently always 0

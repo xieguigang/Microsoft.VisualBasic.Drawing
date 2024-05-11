@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables.Name
+Namespace Tables.Name
     Public NotInheritable Class NameTable
         ''' <summary>
         ''' Contains the (translated) name of this font, copyright notices, etc...

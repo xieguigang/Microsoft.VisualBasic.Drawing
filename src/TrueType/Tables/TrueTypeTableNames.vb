@@ -1,4 +1,4 @@
-﻿Namespace RoyT.TrueType.Tables
+﻿Namespace Tables
     Public Module TrueTypeTableNames
         ''' <summary>
         ''' Character to Glyph Index Mapping Table

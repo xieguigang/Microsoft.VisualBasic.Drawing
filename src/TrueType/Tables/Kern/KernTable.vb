@@ -1,7 +1,6 @@
-﻿Imports System.Collections.Generic
-Imports RoyT.TrueType.IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
-Namespace RoyT.TrueType.Tables.Kern
+Namespace Tables.Kern
     ''' <summary>
     ''' Contains adjustment to horizontal/vertical positions between glyphs
     ''' </summary>

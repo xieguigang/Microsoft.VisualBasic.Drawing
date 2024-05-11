@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables.Cmap
+Namespace Tables.Cmap
     Public NotInheritable Class SequentialMapGroup
         Public Shared Function FromReader(reader As FontReader) As SequentialMapGroup
             Dim startCharCode = reader.ReadUInt32BigEndian()

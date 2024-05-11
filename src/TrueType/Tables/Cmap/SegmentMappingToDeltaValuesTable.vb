@@ -1,7 +1,7 @@
 ﻿Imports Microsoft.VisualBasic.ApplicationServices.Debugging
-Imports RoyT.TrueType.IO
+Imports IO
 
-Namespace RoyT.TrueType.Tables.Cmap
+Namespace Tables.Cmap
     Public NotInheritable Class SegmentMappingToDeltaValuesTable
         Implements ICmapSubtable
         Public Shared Function FromReader(reader As FontReader) As SegmentMappingToDeltaValuesTable

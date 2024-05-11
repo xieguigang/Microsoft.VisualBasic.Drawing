@@ -1,7 +1,7 @@
 ﻿Imports System
-Imports RoyT.TrueType.IO
+Imports IO
 
-Namespace RoyT.TrueType.Tables
+Namespace Tables
     ''' <summary>
     ''' Contains the offset in the file to the major tables (like CMAP, NAME, KERN, etc...) in this font
     ''' </summary>

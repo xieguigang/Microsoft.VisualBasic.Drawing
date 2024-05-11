@@ -1,7 +1,7 @@
-﻿Imports RoyT.TrueType.IO
-Imports System.Runtime.InteropServices
+﻿Imports System.Runtime.InteropServices
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
-Namespace RoyT.TrueType.Tables.Cmap
+Namespace Tables.Cmap
     Public NotInheritable Class EncodingRecord
         Public Shared Function FromReader(reader As FontReader, cmapOffset As Long) As EncodingRecord
             Dim platformId = CType(reader.ReadUInt16BigEndian(), Platform)

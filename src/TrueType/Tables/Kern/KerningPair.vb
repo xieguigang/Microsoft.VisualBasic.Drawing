@@ -1,6 +1,6 @@
 ﻿Imports System
 
-Namespace RoyT.TrueType.Tables.Kern
+Namespace Tables.Kern
     Public Structure KerningPair
         Implements IEquatable(Of KerningPair)
         Public ReadOnly Property LeftGlyphCode As UShort

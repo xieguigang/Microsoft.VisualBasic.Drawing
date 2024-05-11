@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.Tables.Kern
+﻿Imports Tables.Kern
 
-Namespace RoyT.TrueType.Helpers
+Namespace Helpers
     Public Module KerningHelper
         ''' <summary>
         ''' Returns the horizontal kerning between the left and right character scaled by the scale parameter

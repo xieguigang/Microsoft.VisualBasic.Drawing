@@ -1,4 +1,4 @@
-﻿Namespace RoyT.TrueType.Tables.Kern
+﻿Namespace Tables.Kern
     Public Enum Values
         Minimum
         Kerning

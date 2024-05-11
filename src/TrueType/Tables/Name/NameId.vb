@@ -1,4 +1,4 @@
-﻿Namespace RoyT.TrueType.Tables.Name
+﻿Namespace Tables.Name
     Public Enum NameId As UShort
         CopyrightNotice = 0
         FontFamilyName = 1

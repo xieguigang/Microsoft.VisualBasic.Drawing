@@ -1,8 +1,8 @@
 ﻿Imports System.Globalization
 Imports System.Linq
-Imports RoyT.TrueType.Tables.Name
+Imports Tables.Name
 
-Namespace RoyT.TrueType.Helpers
+Namespace Helpers
     Public Module NameHelper
         Public Function GetName(nameId As NameId, culture As CultureInfo, font As TrueTypeFont) As String
             Dim candidates = font.NameTable.NameRecords.Where(Function(r) r.NameId = nameId AndAlso r.Language.Equals(culture)).ToList()

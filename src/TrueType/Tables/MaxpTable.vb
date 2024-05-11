@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables
+Namespace Tables
     ''' <summary>
     ''' Maximum Profile Table
     ''' </summary>

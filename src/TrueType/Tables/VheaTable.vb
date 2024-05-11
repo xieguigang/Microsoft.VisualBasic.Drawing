@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables
+Namespace Tables
     ''' <summary>
     ''' The Vertical Header Table contains information for vertical layout
     ''' </summary>

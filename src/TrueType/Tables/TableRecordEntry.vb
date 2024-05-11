@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables
+Namespace Tables
     Public NotInheritable Class TableRecordEntry
         Public Shared Function FromReader(reader As FontReader) As TableRecordEntry
             Dim tag = reader.ReadAscii(4)

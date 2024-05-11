@@ -1,8 +1,8 @@
 ﻿Imports System
 Imports System.Collections.Generic
-Imports RoyT.TrueType.IO
+Imports IO
 
-Namespace RoyT.TrueType.Tables.Cmap
+Namespace Tables.Cmap
     Public NotInheritable Class CmapTable
         ''' <summary>
         ''' Contains information to get the glyph that corresponds to each supported character

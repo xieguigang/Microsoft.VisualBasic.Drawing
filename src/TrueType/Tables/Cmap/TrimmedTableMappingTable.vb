@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables.Cmap
+Namespace Tables.Cmap
     Public NotInheritable Class TrimmedTableMappingTable
         Implements ICmapSubtable
         Public Shared Function FromReader(reader As FontReader) As TrimmedTableMappingTable

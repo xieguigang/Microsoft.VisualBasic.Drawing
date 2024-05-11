@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports IO
 
-Namespace RoyT.TrueType.Tables.Vmtx
+Namespace Tables.Vmtx
     ''' <summary>
     ''' Horizontal layout metrics for a glyph
     ''' </summary>

@@ -1,4 +1,4 @@
-﻿Namespace RoyT.TrueType.Tables.Cmap
+﻿Namespace Tables.Cmap
     Public Enum CMapSubtableFormat As UShort
         ByteEncodingTable = 0
         HighByteMappingThroughTable = 2

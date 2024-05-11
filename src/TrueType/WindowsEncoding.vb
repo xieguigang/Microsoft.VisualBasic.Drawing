@@ -1,18 +1,17 @@
-﻿Namespace RoyT.TrueType
-    Public Enum WindowsEncoding As UShort
-        Symbol = 0
-        ''' <summary>
-        ''' Unicode BMP
-        ''' </summary>
-        UnicodeUCS2 = 1
-        ShiftJIS = 2
-        PRC = 3
-        Big5 = 4
-        Wansung = 5
-        Johab = 6
-        Reserved0 = 7
-        Reserved1 = 8
-        Reserved2 = 9
-        UnicodeUCS4 = 10
-    End Enum
-End Namespace
+﻿
+Public Enum WindowsEncoding As UShort
+    Symbol = 0
+    ''' <summary>
+    ''' Unicode BMP
+    ''' </summary>
+    UnicodeUCS2 = 1
+    ShiftJIS = 2
+    PRC = 3
+    Big5 = 4
+    Wansung = 5
+    Johab = 6
+    Reserved0 = 7
+    Reserved1 = 8
+    Reserved2 = 9
+    UnicodeUCS4 = 10
+End Enum

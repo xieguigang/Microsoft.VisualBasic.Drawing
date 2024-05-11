@@ -1,7 +1,7 @@
 ﻿Imports System.Collections.Generic
-Imports RoyT.TrueType.IO
+Imports IO
 
-Namespace RoyT.TrueType.Tables.Kern
+Namespace Tables.Kern
     Public NotInheritable Class Format0
         Public Shared Function FromReader(reader As FontReader) As Format0
             Dim pairs = reader.ReadUInt16BigEndian()

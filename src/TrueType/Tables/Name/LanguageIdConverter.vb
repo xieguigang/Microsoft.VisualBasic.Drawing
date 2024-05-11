@@ -2,7 +2,7 @@
 Imports System.Collections.Generic
 Imports System.Globalization
 
-Namespace RoyT.TrueType.Tables.Name
+Namespace Tables.Name
     Public Module LanguageIdConverter
         Private ReadOnly LCIDMap As Dictionary(Of Integer, String) = ReadMapFromStringResource(Properties.Resources.LCIDMap)
         Private ReadOnly MacLanguageCodeMap As Dictionary(Of Integer, String) = ReadMapFromStringResource(Properties.Resources.MacLanguageCodeMap)

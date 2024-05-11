@@ -1,6 +1,6 @@
-﻿Imports RoyT.TrueType.IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
-Namespace RoyT.TrueType.Tables
+Namespace Tables
     ''' <summary>
     ''' The Horizontal Header Table contains information for horizontal layout
     ''' </summary>
