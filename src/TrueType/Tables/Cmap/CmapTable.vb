@@ -1,6 +1,4 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Cmap
     Public NotInheritable Class CmapTable

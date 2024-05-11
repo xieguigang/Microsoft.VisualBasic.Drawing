@@ -1,4 +1,5 @@
-﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
+﻿Imports System.IO
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables
     ''' <summary>

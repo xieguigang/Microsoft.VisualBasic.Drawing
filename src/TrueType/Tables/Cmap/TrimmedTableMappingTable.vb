@@ -1,4 +1,4 @@
-﻿Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Cmap
     Public NotInheritable Class TrimmedTableMappingTable
@@ -37,7 +37,7 @@ Namespace Tables.Cmap
 
 
         Public Function GetGlyphIndex(c As Char) As UInteger Implements ICmapSubtable.GetGlyphIndex
-            Dim charCode = Microsoft.VisualBasic.AscW(c)
+            Dim charCode = Strings.AscW(c)
 
             If FirstCode <= charCode AndAlso charCode < FirstCode + EntryCount Then
                 Return GlyphIdArray(charCode - FirstCode)

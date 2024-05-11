@@ -83,7 +83,8 @@ Namespace Tables.Cmap
         Public ReadOnly Property GlyphIdArray As UShort()
 
         Public Function GetGlyphIndex(c As Char) As UInteger Implements ICmapSubtable.GetGlyphIndex
-            Dim charCode = Microsoft.VisualBasic.AscW(c)
+            Dim charCode As Integer = Strings.AscW(c)
+            Dim ci32 As Integer = charCode
 
             ' Find the first segment that fits the charcode
             For i = 0 To SegCount - 1
@@ -95,15 +96,15 @@ Namespace Tables.Cmap
                     Dim rangeOffset = IdRangeOffset(i)
 
                     If rangeOffset = 0 Then
-                        Return CUShort((delta + c) Mod 65536)
+                        Return CUShort((delta + ci32) Mod 65536)
                     End If
 
                     ' Index depends on the position of rangeOffset in the IdRangeOffset array
-                    Dim index = rangeOffset + (c - start) + i
+                    Dim index = rangeOffset + (ci32 - start) + i
                     Dim glyphId = GlyphIdArray(index)
 
                     If glyphId <> 0 Then
-                        Return CUShort((glyphId + c) Mod 65536)
+                        Return CUShort((glyphId + ci32) Mod 65536)
                     End If
                 End If
             Next

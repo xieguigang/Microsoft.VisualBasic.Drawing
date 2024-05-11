@@ -1,15 +1,12 @@
-﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.RoyT.TrueType.IO
-Imports IO
-Imports Tables
-Imports Tables.Cmap
-Imports Tables.Hmtx
-Imports Tables.Kern
-Imports Tables.Name
-Imports Tables.Vmtx
-Imports System
-Imports System.Collections.Generic
-Imports System.IO
+﻿Imports System.IO
 Imports System.Runtime.InteropServices
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Cmap
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Hmtx
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Kern
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Name
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Vmtx
 
 ''' <summary>
 ''' A TrueType parser for reading, glyphIds, names, descriptions, and 
@@ -33,8 +30,8 @@ Public NotInheritable Class TrueTypeFont
         Dim header = TtcHeader.Parse(reader)
 
         Dim fonts As List(Of TrueTypeFont) = New List(Of TrueTypeFont)()
-        For Each Offset In header.TableDirectoryOffsets
-            reader.Seek(Offset)
+        For Each offset As UInteger In header.TableDirectoryOffsets
+            reader.Seek(offset)
             fonts.Add(FromStream(reader, path))
         Next
 

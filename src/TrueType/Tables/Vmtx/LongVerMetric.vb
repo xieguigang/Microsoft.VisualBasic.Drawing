@@ -1,4 +1,4 @@
-﻿Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Vmtx
     ''' <summary>
@@ -6,7 +6,10 @@ Namespace Tables.Vmtx
     ''' </summary>
     Public Class LongVerMetric
         Public Shared Function FromReader(reader As FontReader) As LongVerMetric
-            Return
+            Return New LongVerMetric With {
+             .AdvanceHeight = reader.ReadUInt16BigEndian(),
+                .TopSideBearing = reader.ReadInt16BigEndian()
+            }
         End Function
 
         ''' <summary>

@@ -13,7 +13,7 @@ Option Explicit On
 
 Imports System
 
-Namespace Microsoft.VisualBasic.Drawing.Fonts.TrueType.Properties
+Namespace My.Resources
     
     '此类是由 StronglyTypedResourceBuilder
     '类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
@@ -24,23 +24,19 @@ Namespace Microsoft.VisualBasic.Drawing.Fonts.TrueType.Properties
     '''</summary>
     <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0"),  _
      Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-     Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute()>  _
-    Friend Class Resources
+     Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
+     Global.Microsoft.VisualBasic.HideModuleNameAttribute()>  _
+    Friend Module Resources
         
-        Private Shared resourceMan As Global.System.Resources.ResourceManager
+        Private resourceMan As Global.System.Resources.ResourceManager
         
-        Private Shared resourceCulture As Global.System.Globalization.CultureInfo
-        
-        <Global.System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")>  _
-        Friend Sub New()
-            MyBase.New
-        End Sub
+        Private resourceCulture As Global.System.Globalization.CultureInfo
         
         '''<summary>
         '''  返回此类使用的缓存的 ResourceManager 实例。
         '''</summary>
         <Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
-        Friend Shared ReadOnly Property ResourceManager() As Global.System.Resources.ResourceManager
+        Friend ReadOnly Property ResourceManager() As Global.System.Resources.ResourceManager
             Get
                 If Object.ReferenceEquals(resourceMan, Nothing) Then
                     Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("Microsoft.VisualBasic.Drawing.Fonts.TrueType.Resources", GetType(Resources).Assembly)
@@ -55,7 +51,7 @@ Namespace Microsoft.VisualBasic.Drawing.Fonts.TrueType.Properties
         '''  使用此强类型资源类的所有资源查找执行重写。
         '''</summary>
         <Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
-        Friend Shared Property Culture() As Global.System.Globalization.CultureInfo
+        Friend Property Culture() As Global.System.Globalization.CultureInfo
             Get
                 Return resourceCulture
             End Get
@@ -117,7 +113,7 @@ Namespace Microsoft.VisualBasic.Drawing.Fonts.TrueType.Properties
         '''0x0032 tn
         '''0x0033 [字符串的其余部分被截断]&quot;; 的本地化字符串。
         '''</summary>
-        Friend Shared ReadOnly Property LCIDMap() As String
+        Friend ReadOnly Property LCIDMap() As String
             Get
                 Return ResourceManager.GetString("LCIDMap", resourceCulture)
             End Get
@@ -213,10 +209,10 @@ Namespace Microsoft.VisualBasic.Drawing.Fonts.TrueType.Properties
         '''88 so
         ''' [字符串的其余部分被截断]&quot;; 的本地化字符串。
         '''</summary>
-        Friend Shared ReadOnly Property MacLanguageCodeMap() As String
+        Friend ReadOnly Property MacLanguageCodeMap() As String
             Get
                 Return ResourceManager.GetString("MacLanguageCodeMap", resourceCulture)
             End Get
         End Property
-    End Class
+    End Module
 End Namespace

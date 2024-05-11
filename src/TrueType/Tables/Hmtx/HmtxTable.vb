@@ -1,6 +1,4 @@
-﻿Imports IO
-Imports System
-Imports System.Collections.Generic
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Hmtx
     ''' <summary>

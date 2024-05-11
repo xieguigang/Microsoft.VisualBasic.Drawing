@@ -1,4 +1,4 @@
-﻿Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables
     Public NotInheritable Class TableRecordEntry

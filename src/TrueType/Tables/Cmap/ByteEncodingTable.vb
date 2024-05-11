@@ -1,4 +1,4 @@
-﻿Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Cmap
     Public NotInheritable Class ByteEncodingTable
@@ -29,8 +29,10 @@ Namespace Tables.Cmap
         Public ReadOnly Property Ids As Byte()
 
         Public Function GetGlyphIndex(c As Char) As UInteger Implements ICmapSubtable.GetGlyphIndex
-            Dim charCode = Microsoft.VisualBasic.AscW(c)
-            If c >= 0 AndAlso c < Ids.Length Then
+            Dim charCode = Strings.AscW(c)
+            Dim ci32 As Integer = charCode
+
+            If ci32 >= 0 AndAlso ci32 < Ids.Length Then
                 Return Ids(charCode)
             End If
 

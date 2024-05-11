@@ -1,7 +1,7 @@
 ﻿Imports System
 
 Namespace Tables.Kern
-    Public Structure KerningPair
+    Public Class KerningPair
         Implements IEquatable(Of KerningPair)
         Public ReadOnly Property LeftGlyphCode As UShort
         Public ReadOnly Property RightGlyphCode As UShort
@@ -16,9 +16,9 @@ Namespace Tables.Kern
         End Function
 
         Public Overrides Function Equals(obj As Object) As Boolean
-            Dim pair As KerningPair = Nothing
+            Dim pair As KerningPair = TryCast(obj, KerningPair)
 
-            If CSharpImpl.__Assign(pair, TryCast(obj, KerningPair)) IsNot Nothing Then
+            If pair IsNot Nothing Then
                 Return Equals(pair)
             End If
 
@@ -28,13 +28,5 @@ Namespace Tables.Kern
         Public Overrides Function GetHashCode() As Integer
             Return (LeftGlyphCode.GetHashCode() * 397) Xor RightGlyphCode.GetHashCode()
         End Function
-
-        Private Class CSharpImpl
-            <Obsolete("Please refactor calling code to use normal Visual Basic assignment")>
-            Shared Function __Assign(Of T)(ByRef target As T, value As T) As T
-                target = value
-                Return value
-            End Function
-        End Class
-    End Structure
+    End Class
 End Namespace

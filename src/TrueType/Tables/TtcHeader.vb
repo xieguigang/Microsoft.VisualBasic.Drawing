@@ -1,5 +1,4 @@
-﻿Imports IO
-Imports System.Collections.Generic
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 ''' <summary>
 ''' Header for TrueType Collection files

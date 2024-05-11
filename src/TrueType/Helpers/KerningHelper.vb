@@ -1,4 +1,4 @@
-﻿Imports Tables.Kern
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Kern
 
 Namespace Helpers
     Public Module KerningHelper

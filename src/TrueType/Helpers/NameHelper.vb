@@ -1,6 +1,5 @@
 ﻿Imports System.Globalization
-Imports System.Linq
-Imports Tables.Name
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.Tables.Name
 
 Namespace Helpers
     Public Module NameHelper

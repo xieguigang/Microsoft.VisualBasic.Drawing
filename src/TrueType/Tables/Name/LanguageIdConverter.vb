@@ -4,8 +4,8 @@ Imports System.Globalization
 
 Namespace Tables.Name
     Public Module LanguageIdConverter
-        Private ReadOnly LCIDMap As Dictionary(Of Integer, String) = ReadMapFromStringResource(Properties.Resources.LCIDMap)
-        Private ReadOnly MacLanguageCodeMap As Dictionary(Of Integer, String) = ReadMapFromStringResource(Properties.Resources.MacLanguageCodeMap)
+        Private ReadOnly LCIDMap As Dictionary(Of Integer, String) = ReadMapFromStringResource(My.Resources.LCIDMap)
+        Private ReadOnly MacLanguageCodeMap As Dictionary(Of Integer, String) = ReadMapFromStringResource(My.Resources.MacLanguageCodeMap)
 
 
         Public Function ToCulture(platform As Platform, languageId As UShort) As CultureInfo
@@ -15,7 +15,7 @@ Namespace Tables.Name
                     Return New CultureInfo(culture)
                 End If
             End If
-            Dim culture As String = Nothing
+            culture = Nothing
 
             If platform = Platform.Macintosh Then
                 If MacLanguageCodeMap.TryGetValue(languageId, culture) Then
