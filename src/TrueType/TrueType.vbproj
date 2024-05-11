@@ -9,7 +9,7 @@
     <Product />
     <Description>A TrueType parser for reading, glyphIds, names, descriptions, and kerning information from TrueType fonts.</Description>
     <Copyright></Copyright>
-    <PackageLicenseUrl>https://github.com/roy-t/TrueType/blob/master/LICENSE</PackageLicenseUrl>
+    
     <PackageProjectUrl>https://github.com/roy-t/TrueType</PackageProjectUrl>
     <RepositoryUrl>https://github.com/roy-t/TrueType</RepositoryUrl>
     <RepositoryType />
@@ -26,11 +26,19 @@
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <UseApplicationFramework>True</UseApplicationFramework>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <RemoveIntegerChecks>True</RemoveIntegerChecks>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <RemoveIntegerChecks>True</RemoveIntegerChecks>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <RemoveIntegerChecks>True</RemoveIntegerChecks>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <RemoveIntegerChecks>True</RemoveIntegerChecks>
     <Optimize>False</Optimize>
   </PropertyGroup>
