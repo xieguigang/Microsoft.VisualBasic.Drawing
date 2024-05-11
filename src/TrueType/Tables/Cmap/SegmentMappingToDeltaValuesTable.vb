@@ -1,5 +1,5 @@
 ﻿Imports Microsoft.VisualBasic.ApplicationServices.Debugging
-Imports IO
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Cmap
     Public NotInheritable Class SegmentMappingToDeltaValuesTable

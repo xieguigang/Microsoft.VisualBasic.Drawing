@@ -1,6 +1,5 @@
-﻿Imports System
-Imports System.Globalization
-Imports IO
+﻿Imports System.Globalization
+Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Name
     Public Class NameRecord

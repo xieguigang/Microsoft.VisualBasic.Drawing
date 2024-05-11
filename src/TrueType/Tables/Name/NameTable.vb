@@ -1,4 +1,4 @@
-﻿Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables.Name
     Public NotInheritable Class NameTable

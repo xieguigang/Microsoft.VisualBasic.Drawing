@@ -1,4 +1,4 @@
-﻿Imports IO
+﻿Imports Microsoft.VisualBasic.Drawing.Fonts.TrueType.IO
 
 Namespace Tables
     ''' <summary>
@@ -12,10 +12,29 @@ Namespace Tables
             Dim numGlyphcs As UShort = reader.ReadUInt16BigEndian()
 
             If version = 0.5F Then
-                Return
+                Return New MaxpTable With {
+                     .Version = version,
+                    .NumGlyphs = numGlyphcs
+                }
             End If
 
-            Return
+            Return New MaxpTable With {
+             .Version = version,
+                .NumGlyphs = numGlyphcs,
+                .MaxPoints = reader.ReadUInt16BigEndian(),
+                .MaxContours = reader.ReadUInt16BigEndian(),
+                .MaxCompositePoints = reader.ReadUInt16BigEndian(),
+                .MaxCompositeContours = reader.ReadUInt16BigEndian(),
+                .MaxZones = reader.ReadUInt16BigEndian(),
+                .MaxTwilightPoints = reader.ReadUInt16BigEndian(),
+                .MaxStorage = reader.ReadUInt16BigEndian(),
+                .MaxFunctionDefs = reader.ReadUInt16BigEndian(),
+               .MaxInstructionDefs = reader.ReadUInt16BigEndian(),
+                .MaxStackElements = reader.ReadUInt16BigEndian(),
+                .MaxSizeOfInstructions = reader.ReadUInt16BigEndian(),
+                .MaxComponentElements = reader.ReadUInt16BigEndian(),
+                .MaxComponentDepth = reader.ReadUInt16BigEndian()
+            }
         End Function
 
         Public Property Version As Single
