@@ -7,10 +7,13 @@ Namespace Helpers
         ''' </summary>        
         Public Function GetGlyphIndex(c As Char, font As TrueTypeFont) As UInteger
             Dim glyphIndex As UInteger = 0
-
-            ' Prefer Windows platform UCS2 glyphs as they are the recommended default on the Windows platform
-            Dim preferred = font.CmapTable.EncodingRecords.FirstOrDefault(Function(e) e.PlatformId = Platform.Windows AndAlso e.WindowsEncodingId = WindowsEncoding.UnicodeUCS2)
-
+            ' Prefer Windows platform UCS2 glyphs as they are the
+            ' recommended default on the Windows platform
+            Dim preferred = font.CmapTable.EncodingRecords _
+                .FirstOrDefault(Function(e)
+                                    Return e.PlatformId = Platform.Windows AndAlso
+                                        e.WindowsEncodingId = WindowsEncoding.UnicodeUCS2
+                                End Function)
 
             If preferred IsNot Nothing Then
                 glyphIndex = preferred.Subtable.GetGlyphIndex(c)
