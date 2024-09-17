@@ -7,6 +7,9 @@ Imports std = System.Math
 
 Namespace ImageFormat
 
+    ' implements of bitmap data reader
+    ' https://github.com/xieguigang/sciBASIC/blob/master/Microsoft.VisualBasic.Core/src/Extensions/Image/Bitmap/BtimapReader.vb
+    '
     Public Class BitmapWriter : Implements IDisposable
 
         Private fileHeader As BitmapFileHeader = BitmapFileHeader.GetDefault()
