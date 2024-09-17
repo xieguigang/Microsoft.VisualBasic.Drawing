@@ -18,7 +18,7 @@ Namespace Helpers
                 For Each subTable In font.KernTable.Subtables
                     If subTable.Format0 IsNot Nothing AndAlso
                         subTable.Direction = Direction.Horizontal AndAlso
-                        subTable.Values = Values.Kerning Then
+                        subTable.Values = Tables.Kern.Values.Kerning Then
 
                         Dim pair As New KerningPair(leftCode, rightCode)
 
