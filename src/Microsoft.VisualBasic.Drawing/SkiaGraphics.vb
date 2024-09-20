@@ -1,46 +1,29 @@
-﻿Imports System.IO
-Imports System.Runtime.CompilerServices
+﻿Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
-Public MustInherit Class SkiaGraphics
-
-    Protected ReadOnly w As Integer
-    Protected ReadOnly h As Integer
+Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
 
     Protected ReadOnly canvasRect As SKRect
     Protected m_canvas As SKCanvas
 
-    Public ReadOnly Property Width As Integer
-        Get
-            Return w
-        End Get
-    End Property
-
-    Public ReadOnly Property Height As Integer
-        Get
-            Return h
-        End Get
-    End Property
-
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Sub New(width As Integer, height As Integer)
-        w = width
-        h = height
+        Call MyBase.New(width, height)
         canvasRect = SKRect.Create(width, height)
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Sub Clear(fill As ArgbColor)
+    Public Overrides Sub Clear(fill As ArgbColor)
         Call m_canvas.Clear(fill.AsSKColor)
     End Sub
 
-    Public Sub Clear(color As String)
+    Public Overloads Sub Clear(color As String)
         Call m_canvas.Clear(ArgbColor.TranslateColor(color).AsSKColor)
     End Sub
 
-    Public Sub DrawString(s As String, fontName As String, fontSize As Single, color As ArgbColor, x As Single, y As Single)
+    Public Overrides Sub DrawString(s As String, fontName As String, fontSize As Single, color As ArgbColor, x As Single, y As Single)
         Dim textPain As New SKPaint With {
            .IsAntialias = True,
            .Style = SKPaintStyle.Fill,
@@ -52,13 +35,13 @@ Public MustInherit Class SkiaGraphics
         m_canvas.DrawText(s, x, y, textPain)
     End Sub
 
-    Public Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As ArgbColor, width As Single)
+    Public Overrides Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As ArgbColor, width As Single)
         Using paint As New SKPaint With {.Color = color.AsSKColor, .StrokeWidth = width}
             m_canvas.DrawLine(x1, y1, x2, y2, paint)
         End Using
     End Sub
 
-    Public Sub DrawPath(path As Polygon2D, color As ArgbColor, width As Single)
+    Public Overrides Sub DrawPath(path As Polygon2D, color As ArgbColor, width As Single)
         Using skpath As New SKPath
             Dim x = path.xpoints
             Dim y = path.ypoints
@@ -81,7 +64,7 @@ Public MustInherit Class SkiaGraphics
         End Using
     End Sub
 
-    Public Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
+    Public Overrides Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
         Using paint As New SKPaint With {
             .TextSize = fontSize,
             .IsAntialias = True,
@@ -93,17 +76,4 @@ Public MustInherit Class SkiaGraphics
             Return (textBounds.Width, textBounds.Height)
         End Using
     End Function
-
-    ''' <summary>
-    ''' save default image file
-    ''' </summary>
-    ''' <param name="file"></param>
-    Public Sub Save(file As String)
-        Using s As Stream = file.Open(FileMode.OpenOrCreate, doClear:=True,)
-            Call Save(s)
-        End Using
-    End Sub
-
-    Public MustOverride Sub Save(file As Stream)
-
 End Class
