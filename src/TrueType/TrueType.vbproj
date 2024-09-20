@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OptionInfer>On</OptionInfer>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>16.9</LangVersion>
     <Version>0.2.0</Version>
     <Authors>Roy Triesscheijn, Wouter de Vries</Authors>
