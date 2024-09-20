@@ -26,6 +26,11 @@ Public Class Graphics
         End Get
     End Property
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Sub New(width As Integer, height As Integer, Optional fill As String = "#ffffff")
+        Call Me.New(New Size(width, height), fill.TranslateColor)
+    End Sub
+
     Sub New(size As Size, Optional fill As Color? = Nothing)
         m_size = size
         m_info = New SKImageInfo(size.Width, size.Height)
