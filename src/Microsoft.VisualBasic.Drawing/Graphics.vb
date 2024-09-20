@@ -72,6 +72,12 @@ Public Class Graphics
         Return "raster_buffer: " & StringFormats.Lanudry(Width * Height * 4&)
     End Function
 
+    Public Function Save(file As String, Optional format As ImageFormats = ImageFormats.Png) As Boolean
+        Using s As Stream = file.Open(FileMode.OpenOrCreate, doClear:=True,)
+            Return Save(s, format)
+        End Using
+    End Function
+
     Public Function Save(file As Stream, format As ImageFormats) As Boolean
         Dim image = m_surface.Snapshot
         Dim data = image.Encode(SKEncodedImageFormat.Png, 100)
