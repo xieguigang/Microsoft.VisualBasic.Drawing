@@ -35,13 +35,25 @@ Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
         m_canvas.DrawText(s, x, y, textPain)
     End Sub
 
-    Public Overrides Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As ArgbColor, width As Single)
-        Using paint As New SKPaint With {.Color = color.AsSKColor, .StrokeWidth = width}
-            m_canvas.DrawLine(x1, y1, x2, y2, paint)
+    Public Overrides Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As ArgbColor, width As Single,
+                                  Optional dash As Single() = Nothing)
+
+        Using paint As New SKPaint With {
+            .Color = color.AsSKColor,
+            .StrokeWidth = width
+        }
+            If Not dash.IsNullOrEmpty Then
+                paint.PathEffect = SKPathEffect.CreateDash(dash, 0)
+            End If
+
+            Call m_canvas.DrawLine(x1, y1, x2, y2, paint)
         End Using
     End Sub
 
-    Public Overrides Sub DrawPath(path As Polygon2D, color As ArgbColor, width As Single)
+    Public Overrides Sub DrawPath(path As Polygon2D, color As ArgbColor, width As Single,
+                                  Optional fill As ArgbColor? = Nothing,
+                                  Optional dash As Single() = Nothing)
+
         Using skpath As New SKPath
             Dim x = path.xpoints
             Dim y = path.ypoints
@@ -54,11 +66,24 @@ Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
 
             Call skpath.Close()
 
+            If Not fill Is Nothing Then
+                Using paint As New SKPaint With {
+                    .Style = SKPaintStyle.Fill,
+                    .Color = CType(fill, ArgbColor).AsSKColor
+                }
+                    Call m_canvas.DrawPath(skpath, paint)
+                End Using
+            End If
+
             Using paint As New SKPaint With {
                 .Color = color.AsSKColor,
                 .StrokeWidth = width,
                 .Style = SKPaintStyle.Stroke
             }
+                If Not dash.IsNullOrEmpty Then
+                    paint.PathEffect = SKPathEffect.CreateDash(dash, 0)
+                End If
+
                 Call m_canvas.DrawPath(skpath, paint)
             End Using
         End Using
