@@ -59,9 +59,8 @@ Public MustInherit Class SkiaGraphics
         }
 
             Dim textBounds As New SKRect
-            Dim w = paint.MeasureText(text, textBounds)
-
-            Return (w, textBounds.Height)
+            Call paint.MeasureText(text, textBounds)
+            Return (textBounds.Width, textBounds.Height)
         End Using
     End Function
 
