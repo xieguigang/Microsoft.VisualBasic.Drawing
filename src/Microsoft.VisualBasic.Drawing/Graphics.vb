@@ -1,5 +1,4 @@
-﻿Imports System.Drawing
-Imports System.IO
+﻿Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports SkiaSharp
@@ -7,33 +6,33 @@ Imports SkiaSharp
 ''' <summary>
 ''' A wrapper of the skia sharp canvas object
 ''' </summary>
-Public Class Graphics
+Public Class Graphics : Inherits SkiaGraphics
 
     ReadOnly m_info As SKImageInfo
-    ReadOnly m_size As Size
     ReadOnly m_surface As SKSurface
     ReadOnly m_canvas As SKCanvas
 
     Public ReadOnly Property Width As Integer
         Get
-            Return m_size.Width
+            Return w
         End Get
     End Property
 
     Public ReadOnly Property Height As Integer
         Get
-            Return m_size.Height
+            Return h
         End Get
     End Property
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Sub New(width As Integer, height As Integer, Optional fill As String = "#ffffff")
-        Call Me.New(New Size(width, height), fill.TranslateColor)
+        Call Me.New(width, height, fill.TranslateColor)
     End Sub
 
-    Sub New(size As Size, Optional fill As Color? = Nothing)
-        m_size = size
-        m_info = New SKImageInfo(size.Width, size.Height)
+    Sub New(width As Integer, height As Integer, Optional fill As ArgbColor? = Nothing)
+        Call MyBase.New(width, height)
+
+        m_info = New SKImageInfo(width, height)
         m_surface = SKSurface.Create(m_info)
         m_canvas = m_surface.Canvas
 
@@ -42,6 +41,10 @@ Public Class Graphics
         Else
             Call Clear(Color.White)
         End If
+    End Sub
+
+    Sub New(size As Size, Optional fill As ArgbColor? = Nothing)
+        Call Me.New(size.Width, size.Height, fill)
     End Sub
 
     Public Function GetPixel(x As Integer, y As Integer) As Color
@@ -53,8 +56,12 @@ Public Class Graphics
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Sub Clear(fill As Color)
+    Public Overloads Sub Clear(fill As Color)
         Call m_canvas.Clear(fill.AsSKColor)
+    End Sub
+
+    Public Overrides Sub Clear(color As String)
+        Call m_canvas.Clear(color.TranslateSKColor)
     End Sub
 
     Public Sub DrawString(s As String, font As Font, color As Color, x As Single, y As Single)
