@@ -3,15 +3,29 @@ Imports SkiaSharp
 
 Public Class SvgGraphics : Inherits SkiaGraphics
 
-    ReadOnly svg As New MemoryStream
-    ReadOnly wstream As New SKManagedWStream(svg)
+    ReadOnly svgfile As New MemoryStream
+    ReadOnly wstream As New SKManagedWStream(svgfile)
     ReadOnly writer As New SKXmlStreamWriter(wstream)
 
     Public Sub New(width As Integer, height As Integer)
         MyBase.New(width, height)
+        m_canvas = SKSvgCanvas.Create(canvasRect, writer)
     End Sub
 
-    Public Overrides Sub Clear(color As String)
-        Throw New NotImplementedException()
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="file"></param>
+    ''' <remarks>
+    ''' this function will release the svg canvas
+    ''' </remarks>
+    Public Overrides Sub Save(file As Stream)
+        Call m_canvas.Flush()
+        Call m_canvas.Dispose()
+
+        svgfile.Position = Scan0
+        svgfile.CopyTo(file)
+
+        Call file.Flush()
     End Sub
 End Class
