@@ -1,6 +1,7 @@
 ﻿Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
 Public MustInherit Class SkiaGraphics
@@ -49,6 +50,35 @@ Public MustInherit Class SkiaGraphics
         }
 
         m_canvas.DrawText(s, x, y, textPain)
+    End Sub
+
+    Public Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As ArgbColor, width As Single)
+        Using paint As New SKPaint With {.Color = color.AsSKColor, .StrokeWidth = width}
+            m_canvas.DrawLine(x1, y1, x2, y2, paint)
+        End Using
+    End Sub
+
+    Public Sub DrawPath(path As Polygon2D, color As ArgbColor, width As Single)
+        Using skpath As New SKPath
+            Dim x = path.xpoints
+            Dim y = path.ypoints
+
+            Call skpath.MoveTo(x(0), y(0))
+
+            For i As Integer = 1 To x.Length - 1
+                Call skpath.LineTo(x(i), y(i))
+            Next
+
+            Call skpath.Close()
+
+            Using paint As New SKPaint With {
+                .Color = color.AsSKColor,
+                .StrokeWidth = width,
+                .Style = SKPaintStyle.Stroke
+            }
+                Call m_canvas.DrawPath(skpath, paint)
+            End Using
+        End Using
     End Sub
 
     Public Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
