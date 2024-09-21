@@ -1,4 +1,5 @@
-﻿Imports System.IO
+﻿Imports System.Drawing
+Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports SkiaSharp
@@ -13,10 +14,10 @@ Public Class Graphics : Inherits SkiaGraphics
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Sub New(width As Integer, height As Integer, Optional fill As String = "#ffffff")
-        Call Me.New(width, height, ArgbColor.TranslateColor(fill))
+        Call Me.New(width, height, TranslateColor(fill))
     End Sub
 
-    Sub New(width As Integer, height As Integer, Optional fill As ArgbColor? = Nothing)
+    Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing)
         Call MyBase.New(width, height)
 
         m_info = New SKImageInfo(width, height)
@@ -24,17 +25,17 @@ Public Class Graphics : Inherits SkiaGraphics
         m_canvas = m_surface.Canvas
 
         If fill Is Nothing Then
-            Call Clear(ArgbColor.Transparent)
+            Call Clear(Color.Transparent)
         Else
             Call Clear(fill)
         End If
     End Sub
 
-    Public Function GetPixel(x As Integer, y As Integer) As ArgbColor
+    Public Function GetPixel(x As Integer, y As Integer) As Color
         Throw New NotImplementedException
     End Function
 
-    Public Sub SetPixel(x As Integer, y As Integer, pixel As ArgbColor)
+    Public Sub SetPixel(x As Integer, y As Integer, pixel As Color)
         Throw New NotImplementedException
     End Sub
 

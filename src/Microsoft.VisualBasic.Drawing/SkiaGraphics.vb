@@ -1,9 +1,10 @@
-﻿Imports System.Runtime.CompilerServices
+﻿Imports System.Drawing
+Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
-Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
+Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     Protected ReadOnly canvasRect As SKRect
     Protected m_canvas As SKCanvas
@@ -15,15 +16,15 @@ Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub Clear(fill As ArgbColor)
+    Public Overrides Sub Clear(fill As Color)
         Call m_canvas.Clear(fill.AsSKColor)
     End Sub
 
     Public Overloads Sub Clear(color As String)
-        Call m_canvas.Clear(ArgbColor.TranslateColor(color).AsSKColor)
+        Call m_canvas.Clear(TranslateColor(color).AsSKColor)
     End Sub
 
-    Public Overrides Sub DrawString(s As String, fontName As String, fontSize As Single, color As ArgbColor, x As Single, y As Single)
+    Public Overrides Sub DrawString(s As String, fontName As String, fontSize As Single, color As Color, x As Single, y As Single)
         Dim textPain As New SKPaint With {
            .IsAntialias = True,
            .Style = SKPaintStyle.Fill,
@@ -35,7 +36,7 @@ Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
         m_canvas.DrawText(s, x, y, textPain)
     End Sub
 
-    Public Overrides Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As ArgbColor, width As Single,
+    Public Overrides Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As Color, width As Single,
                                   Optional dash As Single() = Nothing)
 
         Using paint As New SKPaint With {
@@ -50,8 +51,8 @@ Public MustInherit Class SkiaGraphics : Inherits DrawingGraphics
         End Using
     End Sub
 
-    Public Overrides Sub DrawPath(path As Polygon2D, color As ArgbColor, width As Single,
-                                  Optional fill As ArgbColor? = Nothing,
+    Public Overrides Sub DrawPath(path As Polygon2D, color As Color, width As Single,
+                                  Optional fill As Color? = Nothing,
                                   Optional dash As Single() = Nothing)
 
         Using skpath As New SKPath
