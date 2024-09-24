@@ -17,8 +17,8 @@ Public Class Graphics : Inherits SkiaGraphics
         Call Me.New(width, height, TranslateColor(fill))
     End Sub
 
-    Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing)
-        Call MyBase.New(width, height)
+    Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing, Optional dpi As Integer = 100)
+        Call MyBase.New(width, height, dpi)
 
         m_info = New SKImageInfo(width, height)
         m_surface = SKSurface.Create(m_info)
@@ -64,8 +64,7 @@ Public Class Graphics : Inherits SkiaGraphics
         Return True
     End Function
 
-    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub Save(file As Stream)
-        Call Save(file, ImageFormats.Png)
+        Call Save(file, format:=ImageFormats.Png)
     End Sub
 End Class

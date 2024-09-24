@@ -1,4 +1,5 @@
 ﻿Imports System.Drawing
+Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Math2D
@@ -10,8 +11,10 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Protected m_canvas As SKCanvas
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Sub New(width As Integer, height As Integer)
-        Call MyBase.New(width, height)
+    Sub New(width As Integer, height As Integer, dpi As Integer)
+        Call MyBase.New(dpi)
+
+        Size = New Size(width, height)
         canvasRect = SKRect.Create(width, height)
     End Sub
 
@@ -29,7 +32,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Call m_canvas.Clear(TranslateColor(color).AsSKColor)
     End Sub
 
-    Public Overrides Sub DrawString(s As String, fontName As String, fontSize As Single, color As Color, x As Single, y As Single)
+    Public Overloads Sub DrawString(s As String, fontName As String, fontSize As Single, color As Color, x As Single, y As Single)
         Dim textPain As New SKPaint With {
            .IsAntialias = True,
            .Style = SKPaintStyle.Fill,
@@ -57,7 +60,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Throw New NotImplementedException()
     End Sub
 
-    Public Overrides Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As Color, width As Single,
+    Public Overloads Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As Color, width As Single,
                                   Optional dash As Single() = Nothing)
 
         Using paint As New SKPaint With {
@@ -88,7 +91,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Throw New NotImplementedException()
     End Sub
 
-    Public Overrides Sub DrawPath(path As Polygon2D, color As Color, width As Single,
+    Public Overloads Sub DrawPath(path As Polygon2D, color As Color, width As Single,
                                   Optional fill As Color? = Nothing,
                                   Optional dash As Single() = Nothing)
 
@@ -107,7 +110,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             If Not fill Is Nothing Then
                 Using paint As New SKPaint With {
                     .Style = SKPaintStyle.Fill,
-                    .Color = CType(fill, ArgbColor).AsSKColor
+                    .Color = CType(fill, Color).AsSKColor
                 }
                     Call m_canvas.DrawPath(skpath, paint)
                 End Using
@@ -467,7 +470,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Throw New NotImplementedException()
     End Sub
 
-    Public Overrides Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
+    Public Overloads Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
         Using paint As New SKPaint With {
             .TextSize = fontSize,
             .IsAntialias = True,
@@ -476,6 +479,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
             Dim textBounds As New SKRect
             Call paint.MeasureText(text, textBounds)
+
             Return (textBounds.Width, textBounds.Height)
         End Using
     End Function
@@ -515,4 +519,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Public Overrides Function IsVisible(x As Single, y As Single, width As Single, height As Single) As Boolean
         Throw New NotImplementedException()
     End Function
+
+    Public MustOverride Sub Save(file As Stream)
+
 End Class
