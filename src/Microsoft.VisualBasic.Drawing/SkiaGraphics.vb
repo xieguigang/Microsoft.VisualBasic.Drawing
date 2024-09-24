@@ -9,6 +9,18 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Protected ReadOnly canvasRect As SKRect
     Protected m_canvas As SKCanvas
 
+    Public ReadOnly Property Width As Integer
+        Get
+            Return Size.Width
+        End Get
+    End Property
+
+    Public ReadOnly Property Height As Integer
+        Get
+            Return Size.Height
+        End Get
+    End Property
+
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Sub New(width As Integer, height As Integer)
         Call MyBase.New(width, height)
