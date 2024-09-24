@@ -21,16 +21,14 @@ Public Module Interop
         Return color.TranslateColor.AsSKColor
     End Function
 
-#If WINDOWS Then
     <Extension>
     Public Function SkiaToGdiPlusImage(skImage As SKImage) As Image
         Using data As SKData = skImage.Encode(SKEncodedImageFormat.Png, 100)
             Dim bytes As Byte() = data.ToArray
 
             Using ms As New MemoryStream(bytes)
-                Return Image.FromFile(ms)
+                Return Image.FromStream(ms)
             End Using
         End Using
     End Function
-#End If
 End Module
