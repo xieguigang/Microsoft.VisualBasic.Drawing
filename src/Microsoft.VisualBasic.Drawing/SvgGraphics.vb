@@ -7,8 +7,9 @@ Public Class SvgGraphics : Inherits SkiaGraphics
     ReadOnly wstream As New SKManagedWStream(svgfile)
     ReadOnly writer As New SKXmlStreamWriter(wstream)
 
-    Public Sub New(width As Integer, height As Integer)
-        MyBase.New(width, height)
+    Public Sub New(width As Integer, height As Integer, Optional dpi As Integer = 100)
+        MyBase.New(width, height, dpi)
+
         m_canvas = SKSvgCanvas.Create(canvasRect, writer)
     End Sub
 

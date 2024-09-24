@@ -6,8 +6,9 @@ Public Class PdfGraphics : Inherits SkiaGraphics
     ReadOnly s As New MemoryStream
     ReadOnly document As SKDocument = SKDocument.CreatePdf(s)
 
-    Public Sub New(width As Integer, height As Integer)
-        MyBase.New(width, height)
+    Public Sub New(width As Integer, height As Integer, Optional dpi As Integer = 100)
+        MyBase.New(width, height, dpi)
+
         m_canvas = document.BeginPage(width, height)
     End Sub
 

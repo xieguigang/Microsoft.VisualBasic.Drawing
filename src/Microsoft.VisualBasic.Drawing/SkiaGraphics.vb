@@ -522,4 +522,17 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     Public MustOverride Sub Save(file As Stream)
 
+    Public Function Save(filepath As String) As Boolean
+        Try
+            Using s As Stream = filepath.Open(FileMode.OpenOrCreate, doClear:=True)
+                Call Save(s)
+            End Using
+        Catch ex As Exception
+            Call App.LogException(New Exception(filepath, ex))
+            Return False
+        End Try
+
+        Return True
+    End Function
+
 End Class
