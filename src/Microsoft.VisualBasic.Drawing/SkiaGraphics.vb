@@ -45,19 +45,33 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, ByRef point As PointF)
-        Throw New NotImplementedException()
+        Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, point.X, point.Y)
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, layoutRectangle As RectangleF)
-        Throw New NotImplementedException()
+        Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, layoutRectangle.Left, layoutRectangle.Top)
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, ByRef x As Single, ByRef y As Single, angle As Single)
-        Throw New NotImplementedException()
+        Using paint As New SKPaint With {
+                .TextSize = font.Size,
+                .Color = DirectCast(brush, SolidBrush).Color.AsSKColor,
+                .IsAntialias = True
+            }
+
+            Dim textBounds As New SKRect
+            paint.MeasureText(s, textBounds)
+
+            m_canvas.Translate(x, y)
+            m_canvas.RotateDegrees(angle)
+            m_canvas.DrawText(s, -textBounds.MidX, -textBounds.MidY, paint)
+            m_canvas.RotateDegrees(-angle)
+            m_canvas.Translate(-x, -y)
+        End Using
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, x As Single, y As Single)
-        Throw New NotImplementedException()
+        Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, x, y)
     End Sub
 
     Public Overloads Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As Color, width As Single,
@@ -76,19 +90,19 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, pt1 As PointF, pt2 As PointF)
-        Throw New NotImplementedException()
+        Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width)
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, pt1 As Point, pt2 As Point)
-        Throw New NotImplementedException()
+        Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width)
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, x1 As Integer, y1 As Integer, x2 As Integer, y2 As Integer)
-        Throw New NotImplementedException()
+        Call DrawLine(x1, y1, x2, y2, pen.Color, pen.Width)
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, x1 As Single, y1 As Single, x2 As Single, y2 As Single)
-        Throw New NotImplementedException()
+        Call DrawLine(x1, y1, x2, y2, pen.Color, pen.Width)
     End Sub
 
     Public Overloads Sub DrawPath(path As Polygon2D, color As Color, width As Single,
@@ -327,19 +341,24 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawRectangle(pen As Pen, rect As Rectangle)
-        Throw New NotImplementedException()
+        Call DrawRectangle(pen, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
     Public Overrides Sub DrawRectangle(pen As Pen, rect As RectangleF)
-        Throw New NotImplementedException()
+        Call DrawRectangle(pen, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
     Public Overrides Sub DrawRectangle(pen As Pen, x As Single, y As Single, width As Single, height As Single)
-        Throw New NotImplementedException()
+        Using paint As New SKPaint With {
+            .Color = pen.Color.AsSKColor,
+            .StrokeWidth = pen.Width
+        }
+            Call m_canvas.DrawRect(x, y, width, height, paint)
+        End Using
     End Sub
 
     Public Overrides Sub DrawRectangle(pen As Pen, x As Integer, y As Integer, width As Integer, height As Integer)
-        Throw New NotImplementedException()
+        Call DrawRectangle(pen, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
     Public Overrides Sub DrawRectangles(pen As Pen, rects() As RectangleF)
@@ -363,19 +382,28 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub FillEllipse(brush As Brush, rect As Rectangle)
-        Throw New NotImplementedException()
+        With rect.Centre
+            Call FillEllipse(brush, .X, .Y, rect.Width, rect.Height)
+        End With
     End Sub
 
     Public Overrides Sub FillEllipse(brush As Brush, rect As RectangleF)
-        Throw New NotImplementedException()
+        With rect.Centre
+            Call FillEllipse(brush, .X, .Y, rect.Width, rect.Height)
+        End With
     End Sub
 
     Public Overrides Sub FillEllipse(brush As Brush, x As Single, y As Single, width As Single, height As Single)
-        Throw New NotImplementedException()
+        Using paint As New SKPaint With {
+            .Style = SKPaintStyle.Fill,
+            .Color = DirectCast(brush, SolidBrush).Color.AsSKColor
+        }
+            Call m_canvas.DrawOval(x, y, width, height, paint)
+        End Using
     End Sub
 
     Public Overrides Sub FillEllipse(brush As Brush, x As Integer, y As Integer, width As Integer, height As Integer)
-        Throw New NotImplementedException()
+        Call FillEllipse(brush, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
     Public Overrides Sub FillPath(brush As Brush, path As GraphicsPath)
@@ -403,23 +431,29 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub FillRectangle(brush As Brush, rect As Rectangle)
-        Throw New NotImplementedException()
+        Call FillRectangle(brush, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
     Public Overrides Sub FillRectangle(brush As Brush, rect As RectangleF)
-        Throw New NotImplementedException()
+        Call FillRectangle(brush, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
     Public Overrides Sub FillRectangle(brush As Brush, x As Integer, y As Integer, width As Integer, height As Integer)
-        Throw New NotImplementedException()
+        Call FillRectangle(brush, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
     Public Overrides Sub FillRectangle(brush As Brush, x As Single, y As Single, width As Single, height As Single)
-        Throw New NotImplementedException()
+        Using paint As New SKPaint With {
+            .Style = SKPaintStyle.Fill,
+            .Color = DirectCast(brush, SolidBrush).Color.AsSKColor
+        }
+
+            Call m_canvas.DrawRect(New SKRect(x, y, x + width, y + height), paint)
+        End Using
     End Sub
 
     Public Overrides Sub Flush()
-        Throw New NotImplementedException()
+        m_canvas.Flush()
     End Sub
 
     Public Overrides Sub IntersectClip(rect As RectangleF)
@@ -467,7 +501,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Protected Overrides Sub ClearCanvas(color As Color)
-        Throw New NotImplementedException()
+        m_canvas.Clear(color.AsSKColor)
     End Sub
 
     Public Overloads Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
@@ -485,15 +519,25 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font) As SizeF
-        Throw New NotImplementedException()
+        Using paint As New SKPaint With {
+            .TextSize = font.Size,
+            .IsAntialias = True,
+            .Typeface = SKTypeface.FromFamilyName(font.Name)
+        }
+
+            Dim textBounds As New SKRect
+            Call paint.MeasureText(text, textBounds)
+
+            Return New SizeF(textBounds.Width, textBounds.Height)
+        End Using
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font, width As Integer) As SizeF
-        Throw New NotImplementedException()
+        Return MeasureString(text, font)
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font, layoutArea As SizeF) As SizeF
-        Throw New NotImplementedException()
+        Return MeasureString(text, font)
     End Function
 
     Public Overrides Function GetContextInfo() As Object
