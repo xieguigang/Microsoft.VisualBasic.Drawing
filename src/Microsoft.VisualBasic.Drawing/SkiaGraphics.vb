@@ -131,14 +131,14 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawPath(pen As Pen, path As GraphicsPath)
-        Throw New NotImplementedException()
+        Using skpath As SKPath = path.CreatePath
+            Using stroke As SKPaint = pen.CreatePaint
+                Call m_canvas.DrawPath(skpath, stroke)
+            End Using
+        End Using
     End Sub
 
     Public Overrides Sub AddMetafileComment(data() As Byte)
-        Throw New NotImplementedException()
-    End Sub
-
-    Public Overrides Sub Dispose()
         Throw New NotImplementedException()
     End Sub
 

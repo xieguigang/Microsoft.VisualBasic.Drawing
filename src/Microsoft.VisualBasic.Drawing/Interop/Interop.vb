@@ -36,4 +36,9 @@ Public Module Interop
             End Using
         End Using
     End Function
+
+    <Extension>
+    Public Function CreatePaint(pen As Pen) As SKPaint
+
+    End Function
 End Module

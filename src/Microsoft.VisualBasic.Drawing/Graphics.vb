@@ -67,4 +67,8 @@ Public Class Graphics : Inherits SkiaGraphics
     Public Overrides Sub Save(file As Stream)
         Call Save(file, format:=ImageFormats.Png)
     End Sub
+
+    Public Overrides Sub Dispose()
+        Call m_canvas.Dispose()
+    End Sub
 End Class

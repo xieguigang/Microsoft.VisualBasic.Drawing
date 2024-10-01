@@ -19,4 +19,13 @@ Public Class PdfGraphics : Inherits SkiaGraphics
         s.Seek(Scan0, SeekOrigin.Begin)
         s.CopyTo(file)
     End Sub
+
+    Public Overrides Sub Dispose()
+        Try
+            document.EndPage()
+            document.Dispose()
+        Catch ex As Exception
+
+        End Try
+    End Sub
 End Class

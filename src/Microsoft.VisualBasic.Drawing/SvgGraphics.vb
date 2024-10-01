@@ -27,4 +27,13 @@ Public Class SvgGraphics : Inherits SkiaGraphics
 
         Call file.Flush()
     End Sub
+
+    Public Overrides Sub Dispose()
+        Try
+            Call m_canvas.Flush()
+            Call m_canvas.Dispose()
+        Catch ex As Exception
+
+        End Try
+    End Sub
 End Class
