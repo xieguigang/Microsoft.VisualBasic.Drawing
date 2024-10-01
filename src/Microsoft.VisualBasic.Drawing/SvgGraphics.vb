@@ -4,13 +4,11 @@ Imports SkiaSharp
 Public Class SvgGraphics : Inherits SkiaGraphics
 
     ReadOnly svgfile As New MemoryStream
-    ReadOnly wstream As New SKManagedWStream(svgfile)
-    ReadOnly writer As New SKXmlStreamWriter(wstream)
 
     Public Sub New(width As Integer, height As Integer, Optional dpi As Integer = 100)
         MyBase.New(width, height, dpi)
 
-        m_canvas = SKSvgCanvas.Create(canvasRect, writer)
+        m_canvas = SKSvgCanvas.Create(canvasRect, svgfile)
     End Sub
 
     ''' <summary>
