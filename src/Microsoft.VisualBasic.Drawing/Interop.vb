@@ -4,6 +4,12 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports SkiaSharp
 
+#If WINDOWS Then
+Imports Image = System.Drawing.Image
+#Else
+Imports Image = Microsoft.VisualBasic.Imaging.Image
+#End If
+
 ''' <summary>
 ''' Helper for interop with gdi+ in .net-windows
 ''' </summary>
@@ -21,6 +27,11 @@ Public Module Interop
         Return color.TranslateColor.AsSKColor
     End Function
 
+    ''' <summary>
+    ''' Convert the skia image to gdi+ image
+    ''' </summary>
+    ''' <param name="skImage"></param>
+    ''' <returns></returns>
     <Extension>
     Public Function SkiaToGdiPlusImage(skImage As SKImage) As Image
         Using data As SKData = skImage.Encode(SKEncodedImageFormat.Png, 100)
