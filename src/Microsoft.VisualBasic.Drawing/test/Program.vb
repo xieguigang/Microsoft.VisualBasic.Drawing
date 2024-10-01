@@ -8,6 +8,10 @@ Module Program
         Call testDrawing()
     End Sub
 
+    Private Sub testDriver()
+        SkiaDriver.Register()
+    End Sub
+
     Private Sub testDrawing()
         Dim draw = Function(g As SkiaGraphics) As SkiaGraphics
                        g.Clear(Color.White)
