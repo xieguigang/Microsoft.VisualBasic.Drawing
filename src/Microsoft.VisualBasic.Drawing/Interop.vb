@@ -2,6 +2,7 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
 #If WINDOWS Then
@@ -42,4 +43,18 @@ Public Module Interop
             End Using
         End Using
     End Function
+
+#If WINDOWS Then
+
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    <Extension>
+    Public Function GetGdiPlusRasterImageResource(raster As GdiRasterGraphics) As System.Drawing.Image
+        Return raster.ImageResource.AsImage
+    End Function
+
+    <Extension>
+    Public Function AsImage(image As Microsoft.VisualBasic.Imaging.Image) As System.Drawing.Image
+
+    End Function
+#End If
 End Module
