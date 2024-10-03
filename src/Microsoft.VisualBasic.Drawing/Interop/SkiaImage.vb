@@ -1,4 +1,5 @@
 ﻿Imports System.Drawing
+Imports System.IO
 Imports Microsoft.VisualBasic.Imaging
 Imports SkiaSharp
 
@@ -17,4 +18,14 @@ Public Class SkiaImage : Inherits Image
         Me.Image = image
     End Sub
 
+    Public Overrides Sub Save(s As Stream, format As ImageFormats)
+        Dim data = Image.Encode(SKEncodedImageFormat.Png, 100)
+
+        Try
+            Call data.SaveTo(s)
+            Call s.Flush()
+        Catch ex As Exception
+            Call App.LogException(ex)
+        End Try
+    End Sub
 End Class
