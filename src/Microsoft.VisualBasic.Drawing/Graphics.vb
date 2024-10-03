@@ -2,15 +2,23 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
 ''' <summary>
 ''' A wrapper of the skia sharp canvas object for raster image drawing
 ''' </summary>
 Public Class Graphics : Inherits SkiaGraphics
+    Implements GdiRasterGraphics
 
-    ReadOnly m_info As SKImageInfo
-    ReadOnly m_surface As SKSurface
+    Friend ReadOnly m_info As SKImageInfo
+    Friend ReadOnly m_surface As SKSurface
+
+    Public ReadOnly Property ImageResource As Image Implements GdiRasterGraphics.ImageResource
+        Get
+            Return New SkiaImage(Me)
+        End Get
+    End Property
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Sub New(width As Integer, height As Integer, Optional fill As String = "#ffffff")
