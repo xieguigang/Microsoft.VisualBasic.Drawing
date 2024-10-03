@@ -4,6 +4,7 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
+Imports std = System.Math
 
 Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
@@ -411,15 +412,32 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub FillPie(brush As Brush, rect As Rectangle, startAngle As Single, sweepAngle As Single)
-        Throw New NotImplementedException()
+        FillPie(brush, rect.Left, rect.Top, rect.Width, rect.Height, startAngle, sweepAngle)
     End Sub
 
     Public Overrides Sub FillPie(brush As Brush, x As Integer, y As Integer, width As Integer, height As Integer, startAngle As Integer, sweepAngle As Integer)
-        Throw New NotImplementedException()
+        FillPie(brush, CSng(x), CSng(y), CSng(width), CSng(height), CSng(startAngle), CSng(sweepAngle))
     End Sub
 
     Public Overrides Sub FillPie(brush As Brush, x As Single, y As Single, width As Single, height As Single, startAngle As Single, sweepAngle As Single)
-        Throw New NotImplementedException()
+        Using path As New SKPath
+            Dim startRadians As Single = startAngle * (std.PI / 180)
+            Dim sweepRadians As Single = sweepAngle * (std.PI / 180)
+            Dim radiusX As Single = width / 2
+            Dim radiusY As Single = height / 2
+
+            Call path.MoveTo(New SKPoint(x, y))
+            Call path.ArcTo(New SKRect(x - radiusX, y - radiusY, x + radiusX, y + radiusY),
+                   startRadians, sweepRadians, False)
+            Call path.LineTo(New SKPoint(x, y))
+
+            Using paint As New SKPaint With {
+                .Style = SKPaintStyle.Fill,
+                .Color = DirectCast(brush, SolidBrush).Color.AsSKColor
+            }
+                Call m_canvas.DrawPath(path, paint)
+            End Using
+        End Using
     End Sub
 
     Public Overrides Sub FillPolygon(brush As Brush, points() As Point)
