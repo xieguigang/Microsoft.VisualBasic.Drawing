@@ -1,6 +1,9 @@
 ﻿Imports System.Drawing
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Driver
+Imports Microsoft.VisualBasic.Imaging.SVG
+Imports Microsoft.VisualBasic.Imaging.SVG.XML
+Imports Microsoft.VisualBasic.MIME.Html.CSS
 
 Public Module SkiaDriver
 
@@ -20,7 +23,7 @@ Public Module SkiaDriver
             Throw New NotImplementedException()
         End Function
 
-        Public Overrides Function GetData(g As IGraphics) As IGraphicsData
+        Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
             Throw New NotImplementedException()
         End Function
     End Class
@@ -37,8 +40,12 @@ Public Module SkiaDriver
             Throw New NotImplementedException()
         End Function
 
-        Public Overrides Function GetData(g As IGraphics) As IGraphicsData
-            Throw New NotImplementedException()
+        Public Overrides Function GetData(g As IGraphics, padding As Integer()) As IGraphicsData
+            Dim svg As SvgGraphics = DirectCast(g, SvgGraphics)
+            Dim doc As SvgDocument = SvgDocument.Parse(xml:=svg.GetSvgText)
+            Dim model As New SVGDataLayers(doc)
+
+            Return New SVGData(model, svg.Size, New Padding(padding))
         End Function
     End Class
 
@@ -54,7 +61,7 @@ Public Module SkiaDriver
             Throw New NotImplementedException()
         End Function
 
-        Public Overrides Function GetData(g As IGraphics) As IGraphicsData
+        Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
             Throw New NotImplementedException()
         End Function
     End Class

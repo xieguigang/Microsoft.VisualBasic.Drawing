@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Text
 Imports SkiaSharp
 
 Public Class SvgGraphics : Inherits SkiaGraphics
@@ -11,6 +12,24 @@ Public Class SvgGraphics : Inherits SkiaGraphics
         m_canvas = SKSvgCanvas.Create(canvasRect, svgfile)
     End Sub
 
+    Public Sub Close()
+        ' commit current graphics drawing layer
+        Call m_canvas.Flush()
+        ' commit the correct xml text
+        Call m_canvas.Dispose()
+    End Sub
+
+    ''' <summary>
+    ''' get the svg file of the current graphics
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetSvgText() As String
+        Call Close()
+        Call svgfile.Flush()
+
+        Return Encoding.UTF8.GetString(svgfile.ToArray)
+    End Function
+
     ''' <summary>
     ''' 
     ''' </summary>
@@ -19,8 +38,7 @@ Public Class SvgGraphics : Inherits SkiaGraphics
     ''' this function will release the svg canvas
     ''' </remarks>
     Public Overrides Sub Save(file As Stream)
-        Call m_canvas.Flush()
-        Call m_canvas.Dispose()
+        Call Close()
 
         svgfile.Position = Scan0
         svgfile.CopyTo(file)
@@ -30,8 +48,7 @@ Public Class SvgGraphics : Inherits SkiaGraphics
 
     Public Overrides Sub Dispose()
         Try
-            Call m_canvas.Flush()
-            Call m_canvas.Dispose()
+            Call Close()
         Catch ex As Exception
 
         End Try
