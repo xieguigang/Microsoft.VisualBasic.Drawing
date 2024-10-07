@@ -582,6 +582,19 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Throw New NotImplementedException()
     End Function
 
+    Public Overrides Function GetStringPath(s As String, rect As RectangleF, font As Font) As GraphicsPath
+        Dim path As New SKPath
+
+        Using style As New SKPaint() With {.TextSize = font.Size, .Typeface = font.CreateSkiaTypeface}
+            path = style.GetTextPath(s, 0, 0)
+        End Using
+
+        Dim glyphs = path.GetPoints(path.PointCount)
+        Dim points = glyphs.Select(Function(p) New PointF(p.X, p.Y))
+
+        Return New GraphicsPath(points)
+    End Function
+
     Public MustOverride Sub Save(file As Stream)
 
     Public Function Save(filepath As String) As Boolean

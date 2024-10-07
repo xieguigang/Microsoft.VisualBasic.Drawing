@@ -54,4 +54,24 @@ Public Module Interop
     Public Function CreatePaint(pen As Pen) As SKPaint
 
     End Function
+
+    <Extension>
+    Public Function CreateSkiaFont(font As Font) As SKFont
+        Dim typeface = font.CreateSkiaTypeface
+        Dim skfont As New SKFont(typeface, font.Size)
+        Return skfont
+    End Function
+
+    <Extension>
+    Public Function CreateSkiaTypeface(font As Font) As SKTypeface
+        Dim style As SKFontStyleWeight = SKFontStyleWeight.Normal
+        Dim slant As SKFontStyleSlant = SKFontStyleSlant.Upright
+
+        Select Case font.Style
+            Case FontStyle.Bold : style = SKFontStyleWeight.Bold
+            Case FontStyle.Italic : slant = SKFontStyleSlant.Italic
+        End Select
+
+        Return SKTypeface.FromFamilyName(font.Name, style, SKFontStyleWidth.Normal, slant)
+    End Function
 End Module
