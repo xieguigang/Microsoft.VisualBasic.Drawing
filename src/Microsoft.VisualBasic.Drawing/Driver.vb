@@ -24,7 +24,9 @@ Public Module SkiaDriver
         End Function
 
         Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
-            Throw New NotImplementedException()
+            Dim img As Image = DirectCast(g, GdiRasterGraphics).ImageResource
+            Dim data As New ImageData(img, g.Size, New Padding(padding))
+            Return data
         End Function
     End Class
 
