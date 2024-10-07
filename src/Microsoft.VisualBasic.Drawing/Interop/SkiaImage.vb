@@ -19,7 +19,7 @@ Public Class SkiaImage : Inherits Image
     End Sub
 
     Public Overrides Sub Save(s As Stream, format As ImageFormats)
-        Dim data = Image.Encode(SKEncodedImageFormat.Png, 100)
+        Dim data = Image.Encode(format.GetSkiaEncodeFormat, 100)
 
         Try
             Call data.SaveTo(s)

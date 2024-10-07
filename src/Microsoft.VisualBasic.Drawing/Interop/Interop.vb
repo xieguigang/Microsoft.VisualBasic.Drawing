@@ -38,6 +38,19 @@ Public Module Interop
     End Function
 
     <Extension>
+    Public Function GetSkiaEncodeFormat(format As ImageFormats) As SKEncodedImageFormat
+        Select Case format
+            Case ImageFormats.Bmp : Return SKEncodedImageFormat.Bmp
+            Case ImageFormats.Gif : Return SKEncodedImageFormat.Gif
+            Case ImageFormats.Icon : Return SKEncodedImageFormat.Ico
+            Case ImageFormats.Jpeg : Return SKEncodedImageFormat.Jpeg
+            Case ImageFormats.Png : Return SKEncodedImageFormat.Png
+            Case Else
+                Throw New NotImplementedException(format.ToString)
+        End Select
+    End Function
+
+    <Extension>
     Public Function CreatePaint(pen As Pen) As SKPaint
 
     End Function
