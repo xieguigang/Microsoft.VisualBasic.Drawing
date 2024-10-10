@@ -28,4 +28,11 @@ Public Class SkiaImage : Inherits Image
             Call App.LogException(ex)
         End Try
     End Sub
+
+    Protected Overrides Function ConvertToBitmapStream() As MemoryStream
+        Dim s As New MemoryStream
+        Call Save(s, ImageFormats.Bmp)
+        Call s.Seek(Scan0, SeekOrigin.Begin)
+        Return s
+    End Function
 End Class
