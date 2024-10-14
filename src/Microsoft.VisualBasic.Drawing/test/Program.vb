@@ -7,6 +7,7 @@ Imports SkiaSharp
 Module Program
     Sub Main(args As String())
         ' Call simpleNativeDrawTest()
+        Call RunGradient()
         Call testDrawing()
     End Sub
 
