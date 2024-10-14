@@ -2,7 +2,6 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
-Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
@@ -65,31 +64,7 @@ Public Class Graphics : Inherits SkiaGraphics
 
     Public Overloads Function Save(file As Stream, format As ImageFormats) As Boolean
         Call Dispose()
-
-        If format = ImageFormats.Bmp Then
-            Dim m_data As New BitmapBuffer(m_surface.Bytes, Size, channel:=4)
-            Dim bitmap As New Bitmap(m_data)
-
-            Try
-                Call bitmap.Save(file, ImageFormats.Bmp)
-                Call file.Flush()
-            Catch ex As Exception
-                Call App.LogException(ex)
-                Return False
-            End Try
-        Else
-            Dim m_data = m_surface.Encode(format.GetSkiaEncodeFormat, 100)
-
-            Try
-                Call m_data.SaveTo(file)
-                Call file.Flush()
-            Catch ex As Exception
-                Call App.LogException(ex)
-                Return False
-            End Try
-        End If
-
-        Return True
+        Return SkiaImage.SaveRasterImage(m_surface, file, format)
     End Function
 
     Public Overrides Sub Save(file As Stream)

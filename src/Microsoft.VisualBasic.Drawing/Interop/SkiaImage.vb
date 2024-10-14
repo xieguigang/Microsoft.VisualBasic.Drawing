@@ -1,6 +1,8 @@
 ﻿Imports System.Drawing
 Imports System.IO
+Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports SkiaSharp
 
 Public Class SkiaImage : Inherits Image
@@ -20,20 +22,43 @@ Public Class SkiaImage : Inherits Image
         Me.Image = SKBitmap.FromImage(image)
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub Save(s As Stream, format As ImageFormats)
-        Dim data = Image.Encode(format.GetSkiaEncodeFormat, 100)
-
-        Try
-            Call data.SaveTo(s)
-            Call s.Flush()
-        Catch ex As Exception
-            Call App.LogException(ex)
-        End Try
+        Call SaveRasterImage(Image, s, format)
     End Sub
+
+    Public Shared Function SaveRasterImage(image As SKBitmap, s As Stream, format As ImageFormats) As Boolean
+        If format = ImageFormats.Bmp Then
+            Dim m_data As New BitmapBuffer(image.Bytes, New Size(image.Width, image.Height), channel:=4)
+            Dim bitmap As New Bitmap(m_data)
+
+            Try
+                Call bitmap.Save(s, ImageFormats.Bmp)
+                Call s.Flush()
+            Catch ex As Exception
+                Call App.LogException(ex)
+                Return False
+            End Try
+        Else
+            Dim m_data = image.Encode(format.GetSkiaEncodeFormat, 100)
+
+            Try
+                Call m_data.SaveTo(s)
+                Call s.Flush()
+            Catch ex As Exception
+                Call App.LogException(ex)
+                Return False
+            End Try
+        End If
+
+        Return True
+    End Function
 
     Protected Overrides Function ConvertToBitmapStream() As MemoryStream
         Dim s As New MemoryStream
-        Call Save(s, ImageFormats.Bmp)
+        Dim m_data As New BitmapBuffer(Image.Bytes, Size, channel:=4)
+        Dim bitmap As New Bitmap(m_data)
+        Call bitmap.Save(s, ImageFormats.Bmp)
         Call s.Seek(Scan0, SeekOrigin.Begin)
         Return s
     End Function
