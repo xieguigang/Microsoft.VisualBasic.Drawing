@@ -22,6 +22,7 @@ Module Program
                        Return g
                    End Function
 
+        DirectCast(draw(New Graphics(1000, 1000, "#ffffff")), Graphics).Save("./test.bmp", ImageFormats.Bmp)
         draw(New Graphics(1000, 1000, "#ffffff")).Save("./test.png")
         draw(New SvgGraphics(1000, 1000)).Save("./test.svg")
         draw(New PdfGraphics(1000, 1000)).Save("./test.pdf")

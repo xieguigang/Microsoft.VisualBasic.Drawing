@@ -11,8 +11,7 @@ Imports SkiaSharp
 Public Class Graphics : Inherits SkiaGraphics
     Implements GdiRasterGraphics
 
-    Friend ReadOnly m_info As SKImageInfo
-    Friend ReadOnly m_surface As SKSurface
+    Friend ReadOnly m_surface As SKBitmap
 
     Public ReadOnly Property ImageResource As Image Implements GdiRasterGraphics.ImageResource
         Get
@@ -28,9 +27,8 @@ Public Class Graphics : Inherits SkiaGraphics
     Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing, Optional dpi As Integer = 100)
         Call MyBase.New(width, height, dpi)
 
-        m_info = New SKImageInfo(width, height)
-        m_surface = SKSurface.Create(m_info)
-        m_canvas = m_surface.Canvas
+        m_surface = New SKBitmap(width, height)
+        m_canvas = New SKCanvas(m_surface)
 
         If fill Is Nothing Then
             Call Clear(Color.Transparent)
@@ -58,8 +56,7 @@ Public Class Graphics : Inherits SkiaGraphics
     End Function
 
     Public Overloads Function Save(file As Stream, format As ImageFormats) As Boolean
-        Dim image = m_surface.Snapshot
-        Dim data = image.Encode(SKEncodedImageFormat.Png, 100)
+        Dim data = m_surface.Encode(format.GetSkiaEncodeFormat, 100)
 
         Try
             Call data.SaveTo(file)
