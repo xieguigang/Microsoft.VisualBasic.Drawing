@@ -6,11 +6,13 @@ Module test23
 
     Sub RunGradient()
         Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.bmp", ImageFormats.Bmp)
+        Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.webp", ImageFormats.Webp)
         Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.png")
         Call Rendering(New SvgGraphics(512, 365)).Save("./RedBlueArgb32GradientWithAlpha.svg")
         Call Rendering(New PdfGraphics(512, 365)).Save("./RedBlueArgb32GradientWithAlpha.pdf")
 
         Call Rendering2(New Graphics(256, 256, "#ffffff")).Save("./RedGreen24BitGradient.bmp", ImageFormats.Bmp)
+        Call Rendering2(New Graphics(256, 256, "#ffffff")).Save("./RedGreen24BitGradient.webp", ImageFormats.Webp)
         Call Rendering2(New Graphics(256, 256, "#ffffff")).Save("./RedGreen24BitGradient.png")
         Call Rendering2(New SvgGraphics(256, 256)).Save("./RedGreen24BitGradient.svg")
         Call Rendering2(New PdfGraphics(256, 256)).Save("./RedGreen24BitGradient.pdf")

@@ -45,6 +45,7 @@ Public Module Interop
             Case ImageFormats.Icon : Return SKEncodedImageFormat.Ico
             Case ImageFormats.Jpeg : Return SKEncodedImageFormat.Jpeg
             Case ImageFormats.Png : Return SKEncodedImageFormat.Png
+            Case ImageFormats.Webp : Return SKEncodedImageFormat.Webp
             Case Else
                 Throw New NotImplementedException(format.ToString)
         End Select
