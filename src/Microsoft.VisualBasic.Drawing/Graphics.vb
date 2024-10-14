@@ -4,6 +4,7 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Driver
+Imports Microsoft.VisualBasic.Text.Xml.Linq
 Imports SkiaSharp
 
 ''' <summary>
@@ -64,19 +65,30 @@ Public Class Graphics : Inherits SkiaGraphics
     End Function
 
     Public Overloads Function Save(file As Stream, format As ImageFormats) As Boolean
-        Dim m_data As SKData
+        Call Dispose()
 
-        m_canvas.Flush()
-        m_canvas.Dispose()
-        m_data = m_surface.Encode(format.GetSkiaEncodeFormat, 100)
+        If format = ImageFormats.Bmp Then
+            Dim m_data As New BitmapBuffer(m_surface.Bytes, Size, channel:=4)
+            Dim bitmap As New Bitmap(m_data)
 
-        Try
-            Call m_data.SaveTo(file)
-            Call file.Flush()
-        Catch ex As Exception
-            Call App.LogException(ex)
-            Return False
-        End Try
+            Try
+                Call bitmap.Save(file, ImageFormats.Bmp)
+                Call file.Flush()
+            Catch ex As Exception
+                Call App.LogException(ex)
+                Return False
+            End Try
+        Else
+            Dim m_data = m_surface.Encode(format.GetSkiaEncodeFormat, 100)
+
+            Try
+                Call m_data.SaveTo(file)
+                Call file.Flush()
+            Catch ex As Exception
+                Call App.LogException(ex)
+                Return False
+            End Try
+        End If
 
         Return True
     End Function
