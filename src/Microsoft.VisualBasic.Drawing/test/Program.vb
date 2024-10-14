@@ -55,10 +55,9 @@ Module Program
                        Return g
                    End Function
 
-        Dim bmp As New Graphics(10, 10, "#ffffff")
+        Dim bmp As New Graphics(1000, 1000, "#ffffff")
 
-        bmp.Clear(Color.Red)
-        bmp.Save("./test.bmp", ImageFormats.Bmp)
+        DirectCast(draw(bmp), Graphics).Save("./test.bmp", ImageFormats.Bmp)
 
         draw(New Graphics(1000, 1000, "#ffffff")).Save("./test.png")
         draw(New SvgGraphics(1000, 1000)).Save("./test.svg")
