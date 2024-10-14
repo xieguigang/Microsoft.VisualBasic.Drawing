@@ -6,6 +6,7 @@ Imports SkiaSharp
 
 Module Program
     Sub Main(args As String())
+        Call simpleNativeDrawTest()
         Call testDrawing()
     End Sub
 
@@ -31,6 +32,12 @@ Module Program
             Dim y = (height - textBounds.Height) / 2 + textBounds.Height
 
             canvas.DrawText(text, x, y, paint)
+        End Using
+
+        Using encoded = bitmap.Encode(SKEncodedImageFormat.Bmp, 100)
+            Using stream = System.IO.File.OpenWrite("hello_world.png")
+                encoded.SaveTo(stream)
+            End Using
         End Using
     End Sub
 

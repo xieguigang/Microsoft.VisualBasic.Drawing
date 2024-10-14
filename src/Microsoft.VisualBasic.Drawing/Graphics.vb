@@ -2,6 +2,7 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
@@ -30,7 +31,11 @@ Public Class Graphics : Inherits SkiaGraphics
     Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing, Optional dpi As Integer = 100)
         Call MyBase.New(width, height, dpi)
 
-        m_surface = New SKBitmap(width, height)
+        ' 20241014 the bitmap pixel should be in 32 bit ARGB format
+        ' so the bitmap construct must be configed as 
+        ' SKColorType.Bgra8888,
+        ' SKAlphaType.Premul
+        m_surface = New SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul)
         m_canvas = New SKCanvas(m_surface)
 
         If fill Is Nothing Then
@@ -81,6 +86,7 @@ Public Class Graphics : Inherits SkiaGraphics
     End Sub
 
     Public Overrides Sub Dispose()
+        Call m_canvas.Flush()
         Call m_canvas.Dispose()
     End Sub
 End Class
