@@ -25,6 +25,8 @@ Public Class PdfGraphics : Inherits SkiaGraphics
                 Call document.EndPage()
                 Call document.Dispose()
             End If
+
+            m_isDisposed = True
         Catch ex As Exception
 
         End Try

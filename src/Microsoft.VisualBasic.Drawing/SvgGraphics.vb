@@ -19,6 +19,8 @@ Public Class SvgGraphics : Inherits SkiaGraphics
             ' commit the correct xml text
             Call m_canvas.Dispose()
         End If
+
+        m_isDisposed = True
     End Sub
 
     ''' <summary>

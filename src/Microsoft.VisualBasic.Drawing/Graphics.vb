@@ -45,13 +45,20 @@ Public Class Graphics : Inherits SkiaGraphics
     End Sub
 
     Public Function GetPixel(x As Integer, y As Integer) As Color
-        Throw New NotImplementedException
+        Call Flush()
+
+        Dim skcolor As SKColor = m_surface.GetPixel(x, y)
+        Dim gdicolor As Color = Color.FromArgb(skcolor.Alpha, skcolor.Red, skcolor.Green, skcolor.Blue)
+
+        Return gdicolor
     End Function
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Sub SetPixel(x As Integer, y As Integer, pixel As Color)
-        Throw New NotImplementedException
+        m_surface.SetPixel(x, y, pixel.AsSKColor)
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Function ToString() As String
         Return "raster_buffer: " & StringFormats.Lanudry(Width * Height * 4&)
     End Function
@@ -67,6 +74,7 @@ Public Class Graphics : Inherits SkiaGraphics
         Return SkiaImage.SaveRasterImage(m_surface, file, format)
     End Function
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub Save(file As Stream)
         Call Save(file, format:=ImageFormats.Png)
     End Sub
@@ -76,5 +84,7 @@ Public Class Graphics : Inherits SkiaGraphics
             Call m_canvas.Flush()
             Call m_canvas.Dispose()
         End If
+
+        m_isDisposed = True
     End Sub
 End Class
