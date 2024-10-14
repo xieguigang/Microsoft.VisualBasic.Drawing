@@ -13,14 +13,13 @@ Public Class PdfGraphics : Inherits SkiaGraphics
     End Sub
 
     Public Overrides Sub Save(file As Stream)
-        document.EndPage()
-        document.Dispose()
+        Call ReleaseHandle()
 
         s.Seek(Scan0, SeekOrigin.Begin)
         s.CopyTo(file)
     End Sub
 
-    Public Overrides Sub Dispose()
+    Protected Overrides Sub ReleaseHandle()
         Try
             document.EndPage()
             document.Dispose()

@@ -71,7 +71,7 @@ Public Class Graphics : Inherits SkiaGraphics
         Call Save(file, format:=ImageFormats.Png)
     End Sub
 
-    Public Overrides Sub Dispose()
+    Protected Overrides Sub ReleaseHandle()
         Call m_canvas.Flush()
         Call m_canvas.Dispose()
     End Sub
