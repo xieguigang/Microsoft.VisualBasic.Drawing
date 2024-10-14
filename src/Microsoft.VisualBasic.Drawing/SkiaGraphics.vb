@@ -334,11 +334,33 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawPolygon(pen As Pen, points() As PointF)
-        Throw New NotImplementedException()
+        If points.TryCount <= 2 Then
+            Return
+        End If
+
+        Using path As New SKPath
+            Call path.MoveTo(points(0).X, points(0).Y)
+
+            For i As Integer = 1 To points.Length - 1
+                Call path.LineTo(points(i).X, points(i).Y)
+            Next
+
+            Call path.Close()
+
+            Using paint As New SKPaint With {
+                .Color = pen.Color.AsSKColor,
+                .Style = SKPaintStyle.Stroke,
+                .StrokeWidth = pen.Width
+            }
+                Call m_canvas.DrawPath(path, paint)
+            End Using
+        End Using
     End Sub
 
     Public Overrides Sub DrawPolygon(pen As Pen, points() As Point)
-        Throw New NotImplementedException()
+        If points.TryCount > 2 Then
+            Call DrawPolygon(pen, points.Select(Function(p) New PointF(p.X, p.Y)).ToArray)
+        End If
     End Sub
 
     Public Overrides Sub DrawRectangle(pen As Pen, rect As Rectangle)
@@ -440,12 +462,34 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         End Using
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub FillPolygon(brush As Brush, points() As Point)
-        Throw New NotImplementedException()
+        If points.TryCount > 2 Then
+            Call FillPolygon(brush, points.Select(Function(p) New PointF(p.X, p.Y)).ToArray)
+        End If
     End Sub
 
     Public Overrides Sub FillPolygon(brush As Brush, points() As PointF)
-        Throw New NotImplementedException()
+        If points.TryCount <= 2 Then
+            Return
+        End If
+
+        Using path As New SKPath
+            Call path.MoveTo(points(0).X, points(0).Y)
+
+            For i As Integer = 1 To points.Length - 1
+                Call path.LineTo(points(i).X, points(i).Y)
+            Next
+
+            Call path.Close()
+
+            Using paint As New SKPaint With {
+                .Color = DirectCast(brush, SolidBrush).Color.AsSKColor,
+                .Style = SKPaintStyle.Fill
+            }
+                Call m_canvas.DrawPath(path, paint)
+            End Using
+        End Using
     End Sub
 
     Public Overrides Sub FillRectangle(brush As Brush, rect As Rectangle)
