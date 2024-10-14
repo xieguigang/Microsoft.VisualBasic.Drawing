@@ -72,7 +72,9 @@ Public Class Graphics : Inherits SkiaGraphics
     End Sub
 
     Protected Overrides Sub ReleaseHandle()
-        Call m_canvas.Flush()
-        Call m_canvas.Dispose()
+        If Not m_isDisposed Then
+            Call m_canvas.Flush()
+            Call m_canvas.Dispose()
+        End If
     End Sub
 End Class

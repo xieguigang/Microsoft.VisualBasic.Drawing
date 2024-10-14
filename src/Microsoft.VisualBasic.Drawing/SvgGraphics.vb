@@ -13,10 +13,12 @@ Public Class SvgGraphics : Inherits SkiaGraphics
     End Sub
 
     Public Sub Close()
-        ' commit current graphics drawing layer
-        Call m_canvas.Flush()
-        ' commit the correct xml text
-        Call m_canvas.Dispose()
+        If Not m_isDisposed Then
+            ' commit current graphics drawing layer
+            Call m_canvas.Flush()
+            ' commit the correct xml text
+            Call m_canvas.Dispose()
+        End If
     End Sub
 
     ''' <summary>

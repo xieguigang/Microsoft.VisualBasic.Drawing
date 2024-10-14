@@ -21,8 +21,10 @@ Public Class PdfGraphics : Inherits SkiaGraphics
 
     Protected Overrides Sub ReleaseHandle()
         Try
-            document.EndPage()
-            document.Dispose()
+            If Not m_isDisposed Then
+                Call document.EndPage()
+                Call document.Dispose()
+            End If
         Catch ex As Exception
 
         End Try
