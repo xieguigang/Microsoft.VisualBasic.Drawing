@@ -1,10 +1,20 @@
 ﻿Imports System.Drawing
+Imports System.IO
 Imports Microsoft.VisualBasic.Drawing
 Imports Microsoft.VisualBasic.Imaging
 
 Module test23
 
     Sub RunGradient()
+        Dim test = Rendering(New Graphics(512, 365, "#ffffff"))
+        Dim image = test.ImageResource
+        Dim bmp As New Bitmap(image)
+
+        Using s As Stream = "./aaa.bmp".Open(FileMode.OpenOrCreate, doClear:=True, [readOnly]:=False)
+            Call bmp.Save(s, ImageFormats.Bmp)
+        End Using
+
+
         Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.bmp", ImageFormats.Bmp)
         Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.webp", ImageFormats.Webp)
         Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.png")
