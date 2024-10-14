@@ -9,6 +9,8 @@ Public Class SkiaImage : Inherits Image
     Public ReadOnly Property Image As SKBitmap
 
     Sub New(canvas As Graphics)
+        Call canvas.Dispose()
+
         Size = canvas.Size
         Image = canvas.m_surface
     End Sub

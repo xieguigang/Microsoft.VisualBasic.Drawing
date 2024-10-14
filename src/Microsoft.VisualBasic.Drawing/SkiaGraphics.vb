@@ -598,6 +598,9 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Public MustOverride Sub Save(file As Stream)
 
     Public Function Save(filepath As String) As Boolean
+        Call m_canvas.Flush()
+        Call m_canvas.Dispose()
+
         Try
             Using s As Stream = filepath.Open(FileMode.OpenOrCreate, doClear:=True)
                 Call Save(s)

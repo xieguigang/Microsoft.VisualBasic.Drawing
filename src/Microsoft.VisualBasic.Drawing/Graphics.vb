@@ -11,6 +11,9 @@ Imports SkiaSharp
 Public Class Graphics : Inherits SkiaGraphics
     Implements GdiRasterGraphics
 
+    ''' <summary>
+    ''' image save must dispose the canvas at first
+    ''' </summary>
     Friend ReadOnly m_surface As SKBitmap
 
     Public ReadOnly Property ImageResource As Image Implements GdiRasterGraphics.ImageResource
@@ -56,10 +59,14 @@ Public Class Graphics : Inherits SkiaGraphics
     End Function
 
     Public Overloads Function Save(file As Stream, format As ImageFormats) As Boolean
-        Dim data = m_surface.Encode(format.GetSkiaEncodeFormat, 100)
+        Dim m_data As SKData
+
+        m_canvas.Flush()
+        m_canvas.Dispose()
+        m_data = m_surface.Encode(format.GetSkiaEncodeFormat, 100)
 
         Try
-            Call data.SaveTo(file)
+            Call m_data.SaveTo(file)
             Call file.Flush()
         Catch ex As Exception
             Call App.LogException(ex)
