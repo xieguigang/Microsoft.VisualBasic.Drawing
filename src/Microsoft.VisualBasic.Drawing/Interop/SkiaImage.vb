@@ -35,4 +35,8 @@ Public Class SkiaImage : Inherits Image
         Call s.Seek(Scan0, SeekOrigin.Begin)
         Return s
     End Function
+
+    Public Shared Narrowing Operator CType(img As SkiaImage) As Bitmap
+        Return FromStream(img.ConvertToBitmapStream)
+    End Operator
 End Class
