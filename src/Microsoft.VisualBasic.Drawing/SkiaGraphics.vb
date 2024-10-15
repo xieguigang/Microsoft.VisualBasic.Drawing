@@ -22,7 +22,6 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides ReadOnly Property Size As Size
-    Public Overrides Property PageScale As Single
     Public Overrides Property RenderingOrigin As Point
     Public Overrides Property TextContrast As Integer
 
@@ -619,10 +618,6 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Function
 
     Public Overrides Function GetContextInfo() As Object
-        Throw New NotImplementedException()
-    End Function
-
-    Public Overrides Function GetNearestColor(color As Color) As Color
         Throw New NotImplementedException()
     End Function
 
