@@ -519,7 +519,9 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub Flush()
-        m_canvas.Flush()
+        If Not m_isDisposed Then
+            Call m_canvas.Flush()
+        End If
     End Sub
 
     Public Overrides Sub IntersectClip(rect As RectangleF)
