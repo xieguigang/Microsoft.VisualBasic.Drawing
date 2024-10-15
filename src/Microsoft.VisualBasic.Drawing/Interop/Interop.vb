@@ -89,7 +89,7 @@ Public Module Interop
             Case ImageFormats.Png : Return SKEncodedImageFormat.Png
             Case ImageFormats.Webp : Return SKEncodedImageFormat.Webp
             Case Else
-                Throw New NotImplementedException(format.ToString)
+                Throw New NotImplementedException("ImageFormats: " & format.ToString & " convert to skia encoder format.")
         End Select
     End Function
 
