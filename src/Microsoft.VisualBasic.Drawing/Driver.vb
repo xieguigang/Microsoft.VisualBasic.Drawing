@@ -8,9 +8,9 @@ Imports Microsoft.VisualBasic.MIME.Html.CSS
 Public Module SkiaDriver
 
     Public Sub Register()
-        DriverLoad.libgdiplus_raster = New RasterInterop
-        DriverLoad.svg = New SvgInterop
-        DriverLoad.pdf = New PdfInterop
+        Call DriverLoad.Register(New RasterInterop, Drivers.GDI)
+        Call DriverLoad.Register(New SvgInterop, Drivers.SVG)
+        Call DriverLoad.Register(New PdfInterop, Drivers.PDF)
     End Sub
 
     Private Class RasterInterop : Inherits DeviceInterop
