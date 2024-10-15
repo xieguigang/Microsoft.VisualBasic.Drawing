@@ -44,6 +44,13 @@ Public Class Graphics : Inherits SkiaGraphics
         End If
     End Sub
 
+    Sub New(bitmap As SKBitmap)
+        Call MyBase.New(bitmap.Width, bitmap.Height, 100)
+
+        m_surface = bitmap
+        m_canvas = New SKCanvas(m_surface)
+    End Sub
+
     Public Function GetPixel(x As Integer, y As Integer) As Color
         Call Flush()
 

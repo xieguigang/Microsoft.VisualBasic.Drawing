@@ -12,19 +12,32 @@ Public Class PdfImage : Inherits GraphicsData
         End Get
     End Property
 
+    Dim g As PdfGraphics
+
     Public Sub New(img As Object, size As Size, padding As Padding)
         MyBase.New(img, size, padding)
+
+        g = img
     End Sub
 
     Public Overrides Function GetDataURI() As DataURI
-        Throw New NotImplementedException()
+        Using s As New MemoryStream
+            Call Save(s)
+            Call s.Flush()
+            Call s.Seek(Scan0, SeekOrigin.Begin)
+
+            Return New DataURI(s, mime:="application/pdf")
+        End Using
     End Function
 
     Public Overrides Function Save(path As String) As Boolean
-        Throw New NotImplementedException()
+        Using s As Stream = path.Open(FileMode.OpenOrCreate, doClear:=True, [readOnly]:=False)
+            Return Save(s)
+        End Using
     End Function
 
     Public Overrides Function Save(out As Stream) As Boolean
-        Throw New NotImplementedException()
+        Call g.Save(out)
+        Return True
     End Function
 End Class

@@ -20,7 +20,7 @@ Public Module SkiaDriver
         End Function
 
         Public Overrides Function CreateCanvas2D(background As Bitmap, direct_access As Boolean) As IGraphics
-            Throw New NotImplementedException()
+            Return New Graphics(background.CastSkiaBitmap)
         End Function
 
         Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
@@ -39,7 +39,9 @@ Public Module SkiaDriver
         End Function
 
         Public Overrides Function CreateCanvas2D(background As Bitmap, direct_access As Boolean) As IGraphics
-            Throw New NotImplementedException()
+            Dim svg As New SvgGraphics(background.Width, background.Height, 100)
+            svg.DrawImage(background, New Point)
+            Return svg
         End Function
 
         Public Overrides Function GetData(g As IGraphics, padding As Integer()) As IGraphicsData
@@ -60,11 +62,13 @@ Public Module SkiaDriver
         End Function
 
         Public Overrides Function CreateCanvas2D(background As Bitmap, direct_access As Boolean) As IGraphics
-            Throw New NotImplementedException()
+            Dim pdf As New PdfGraphics(background.Width, background.Height)
+            pdf.DrawImage(background, New Point)
+            Return pdf
         End Function
 
         Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
-            Throw New NotImplementedException()
+            Return New PdfImage()
         End Function
     End Class
 End Module
