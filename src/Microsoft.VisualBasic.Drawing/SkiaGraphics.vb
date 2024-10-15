@@ -246,7 +246,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, point As Point)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, destPoints() As Point)
@@ -258,47 +258,51 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, rect As Rectangle)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(rect.Left), CSng(rect.Top), CSng(rect.Width), CSng(rect.Height))
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, point As PointF)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, rect As RectangleF)
-        Throw New NotImplementedException()
+        Call DrawImage(image, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer)
-        Throw New NotImplementedException()
+        Call DrawImage(image, x, y, image.Width, image.Height)
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single)
-        Throw New NotImplementedException()
+        Call DrawImage(image, x, y, image.Width, image.Height)
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single, width As Single, height As Single)
-        Throw New NotImplementedException()
+        Dim rect As New SKRect(x, y, x + width, y + height)
+
+        Using paint As New SKPaint With {.IsAntialias = True}
+            Call m_canvas.DrawImage(image.AsSKImage, rect, paint)
+        End Using
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, rect As Rectangle)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(rect.Left), CSng(rect.Top), CSng(image.Width), CSng(image.Height))
     End Sub
 
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, point As Point)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, x As Integer, y As Integer)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(x), CSng(y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
-        Throw New NotImplementedException()
+        Call DrawImage(image, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
     Public Overrides Sub DrawImageUnscaledAndClipped(image As Imaging.Image, rect As Rectangle)

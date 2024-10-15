@@ -9,6 +9,13 @@ Imports SkiaSharp
 ''' </summary>
 Public Module Interop
 
+    <Extension>
+    Public Function AsSKImage(image As Image) As SKImage
+        If TypeOf image Is SkiaImage Then
+
+        End If
+    End Function
+
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     <Extension>
     Public Function AsSKColor(color As Color) As SKColor
