@@ -36,6 +36,8 @@ Public Class Graphics : Inherits SkiaGraphics
     Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing, Optional dpi As Integer = 100)
         Call MyBase.New(width, height, dpi)
 
+        Dim config As New SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul, dpi)
+
         ' 20241014 the bitmap pixel should be in 32 bit ARGB format
         ' so the bitmap construct must be configed as 
         ' SKColorType.Bgra8888,
