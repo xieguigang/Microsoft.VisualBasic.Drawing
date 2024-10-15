@@ -2,11 +2,13 @@
 Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 Imports std = System.Math
 
 Public MustInherit Class SkiaGraphics : Inherits IGraphics
+    Implements SaveGdiBitmap
 
     Protected ReadOnly canvasRect As SKRect
     Protected m_canvas As SKCanvas
@@ -662,5 +664,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
         Return True
     End Function
+
+    Public MustOverride Function Save(Stream As Stream, format As ImageFormats) As Boolean Implements SaveGdiBitmap.Save
 
 End Class

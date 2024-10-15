@@ -76,7 +76,7 @@ Public Class Graphics : Inherits SkiaGraphics
         End Using
     End Function
 
-    Public Overloads Function Save(file As Stream, format As ImageFormats) As Boolean
+    Public Overrides Function Save(file As Stream, format As ImageFormats) As Boolean
         Call Dispose()
         Return SkiaImage.SaveRasterImage(m_surface, file, format)
     End Function

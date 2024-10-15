@@ -31,4 +31,15 @@ Public Class PdfGraphics : Inherits SkiaGraphics
 
         End Try
     End Sub
+
+    Public Overrides Function Save(Stream As Stream, format As Imaging.ImageFormats) As Boolean
+        Try
+            Call Save(Stream)
+        Catch ex As Exception
+            Call App.LogException(ex)
+            Return False
+        End Try
+
+        Return True
+    End Function
 End Class
