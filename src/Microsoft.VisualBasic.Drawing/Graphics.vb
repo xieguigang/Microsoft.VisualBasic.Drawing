@@ -16,6 +16,12 @@ Public Class Graphics : Inherits SkiaGraphics
     ''' </summary>
     Friend ReadOnly m_surface As SKBitmap
 
+    Public Overrides ReadOnly Property Driver As Drivers
+        Get
+            Return Drivers.GDI
+        End Get
+    End Property
+
     Public ReadOnly Property ImageResource As Image Implements GdiRasterGraphics.ImageResource
         Get
             Return New SkiaImage(Me)

@@ -1,10 +1,17 @@
 ﻿Imports System.IO
+Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
 Public Class PdfGraphics : Inherits SkiaGraphics
 
     ReadOnly s As New MemoryStream
     ReadOnly document As SKDocument = SKDocument.CreatePdf(s)
+
+    Public Overrides ReadOnly Property Driver As Drivers
+        Get
+            Return Drivers.PDF
+        End Get
+    End Property
 
     Public Sub New(width As Integer, height As Integer, Optional dpi As Integer = 100)
         MyBase.New(width, height, dpi)

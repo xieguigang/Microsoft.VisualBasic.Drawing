@@ -1,10 +1,17 @@
 ﻿Imports System.IO
 Imports System.Text
+Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
 Public Class SvgGraphics : Inherits SkiaGraphics
 
     ReadOnly svgfile As New MemoryStream
+
+    Public Overrides ReadOnly Property Driver As Drivers
+        Get
+            Return Drivers.SVG
+        End Get
+    End Property
 
     Public Sub New(width As Integer, height As Integer, Optional dpi As Integer = 100)
         MyBase.New(width, height, dpi)
