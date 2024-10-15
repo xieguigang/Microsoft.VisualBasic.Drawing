@@ -29,14 +29,18 @@ Public Class Graphics : Inherits SkiaGraphics
     End Property
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Sub New(width As Integer, height As Integer, Optional fill As String = "#ffffff")
-        Call Me.New(width, height, TranslateColor(fill))
+    Sub New(width As Integer, height As Integer,
+            Optional fill As String = "#ffffff",
+            Optional dpi As Integer = 100)
+
+        Call Me.New(width, height, TranslateColor(fill), dpi)
     End Sub
 
-    Sub New(width As Integer, height As Integer, Optional fill As Color? = Nothing, Optional dpi As Integer = 100)
-        Call MyBase.New(width, height, dpi)
+    Sub New(width As Integer, height As Integer,
+            Optional fill As Color? = Nothing,
+            Optional dpi As Integer = 100)
 
-        Dim config As New SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul, dpi)
+        Call MyBase.New(width, height, dpi)
 
         ' 20241014 the bitmap pixel should be in 32 bit ARGB format
         ' so the bitmap construct must be configed as 
@@ -52,8 +56,8 @@ Public Class Graphics : Inherits SkiaGraphics
         End If
     End Sub
 
-    Sub New(bitmap As SKBitmap)
-        Call MyBase.New(bitmap.Width, bitmap.Height, 100)
+    Sub New(bitmap As SKBitmap, Optional dpi As Integer = 100)
+        Call MyBase.New(bitmap.Width, bitmap.Height, dpi)
 
         m_surface = bitmap
         m_canvas = New SKCanvas(m_surface)
