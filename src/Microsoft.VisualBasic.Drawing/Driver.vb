@@ -68,7 +68,7 @@ Public Module SkiaDriver
         End Function
 
         Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
-            Return New PdfImage()
+            Return New PdfImage(g, g.Size, New Padding(padding))
         End Function
     End Class
 End Module
