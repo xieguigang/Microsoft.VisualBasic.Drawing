@@ -10,6 +10,26 @@ Imports SkiaSharp
 Public Module Interop
 
     <Extension>
+    Public Function AsRectangle(rect As RectangleF) As SKRect
+        Return New SKRect(rect.Left, rect.Top, rect.Left + rect.Width, rect.Top + rect.Height)
+    End Function
+
+    <Extension>
+    Public Function AsRectangle(rect As Rectangle) As SKRect
+        Return New SKRect(rect.Left, rect.Top, rect.Left + rect.Width, rect.Top + rect.Height)
+    End Function
+
+    <Extension>
+    Public Function AsSKPoint(point As PointF) As SKPoint
+        Return New SKPoint(point.X, point.Y)
+    End Function
+
+    <Extension>
+    Public Function AsSKPoint(point As Point) As SKPoint
+        Return New SKPoint(point.X, point.Y)
+    End Function
+
+    <Extension>
     Public Function AsSKImage(image As Image) As SKImage
         If TypeOf image Is SkiaImage Then
             Return SKImage.FromBitmap(DirectCast(image, SkiaImage).Image)
@@ -75,7 +95,12 @@ Public Module Interop
 
     <Extension>
     Public Function CreatePaint(pen As Pen) As SKPaint
-
+        Return New SKPaint With {
+            .Color = pen.Color.AsSKColor,
+            .IsAntialias = True,
+            .Style = SKPaintStyle.Stroke,
+            .StrokeWidth = pen.Width
+        }
     End Function
 
     <Extension>
