@@ -14,6 +14,10 @@ Module PathBuilder
         For Each op As GraphicsPath.op In path.AsEnumerable
             Select Case op.GetType
                 Case GetType(GraphicsPath.op_AddArc) : Call skia.AddArc(op)
+
+                Case GetType(GraphicsPath.op_CloseFigure) : Call skia.Close()
+                Case GetType(GraphicsPath.op_CloseAllFigures) : Call skia.Close()
+
                 Case Else
                     Throw New NotImplementedException(op.GetType.FullName)
             End Select
