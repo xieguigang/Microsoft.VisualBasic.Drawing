@@ -36,15 +36,18 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overloads Sub DrawString(s As String, fontName As String, fontSize As Single, color As Color, x As Single, y As Single)
-        Dim textPain As New SKPaint With {
+        Using textPain As New SKPaint With {
            .IsAntialias = True,
            .Style = SKPaintStyle.Fill,
            .Color = color.AsSKColor,
            .TextSize = fontSize,
            .Typeface = SKTypeface.FromFamilyName(fontName)
         }
+            Dim textBounds As New SKRect
 
-        m_canvas.DrawText(s, x, y, textPain)
+            Call textPain.MeasureText(s, textBounds)
+            Call m_canvas.DrawText(s, x, y + textBounds.Height, textPain)
+        End Using
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, ByRef point As PointF)
@@ -63,6 +66,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             }
 
             Dim textBounds As New SKRect
+
+            ' get text bounds size
             paint.MeasureText(s, textBounds)
 
             m_canvas.Translate(x, y)
@@ -598,7 +603,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             Dim textBounds As New SKRect
             Call paint.MeasureText(text, textBounds)
 
-            Return New SizeF(textBounds.Width, textBounds.Height)
+            Return New SizeF(textBounds.Width * 1.125, textBounds.Height * 1.125)
         End Using
     End Function
 
