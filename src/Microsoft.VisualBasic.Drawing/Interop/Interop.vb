@@ -12,8 +12,23 @@ Public Module Interop
     <Extension>
     Public Function AsSKImage(image As Image) As SKImage
         If TypeOf image Is SkiaImage Then
-
+            Return SKImage.FromBitmap(DirectCast(image, SkiaImage).Image)
+        ElseIf TypeOf image Is Bitmap Then
+            Return SKImage.FromBitmap(DirectCast(image, Bitmap).CastSkiaBitmap)
+        Else
+            Throw New NotImplementedException(image.GetType.FullName)
         End If
+    End Function
+
+    <Extension>
+    Public Function CastSkiaBitmap(bitmap As Bitmap) As SKBitmap
+        Using ms As New MemoryStream
+            Call bitmap.Save(ms, ImageFormats.Bmp)
+            Call ms.Flush()
+            Call ms.Seek(Scan0, SeekOrigin.Begin)
+
+            Return SKBitmap.Decode(ms)
+        End Using
     End Function
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
