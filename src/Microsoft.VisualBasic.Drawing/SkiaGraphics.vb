@@ -58,7 +58,10 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, layoutRectangle.Left, layoutRectangle.Top)
     End Sub
 
-    Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, ByRef x As Single, ByRef y As Single, angle As Single)
+    Public Overrides Sub DrawString(s As String, font As Font, brush As Brush,
+                                    ByRef x As Single,
+                                    ByRef y As Single, angle As Single)
+
         Using paint As New SKPaint With {
                 .TextSize = font.Size,
                 .Color = DirectCast(brush, SolidBrush).Color.AsSKColor,
