@@ -49,6 +49,8 @@ Private Function Rendering(Of T As SkiaGraphics)(g As T) As T
 End Function
 ```
 
+![](./demo/RedBlueArgb32GradientWithAlpha.png)
+
 ```vbnet
 Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.bmp", ImageFormats.Bmp)
 Call Rendering(New Graphics(512, 365, "#ffffff")).Save("./RedBlueArgb32GradientWithAlpha.webp", ImageFormats.Webp)
@@ -57,5 +59,6 @@ Call Rendering(New SvgGraphics(512, 365)).Save("./RedBlueArgb32GradientWithAlpha
 Call Rendering(New PdfGraphics(512, 365)).Save("./RedBlueArgb32GradientWithAlpha.pdf")
 ```
 
-![](./demo/RedBlueArgb32GradientWithAlpha.png)
 ![](./demo/RedGreen24BitGradient.svg)
+
+
