@@ -89,7 +89,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
         Using paint As New SKPaint With {
             .Color = color.AsSKColor,
-            .StrokeWidth = width
+            .StrokeWidth = width,
+            .Style = SKPaintStyle.Stroke
         }
             If Not dash.IsNullOrEmpty Then
                 paint.PathEffect = SKPathEffect.CreateDash(dash, 0)
