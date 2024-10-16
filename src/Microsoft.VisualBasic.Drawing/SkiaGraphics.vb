@@ -456,21 +456,22 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     Public Overrides Sub FillPie(brush As Brush, x As Single, y As Single, width As Single, height As Single, startAngle As Single, sweepAngle As Single)
         Using path As New SKPath
-            Dim startRadians As Single = startAngle * (std.PI / 180)
-            Dim sweepRadians As Single = sweepAngle * (std.PI / 180)
-            Dim radiusX As Single = width / 2
-            Dim radiusY As Single = height / 2
+            ' Dim startRadians As Single = startAngle * (std.PI / 180)
+            ' Dim sweepRadians As Single = sweepAngle * (std.PI / 180)
+            'Dim radiusX As Single = width / 2
+            'Dim radiusY As Single = height / 2
 
-            Call path.MoveTo(New SKPoint(x, y))
-            Call path.ArcTo(New SKRect(x - radiusX, y - radiusY, x + radiusX, y + radiusY),
-                   startRadians, sweepRadians, False)
-            Call path.LineTo(New SKPoint(x, y))
+            'Call path.MoveTo(New SKPoint(x, y))
+            'Call path.ArcTo(New SKRect(x - radiusX, y - radiusY, x + radiusX, y + radiusY),
+            '       startAngle, sweepAngle, False)
+            'Call path.LineTo(New SKPoint(x, y))
 
             Using paint As New SKPaint With {
                 .Style = SKPaintStyle.Fill,
                 .Color = DirectCast(brush, SolidBrush).Color.AsSKColor
             }
-                Call m_canvas.DrawPath(path, paint)
+                ' Call m_canvas.DrawPath(path, paint)
+                Call m_canvas.DrawArc(New SKRect(x, y, x + width, y + height), startAngle, sweepAngle, True, paint)
             End Using
         End Using
     End Sub
