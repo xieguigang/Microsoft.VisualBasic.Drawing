@@ -64,7 +64,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Using paint As New SKPaint With {
                 .TextSize = font.Size,
                 .Color = DirectCast(brush, SolidBrush).Color.AsSKColor,
-                .IsAntialias = True
+                .IsAntialias = True,
+                .Style = SKPaintStyle.Fill
             }
 
             Dim textBounds As New SKRect
@@ -388,7 +389,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Public Overrides Sub DrawRectangle(pen As Pen, x As Single, y As Single, width As Single, height As Single)
         Using paint As New SKPaint With {
             .Color = pen.Color.AsSKColor,
-            .StrokeWidth = pen.Width
+            .StrokeWidth = pen.Width,
+            .Style = SKPaintStyle.Stroke
         }
             Call m_canvas.DrawRect(x, y, width, height, paint)
         End Using
