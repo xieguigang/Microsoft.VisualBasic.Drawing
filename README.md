@@ -58,3 +58,4 @@ Call Rendering(New PdfGraphics(512, 365)).Save("./RedBlueArgb32GradientWithAlpha
 ```
 
 ![](./demo/RedBlueArgb32GradientWithAlpha.png)
+![](./demo/RedGreen24BitGradient.svg)
