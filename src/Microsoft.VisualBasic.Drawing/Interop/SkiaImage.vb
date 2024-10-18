@@ -17,6 +17,11 @@ Public Class SkiaImage : Inherits Image
         Image = canvas.m_surface
     End Sub
 
+    Sub New(bitmap As SKBitmap)
+        Me.Size = New Size(bitmap.Width, bitmap.Height)
+        Me.Image = bitmap
+    End Sub
+
     Sub New(size As Size, image As SKImage)
         Me.Size = size
         Me.Image = SKBitmap.FromImage(image)
