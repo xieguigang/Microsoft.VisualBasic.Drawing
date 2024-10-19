@@ -293,7 +293,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
         Using paint As New SKPaint With {
             .IsAntialias = True,
-            .BlendMode = SKBlendMode.SrcATop
+            .BlendMode = SKBlendMode.DstIn
         }
             Call m_canvas.DrawImage(image.AsSKImage, rect, paint)
         End Using
