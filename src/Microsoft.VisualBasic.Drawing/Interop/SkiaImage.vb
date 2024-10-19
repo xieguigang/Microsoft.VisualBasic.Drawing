@@ -27,6 +27,26 @@ Public Class SkiaImage : Inherits Image
         Me.Image = SKBitmap.FromImage(image)
     End Sub
 
+    ''' <summary>
+    ''' this method will try to replace the black pixel to transparent
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function SetTransparent() As SkiaImage
+        Dim transparent As New SKColor(0, 0, 0, 0)
+
+        For x As Integer = 0 To Size.Width - 1
+            For y As Integer = 0 To Size.Height - 1
+                Dim p As SKColor = Image.GetPixel(x, y)
+
+                If p.Alpha = 255 AndAlso p.Red = 0 AndAlso p.Green = 0 AndAlso p.Blue = 0 Then
+                    Call Image.SetPixel(x, y, transparent)
+                End If
+            Next
+        Next
+
+        Return Me
+    End Function
+
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub Save(s As Stream, format As ImageFormats)
         Call SaveRasterImage(Image, s, format)
