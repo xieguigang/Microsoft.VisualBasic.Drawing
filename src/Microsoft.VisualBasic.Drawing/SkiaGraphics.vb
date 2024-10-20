@@ -289,14 +289,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single, width As Single, height As Single)
-        Dim rect As New SKRect(x, y, x + width, y + height)
-
-        Using paint As New SKPaint With {
-            .IsAntialias = True,
-            .BlendMode = SKBlendMode.DstIn
-        }
-            Call m_canvas.DrawImage(image.AsSKImage, rect, paint)
-        End Using
+        Call m_canvas.DrawImage(image.AsSKImage, New SKRect(x, y, x + width, y + height))
     End Sub
 
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
