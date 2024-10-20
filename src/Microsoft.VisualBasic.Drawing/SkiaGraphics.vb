@@ -295,7 +295,9 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single, width As Single, height As Single)
-        Call m_canvas.DrawImage(image.AsSKImage, New SKRect(x, y, x + width, y + height))
+        Using blender As New SKPaint With {.IsAntialias = True}
+            Call m_canvas.DrawImage(image.AsSKImage, New SKRect(x, y, x + width, y + height), blender)
+        End Using
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
