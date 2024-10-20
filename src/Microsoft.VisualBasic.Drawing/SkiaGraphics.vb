@@ -268,46 +268,57 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Throw New NotImplementedException()
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, rect As Rectangle)
         Call DrawImage(image, CSng(rect.Left), CSng(rect.Top), CSng(rect.Width), CSng(rect.Height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, point As PointF)
         Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, rect As RectangleF)
         Call DrawImage(image, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer)
         Call DrawImage(image, x, y, image.Width, image.Height)
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single)
         Call DrawImage(image, x, y, image.Width, image.Height)
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single, width As Single, height As Single)
         Call m_canvas.DrawImage(image.AsSKImage, New SKRect(x, y, x + width, y + height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
         Call DrawImage(image, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, rect As Rectangle)
         Call DrawImage(image, CSng(rect.Left), CSng(rect.Top), CSng(image.Width), CSng(image.Height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, point As Point)
         Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, x As Integer, y As Integer)
         Call DrawImage(image, CSng(x), CSng(y), CSng(image.Width), CSng(image.Height))
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
         Call DrawImage(image, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
