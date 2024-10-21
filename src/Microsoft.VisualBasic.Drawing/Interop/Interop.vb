@@ -40,6 +40,14 @@ Public Module Interop
         End If
     End Function
 
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="bitmap"></param>
+    ''' <returns></returns>
+    ''' <remarks>
+    ''' the transparent will be lost when cast memory bitmap to skia bitmap object
+    ''' </remarks>
     <Extension>
     Public Function CastSkiaBitmap(bitmap As Bitmap) As SKBitmap
         Using ms As New MemoryStream
