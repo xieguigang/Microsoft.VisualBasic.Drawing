@@ -455,7 +455,13 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub FillPath(brush As Brush, path As GraphicsPath)
-        Throw New NotImplementedException()
+        Using skia As SKPath = PathBuilder.CreatePath(path),
+            paint As New SKPaint With {
+                .Style = SKPaintStyle.Fill,
+                .Color = DirectCast(brush, SolidBrush).Color.AsSKColor
+        }
+            Call m_canvas.DrawPath(skia, paint)
+        End Using
     End Sub
 
     Public Overrides Sub FillPie(brush As Brush, rect As Rectangle, startAngle As Single, sweepAngle As Single)
