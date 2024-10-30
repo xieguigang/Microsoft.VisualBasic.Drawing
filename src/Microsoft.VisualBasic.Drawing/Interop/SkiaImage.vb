@@ -4,6 +4,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
+Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
 Public Class SkiaImage : Inherits Image
@@ -27,6 +28,10 @@ Public Class SkiaImage : Inherits Image
         Me.Size = size
         Me.Image = SKBitmap.FromImage(image)
     End Sub
+
+    Public Overrides Function ToString() As String
+        Return $"[{Size.Width}x{Size.Height}]" & StringFormats.Lanudry(Size.Area * 4)
+    End Function
 
     ''' <summary>
     ''' this method will try to replace the black pixel to transparent
