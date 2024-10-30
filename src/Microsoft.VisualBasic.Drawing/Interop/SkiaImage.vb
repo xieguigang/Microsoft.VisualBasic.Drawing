@@ -1,6 +1,7 @@
 ﻿Imports System.Drawing
 Imports System.IO
 Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports SkiaSharp
@@ -77,6 +78,24 @@ Public Class SkiaImage : Inherits Image
         End If
 
         Return True
+    End Function
+
+    Public Shared Function FromBufferData(pixels As Byte(), width As Integer, height As Integer) As SkiaImage
+        Dim imageInfo As New SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul)
+        Dim bitmap As New SKBitmap
+        Dim handle As GCHandle = GCHandle.Alloc(pixels, GCHandleType.Pinned)
+
+        Try
+            Call bitmap.InstallPixels(imageInfo, handle.AddrOfPinnedObject, imageInfo.RowBytes)
+        Catch ex As Exception
+            If handle.IsAllocated Then
+                Call handle.Free()
+            Else
+                Throw New InvalidProgramException("allocate memory error!")
+            End If
+        End Try
+
+        Return New SkiaImage(bitmap)
     End Function
 
     Protected Overrides Function ConvertToBitmapStream() As MemoryStream

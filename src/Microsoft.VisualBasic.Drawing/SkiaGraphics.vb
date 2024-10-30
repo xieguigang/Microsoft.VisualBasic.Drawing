@@ -5,7 +5,6 @@ Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
-Imports std = System.Math
 
 Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Implements SaveGdiBitmap
