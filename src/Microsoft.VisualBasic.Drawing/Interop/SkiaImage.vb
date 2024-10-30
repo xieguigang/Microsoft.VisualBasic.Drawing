@@ -88,6 +88,15 @@ Public Class SkiaImage : Inherits Image
         Return True
     End Function
 
+    Public Shared Function FromFile(path As String) As SkiaImage
+        Using s As Stream = path.Open(FileMode.Open, doClear:=False, [readOnly]:=True)
+            Dim bitmap As SKBitmap = SKBitmap.Decode(s)
+            Dim image As New SkiaImage(bitmap)
+
+            Return image
+        End Using
+    End Function
+
     Public Shared Function FromBufferData(pixels As Byte(), width As Integer, height As Integer) As SkiaImage
         Dim imageInfo As New SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul)
         Dim bitmap As New SKBitmap

@@ -25,6 +25,25 @@ Module Program
         Using s = "./raw_scaled.png".Open(IO.FileMode.OpenOrCreate)
             Call large.Save(s, ImageFormats.Png)
         End Using
+
+        Dim large_canvas As New Graphics(3500, 2000, "#ffffff")
+        Call large_canvas.DrawImage(img, 0, 0, large_canvas.Width, large_canvas.Height)
+
+        Using s = "./raw_skia.png".Open(IO.FileMode.OpenOrCreate)
+            Call large_canvas.ImageResource.Save(s, ImageFormats.Png)
+        End Using
+
+
+        large_canvas = New Graphics(2500, 5000, "#ffffff", dpi:=300)
+        img = SkiaImage.FromFile("E:\Microsoft.VisualBasic.Drawing\demo\debug.png")
+
+        Call large_canvas.DrawImage(img, 0, 0, large_canvas.Width, large_canvas.Height)
+
+        Using s = "./raw_skia2.png".Open(IO.FileMode.OpenOrCreate)
+            Call large_canvas.ImageResource.Save(s, ImageFormats.Png)
+        End Using
+
+        Pause()
     End Sub
 
     Sub simpleNativeDrawTest()
