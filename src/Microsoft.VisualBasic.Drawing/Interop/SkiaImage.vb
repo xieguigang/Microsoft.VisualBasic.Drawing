@@ -48,6 +48,14 @@ Public Class SkiaImage : Inherits Image
         Return Me
     End Function
 
+    Public Function Resize(width As Integer, height As Integer) As SkiaImage
+        Dim bytes As Byte() = Image.Bytes
+        Dim matrix As Byte(,) = BitmapResizer.ByteArrayToByteMatrix(bytes, Image.Width, Image.Height)
+        matrix = matrix.BilinearInterpolation(Image.Width, Image.Height, width, height)
+        bytes = BitmapResizer.ByteMatrixToByteArray(matrix)
+        Return FromBufferData(bytes, width, height)
+    End Function
+
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub Save(s As Stream, format As ImageFormats)
         Call SaveRasterImage(Image, s, format)
