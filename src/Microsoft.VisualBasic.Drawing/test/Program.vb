@@ -6,9 +6,25 @@ Imports SkiaSharp
 
 Module Program
     Sub Main(args As String())
+        Call resizetest()
+
         ' Call simpleNativeDrawTest()
         Call RunGradient()
         Call testDrawing()
+    End Sub
+
+    Sub resizetest()
+        Dim bmp As New Graphics(1000, 1000, "#ffffff")
+        Call draw(bmp)
+        Dim img As SkiaImage = bmp.ImageResource
+        Dim large = img.Resize(3500, 2000)
+
+        Using s = "./raw.png".Open(IO.FileMode.OpenOrCreate)
+            Call img.Save(s, ImageFormats.Png)
+        End Using
+        Using s = "./raw_scaled.png".Open(IO.FileMode.OpenOrCreate)
+            Call large.Save(s, ImageFormats.Png)
+        End Using
     End Sub
 
     Sub simpleNativeDrawTest()
@@ -46,16 +62,16 @@ Module Program
         SkiaDriver.Register()
     End Sub
 
+    Private Function draw(g As SkiaGraphics) As SkiaGraphics
+        g.Clear(Color.White)
+        g.DrawString("123456", FontFace.SegoeUI, 20, "#ff000f".TranslateColor(), 300, 900)
+        g.DrawPath(New Polygon2D({30, 69, 888, 777}, {691, 258, 666, 1}), Color.Green, 5, Color.Blue, dash:={5, 10})
+        g.DrawLine(50, 50, 300, 600, Color.Red, 5)
+
+        Return g
+    End Function
+
     Private Sub testDrawing()
-        Dim draw = Function(g As SkiaGraphics) As SkiaGraphics
-                       g.Clear(Color.White)
-                       g.DrawString("123456", FontFace.SegoeUI, 20, "#ff000f".TranslateColor(), 300, 900)
-                       g.DrawPath(New Polygon2D({30, 69, 888, 777}, {691, 258, 666, 1}), Color.Green, 5, Color.Blue, dash:={5, 10})
-                       g.DrawLine(50, 50, 300, 600, Color.Red, 5)
-
-                       Return g
-                   End Function
-
         Dim bmp As New Graphics(1000, 1000, "#ffffff")
 
         DirectCast(draw(bmp), Graphics).Save("./test.bmp", ImageFormats.Bmp)
