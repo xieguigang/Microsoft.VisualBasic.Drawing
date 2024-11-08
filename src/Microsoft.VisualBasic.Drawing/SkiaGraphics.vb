@@ -45,7 +45,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
             If s Is Nothing Then
                 s = ""
-                Call $"the given string for drawing is nothing at stack trace: {Environment.StackTrace}".Warning
+                Call $"the given string for drawing is nothing at stack trace: {vbCrLf}{Environment.StackTrace}".Warning
             End If
 
             Call textPain.MeasureText(s, textBounds)
