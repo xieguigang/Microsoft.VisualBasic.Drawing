@@ -43,6 +43,11 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         }
             Dim textBounds As New SKRect
 
+            If s Is Nothing Then
+                s = ""
+                Call $"the given string for drawing is nothing at stack trace: {Environment.StackTrace}".Warning
+            End If
+
             Call textPain.MeasureText(s, textBounds)
             Call m_canvas.DrawText(s, x, y + textBounds.Height, textPain)
         End Using
