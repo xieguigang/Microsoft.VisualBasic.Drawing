@@ -244,56 +244,62 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Throw New NotImplementedException()
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawEllipse(pen As Pen, rect As Rectangle)
-        Throw New NotImplementedException()
+        Call DrawEllipse(pen, rect.X, rect.Y, rect.Width, rect.Height)
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawEllipse(pen As Pen, rect As RectangleF)
-        Throw New NotImplementedException()
+        Call DrawEllipse(pen, rect.X, rect.Y, rect.Width, rect.Height)
     End Sub
 
     Public Overrides Sub DrawEllipse(pen As Pen, x As Single, y As Single, width As Single, height As Single)
-        Throw New NotImplementedException()
+        Using stroke As SKPaint = pen.CreatePaint
+            m_canvas.DrawOval(New SKRect(x, y, x + width, y + height), stroke)
+        End Using
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawEllipse(pen As Pen, x As Integer, y As Integer, width As Integer, height As Integer)
-        Throw New NotImplementedException()
+        Call DrawEllipse(pen, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
-    Public Overrides Sub DrawImage(image As Imaging.Image, point As Point)
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Public Overrides Sub DrawImage(image As Image, point As Point)
         Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
-    Public Overrides Sub DrawImage(image As Imaging.Image, destPoints() As Point)
+    Public Overrides Sub DrawImage(image As Image, destPoints() As Point)
         Throw New NotImplementedException()
     End Sub
 
-    Public Overrides Sub DrawImage(image As Imaging.Image, destPoints() As PointF)
+    Public Overrides Sub DrawImage(image As Image, destPoints() As PointF)
         Throw New NotImplementedException()
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImage(image As Imaging.Image, rect As Rectangle)
+    Public Overrides Sub DrawImage(image As Image, rect As Rectangle)
         Call DrawImage(image, CSng(rect.Left), CSng(rect.Top), CSng(rect.Width), CSng(rect.Height))
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImage(image As Imaging.Image, point As PointF)
+    Public Overrides Sub DrawImage(image As Image, point As PointF)
         Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImage(image As Imaging.Image, rect As RectangleF)
+    Public Overrides Sub DrawImage(image As Image, rect As RectangleF)
         Call DrawImage(image, rect.Left, rect.Top, rect.Width, rect.Height)
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer)
+    Public Overrides Sub DrawImage(image As Image, x As Integer, y As Integer)
         Call DrawImage(image, x, y, image.Width, image.Height)
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImage(image As Imaging.Image, x As Single, y As Single)
+    Public Overrides Sub DrawImage(image As Image, x As Single, y As Single)
         Call DrawImage(image, x, y, image.Width, image.Height)
     End Sub
 
@@ -308,31 +314,31 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImage(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
+    Public Overrides Sub DrawImage(image As Image, x As Integer, y As Integer, width As Integer, height As Integer)
         Call DrawImage(image, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, rect As Rectangle)
+    Public Overrides Sub DrawImageUnscaled(image As Image, rect As Rectangle)
         Call DrawImage(image, CSng(rect.Left), CSng(rect.Top), CSng(image.Width), CSng(image.Height))
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, point As Point)
+    Public Overrides Sub DrawImageUnscaled(image As Image, point As Point)
         Call DrawImage(image, CSng(point.X), CSng(point.Y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, x As Integer, y As Integer)
+    Public Overrides Sub DrawImageUnscaled(image As Image, x As Integer, y As Integer)
         Call DrawImage(image, CSng(x), CSng(y), CSng(image.Width), CSng(image.Height))
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Public Overrides Sub DrawImageUnscaled(image As Imaging.Image, x As Integer, y As Integer, width As Integer, height As Integer)
+    Public Overrides Sub DrawImageUnscaled(image As Image, x As Integer, y As Integer, width As Integer, height As Integer)
         Call DrawImage(image, CSng(x), CSng(y), CSng(width), CSng(height))
     End Sub
 
-    Public Overrides Sub DrawImageUnscaledAndClipped(image As Imaging.Image, rect As Rectangle)
+    Public Overrides Sub DrawImageUnscaledAndClipped(image As Image, rect As Rectangle)
         Throw New NotImplementedException()
     End Sub
 

@@ -101,6 +101,11 @@ Public Module Interop
         End Select
     End Function
 
+    ''' <summary>
+    ''' Create the stroke pen paint style
+    ''' </summary>
+    ''' <param name="pen"></param>
+    ''' <returns></returns>
     <Extension>
     Public Function CreatePaint(pen As Pen) As SKPaint
         Return New SKPaint With {
