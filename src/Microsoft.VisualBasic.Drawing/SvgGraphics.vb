@@ -4,6 +4,7 @@ Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
 Public Class SvgGraphics : Inherits SkiaGraphics
+    Implements ISvgGraphics
 
     ReadOnly svgfile As New MemoryStream
 
@@ -34,7 +35,7 @@ Public Class SvgGraphics : Inherits SkiaGraphics
     ''' get the svg file of the current graphics
     ''' </summary>
     ''' <returns></returns>
-    Public Function GetSvgText() As String
+    Public Function GetSvgText() As String Implements ISvgGraphics.GetSvgText
         Call Close()
         Call svgfile.Flush()
 
