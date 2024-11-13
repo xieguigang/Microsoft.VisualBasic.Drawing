@@ -93,7 +93,12 @@ Public Class SkiaImage : Inherits Image
         Return True
     End Function
 
-    Public Shared Function FromFile(path As String) As SkiaImage
+    ''' <summary>
+    ''' Load skia image object from a given image file
+    ''' </summary>
+    ''' <param name="path"></param>
+    ''' <returns></returns>
+    Public Overloads Shared Function FromFile(path As String) As SkiaImage
         Using s As Stream = path.Open(FileMode.Open, doClear:=False, [readOnly]:=True)
             Dim bitmap As SKBitmap = SKBitmap.Decode(s)
             Dim image As New SkiaImage(bitmap)
