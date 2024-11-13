@@ -173,19 +173,22 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawArc(pen As Pen, rect As RectangleF, startAngle As Single, sweepAngle As Single)
-        Throw New NotImplementedException()
+        Call DrawArc(pen, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle)
     End Sub
 
     Public Overrides Sub DrawArc(pen As Pen, rect As Rectangle, startAngle As Single, sweepAngle As Single)
-        Throw New NotImplementedException()
+        Call DrawArc(pen, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle)
     End Sub
 
     Public Overrides Sub DrawArc(pen As Pen, x As Integer, y As Integer, width As Integer, height As Integer, startAngle As Integer, sweepAngle As Integer)
-        Throw New NotImplementedException()
+        Call DrawArc(pen, CSng(x), CSng(y), CSng(width), CSng(height), CSng(startAngle), CSng(sweepAngle))
     End Sub
 
     Public Overrides Sub DrawArc(pen As Pen, x As Single, y As Single, width As Single, height As Single, startAngle As Single, sweepAngle As Single)
-        Throw New NotImplementedException()
+        Using stroke As SKPaint = pen.CreatePaint, path As New SKPath
+            path.AddArc(New SKRect(x, y, x + width, y + height), startAngle, sweepAngle)
+            m_canvas.DrawPath(path, stroke)
+        End Using
     End Sub
 
     Public Overrides Sub DrawBezier(pen As Pen, pt1 As Point, pt2 As Point, pt3 As Point, pt4 As Point)
