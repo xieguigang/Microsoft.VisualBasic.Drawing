@@ -11,6 +11,7 @@ Public Module SkiaDriver
         Call DriverLoad.Register(New RasterInterop, Drivers.GDI)
         Call DriverLoad.Register(New SvgInterop, Drivers.SVG)
         Call DriverLoad.Register(New PdfInterop, Drivers.PDF)
+        Call DriverLoad.Register(AddressOf SkiaImage.FromFile)
     End Sub
 
     Private Class RasterInterop : Inherits DeviceInterop

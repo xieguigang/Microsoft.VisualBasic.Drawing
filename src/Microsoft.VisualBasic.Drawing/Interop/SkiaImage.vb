@@ -94,16 +94,25 @@ Public Class SkiaImage : Inherits Image
     End Function
 
     ''' <summary>
+    ''' load skia sharp image from a given stream data
+    ''' </summary>
+    ''' <param name="s"></param>
+    ''' <returns></returns>
+    Public Overloads Shared Function FromFile(s As Stream) As SkiaImage
+        Dim bitmap As SKBitmap = SKBitmap.Decode(s)
+        Dim image As New SkiaImage(bitmap)
+
+        Return image
+    End Function
+
+    ''' <summary>
     ''' Load skia image object from a given image file
     ''' </summary>
     ''' <param name="path"></param>
     ''' <returns></returns>
     Public Overloads Shared Function FromFile(path As String) As SkiaImage
         Using s As Stream = path.Open(FileMode.Open, doClear:=False, [readOnly]:=True)
-            Dim bitmap As SKBitmap = SKBitmap.Decode(s)
-            Dim image As New SkiaImage(bitmap)
-
-            Return image
+            Return FromFile(s)
         End Using
     End Function
 
