@@ -1,9 +1,11 @@
 ﻿Imports System.Drawing
+Imports System.IO
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports Microsoft.VisualBasic.Imaging.SVG
 Imports Microsoft.VisualBasic.Imaging.SVG.XML
 Imports Microsoft.VisualBasic.MIME.Html.CSS
+Imports SkiaSharp
 
 Public Module SkiaDriver
 
@@ -22,6 +24,24 @@ Public Module SkiaDriver
 
         Public Overrides Function CreateCanvas2D(background As Bitmap, direct_access As Boolean) As IGraphics
             Return New Graphics(background.CastSkiaBitmap)
+        End Function
+
+        Public Overrides Function CreateCanvas2D(background As Image, direct_access As Boolean) As IGraphics
+            Dim bitmap As SKBitmap
+
+            If TypeOf background Is SkiaImage Then
+                bitmap = DirectCast(background, SkiaImage).Image
+            Else
+                Using s As Stream = New MemoryStream
+                    Call background.Save(s, ImageFormats.Png)
+                    Call s.Seek(0, Scan0)
+                    Call s.Flush()
+
+                    bitmap = SKBitmap.Decode(s)
+                End Using
+            End If
+
+            Return New Graphics(bitmap)
         End Function
 
         Public Overrides Function GetData(g As IGraphics, padding() As Integer) As IGraphicsData
@@ -45,6 +65,12 @@ Public Module SkiaDriver
             Return svg
         End Function
 
+        Public Overrides Function CreateCanvas2D(background As Image, direct_access As Boolean) As IGraphics
+            Dim svg As New SvgGraphics(background.Width, background.Height, 100)
+            svg.DrawImage(background, New Point)
+            Return svg
+        End Function
+
         Public Overrides Function GetData(g As IGraphics, padding As Integer()) As IGraphicsData
             Dim svg As SvgGraphics = DirectCast(g, SvgGraphics)
             Dim doc As SvgDocument = SvgDocument.Parse(xml:=svg.GetSvgText)
@@ -63,6 +89,12 @@ Public Module SkiaDriver
         End Function
 
         Public Overrides Function CreateCanvas2D(background As Bitmap, direct_access As Boolean) As IGraphics
+            Dim pdf As New PdfGraphics(background.Width, background.Height)
+            pdf.DrawImage(background, New Point)
+            Return pdf
+        End Function
+
+        Public Overrides Function CreateCanvas2D(background As Image, direct_access As Boolean) As IGraphics
             Dim pdf As New PdfGraphics(background.Width, background.Height)
             pdf.DrawImage(background, New Point)
             Return pdf
