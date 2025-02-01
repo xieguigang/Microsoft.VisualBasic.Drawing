@@ -6,6 +6,9 @@ Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
+''' <summary>
+''' the abstract wrapper for the skiasharp library
+''' </summary>
 Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Implements SaveGdiBitmap
 
@@ -20,6 +23,10 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         canvasRect = SKRect.Create(width, height)
     End Sub
 
+    ''' <summary>
+    ''' the graphics size of current skia canvas
+    ''' </summary>
+    ''' <returns></returns>
     Public Overrides ReadOnly Property Size As Size
     Public Overrides Property RenderingOrigin As Point
     Public Overrides Property TextContrast As Integer
