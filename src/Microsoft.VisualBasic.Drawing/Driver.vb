@@ -14,7 +14,22 @@ Public Module SkiaDriver
         Call DriverLoad.Register(New SvgInterop, Drivers.SVG)
         Call DriverLoad.Register(New PdfInterop, Drivers.PDF)
         Call DriverLoad.Register(AddressOf SkiaImage.FromFile)
+        Call DriverLoad.Register(AddressOf SkiaDriver.MeasureString)
     End Sub
+
+    Public Function MeasureString(text As String, font As Font) As SizeF
+        Using paint As New SKPaint With {
+            .TextSize = font.Size,
+            .IsAntialias = True,
+            .Typeface = SKTypeface.FromFamilyName(font.Name)
+        }
+
+            Dim textBounds As New SKRect
+            Call paint.MeasureText(text, textBounds)
+
+            Return New SizeF(textBounds.Width * 1.125, textBounds.Height * 1.125)
+        End Using
+    End Function
 
     Private Class RasterInterop : Inherits DeviceInterop
 

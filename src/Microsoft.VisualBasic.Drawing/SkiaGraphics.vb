@@ -638,29 +638,19 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font) As SizeF
-        Using paint As New SKPaint With {
-            .TextSize = font.Size,
-            .IsAntialias = True,
-            .Typeface = SKTypeface.FromFamilyName(font.Name)
-        }
-
-            Dim textBounds As New SKRect
-            Call paint.MeasureText(text, textBounds)
-
-            Return New SizeF(textBounds.Width * 1.125, textBounds.Height * 1.125)
-        End Using
+        Return SkiaDriver.MeasureString(text, font)
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font, width As Integer) As SizeF
-        Return MeasureString(text, font)
+        Return SkiaDriver.MeasureString(text, font)
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font, layoutArea As SizeF) As SizeF
-        Return MeasureString(text, font)
+        Return SkiaDriver.MeasureString(text, font)
     End Function
 
     Public Overrides Function GetContextInfo() As Object
-        Throw New NotImplementedException()
+        Return m_canvas
     End Function
 
     Public Overrides Function IsVisible(rect As Rectangle) As Boolean
