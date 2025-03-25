@@ -27,7 +27,7 @@ Public Module SkiaDriver
         }
             Call paint.MeasureText(text, textBounds)
 
-            Return New SizeF(textBounds.Width, textBounds.Height * 1.125)
+            Return New SizeF(textBounds.Width + 1, textBounds.Height + 1)
         End Using
     End Function
 
