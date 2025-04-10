@@ -34,7 +34,7 @@ Public Module SkiaTools
 
             For Each frame As SKCodecFrameInfo In filedata.FrameInfo
                 Using bitmap As SKBitmap = New SKBitmap(Info.Width, Info.Height, Info.ColorType, Info.AlphaType)
-                    Call filedata.GetPixels(frame, bitmap)
+                    ' Call filedata.GetPixels(frame, bitmap)
                 End Using
             Next
         End If
