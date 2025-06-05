@@ -12,6 +12,12 @@ Public Class PdfImage : Inherits GraphicsData
         End Get
     End Property
 
+    Public Overrides ReadOnly Property Previews As String
+        Get
+            Return "PDF"
+        End Get
+    End Property
+
     Dim g As PdfGraphics
 
     Public Sub New(img As Object, size As Size, padding As Padding)
