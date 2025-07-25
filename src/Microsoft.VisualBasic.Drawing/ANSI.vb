@@ -28,7 +28,7 @@ Public Module ANSI
     Public Function GenerateImagePreview(img As Image, terminalWidth As Integer) As String
         ' 计算新尺寸 (保持宽高比)
         Dim aspectRatio As Single = img.Height / CSng(img.Width)
-        Dim newHeight As Integer = CInt(terminalWidth * aspectRatio)
+        Dim newHeight As Integer = CInt(terminalWidth * aspectRatio) * 0.8
         Dim scaledImg As Bitmap
 
         ' 创建缩放后的位图
