@@ -36,10 +36,7 @@ Public Class Graphics : Inherits SkiaGraphics
         Call Me.New(width, height, TranslateColor(fill), dpi)
     End Sub
 
-    Sub New(width As Integer, height As Integer,
-            Optional fill As Color? = Nothing,
-            Optional dpi As Integer = 100)
-
+    Sub New(width As Integer, height As Integer, fill As Color, Optional dpi As Integer = 100)
         Call MyBase.New(width, height, dpi)
 
         ' 20241014 the bitmap pixel should be in 32 bit ARGB format
@@ -49,7 +46,7 @@ Public Class Graphics : Inherits SkiaGraphics
         m_surface = New SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul)
         m_canvas = New SKCanvas(m_surface)
 
-        If fill Is Nothing Then
+        If fill.IsEmpty Then
             Call Clear(Color.Transparent)
         Else
             Call Clear(fill)
@@ -97,6 +94,17 @@ Public Class Graphics : Inherits SkiaGraphics
     Public Overrides Sub Save(file As Stream)
         Call Save(file, format:=ImageFormats.Png)
     End Sub
+
+    Public Shared Function FromImage(bitmap As Bitmap) As Graphics
+        If bitmap Is Nothing Then
+            Throw New ArgumentNullException(NameOf(bitmap), "The bitmap cannot be null.")
+        End If
+        Dim skBitmap As New SKBitmap(bitmap.Width, bitmap.Height)
+        Dim canvas As New SKCanvas(skBitmap)
+        ' Draw the GDI+ Bitmap onto the SkiaSharp canvas
+        canvas.DrawImage(bitmap.AsSKImage, 0, 0)
+        Return New Graphics(skBitmap)
+    End Function
 
     Protected Overrides Sub ReleaseHandle()
         If Not m_isDisposed Then

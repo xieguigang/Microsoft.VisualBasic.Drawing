@@ -6,6 +6,9 @@ Imports SkiaSharp
 
 Module Program
     Sub Main(args As String())
+        Call Main22222({"G:\mzkit\Rscript\Library\mzkit_app\test\msn_peaks\umap.png"})
+        Call Pause()
+
         Call resizetest()
 
         ' Call simpleNativeDrawTest()
@@ -57,9 +60,9 @@ Module Program
 
             Dim paint As New SKPaint With
         {
-            .Color = SKColors.Black, ' ÎÄ±¾ÑÕÉ«
-            .TextSize = 48,          ' ÎÄ±¾´óÐ¡
-            .IsAntialias = True ' ÆôÓÃ¿¹¾â³Ý
+            .Color = SKColors.Black, ' ï¿½Ä±ï¿½ï¿½ï¿½É«
+            .TextSize = 48,          ' ï¿½Ä±ï¿½ï¿½ï¿½Ð¡
+            .IsAntialias = True ' ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½
         }
             Dim textBounds = New SKRect()
             paint.MeasureText(text, textBounds)

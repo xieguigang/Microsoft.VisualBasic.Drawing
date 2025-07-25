@@ -134,6 +134,10 @@ Public Class SkiaImage : Inherits Image
         Return New SkiaImage(bitmap)
     End Function
 
+    Public Function ToBitmap() As Bitmap
+        Return CType(Me, Bitmap)
+    End Function
+
     Protected Overrides Function ConvertToBitmapStream() As MemoryStream
         Dim s As New MemoryStream
         Dim m_data As New BitmapBuffer(Image.Bytes, Size, channel:=4)
