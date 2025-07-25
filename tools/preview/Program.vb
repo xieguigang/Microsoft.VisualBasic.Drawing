@@ -3,6 +3,10 @@ Imports Microsoft.VisualBasic.Drawing
 
 Module Program
 
+    Sub New()
+        Call Microsoft.VisualBasic.Imaging.Driver.Register(Function(s) SkiaImage.FromFile(s))
+    End Sub
+
     Public Function Main() As Integer
         Return GetType(Program).RunCLI(App.CommandLine, executeFile:=AddressOf PreviewFile, executeEmpty:=AddressOf Help)
     End Function
