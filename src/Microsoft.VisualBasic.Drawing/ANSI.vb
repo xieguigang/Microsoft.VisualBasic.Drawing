@@ -4,6 +4,9 @@ Imports System.Text
 Imports Microsoft.VisualBasic.ApplicationServices.Terminal
 Imports Microsoft.VisualBasic.Imaging
 
+''' <summary>
+''' Display images in ansii escape sequences
+''' </summary>
 Public Module ANSI
 
     ' 在 GetAnsiColorSequence 中添加颜色模式切换

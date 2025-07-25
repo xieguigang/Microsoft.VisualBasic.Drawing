@@ -5,6 +5,8 @@
     <RootNamespace>preview</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
+    <Description>CLI takes in an image file, and using ANSI escape sequences, outputs a low-fidelity preview of the image in the terminal.</Description>
+    <Title>Display images in ansii escape sequences</Title>
   </PropertyGroup>
 
   <ItemGroup>
