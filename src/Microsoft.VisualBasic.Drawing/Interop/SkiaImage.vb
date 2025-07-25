@@ -138,6 +138,10 @@ Public Class SkiaImage : Inherits Image
         Return CType(Me, Bitmap)
     End Function
 
+    ''' <summary>
+    ''' this will lost the transparent information of the skia image, and convert the skia image to a memory bitmap
+    ''' </summary>
+    ''' <returns></returns>
     Protected Overrides Function ConvertToBitmapStream() As MemoryStream
         Dim s As New MemoryStream
         Dim m_data As New BitmapBuffer(Image.Bytes, Size, channel:=4)
@@ -148,11 +152,14 @@ Public Class SkiaImage : Inherits Image
     End Function
 
     Public Shared Narrowing Operator CType(img As SkiaImage) As Microsoft.VisualBasic.Imaging.Bitmap
-        Dim s As Stream = img.ConvertToBitmapStream()
-        Dim image As Bitmap = Bitmap.FromStream(s)
-        Return image
+        Dim bitmap As New Bitmap(img.GetMemoryBitmap)
+        Return bitmap
     End Operator
 
+    ''' <summary>
+    ''' keeps the transparent information of the skia image, and convert the skia image to a memory bitmap
+    ''' </summary>
+    ''' <returns></returns>
     Protected Overrides Function GetMemoryBitmap() As BitmapBuffer
         Return New BitmapBuffer(Image.Bytes, Size, channel:=4)
     End Function
