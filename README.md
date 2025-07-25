@@ -61,4 +61,47 @@ Call Rendering(New PdfGraphics(512, 365)).Save("./RedBlueArgb32GradientWithAlpha
 
 ![](./demo/RedGreen24BitGradient.svg)
 
+## ANSI Image Viewer 
 
+A vb.net CLI tool takes in an image file, and using ANSI escape sequences, outputs a low-fidelity preview of the image in the terminal.
+
+![](demo/flower-true-color.JPG)
+
+```vbnet
+Imports Microsoft.VisualBasic.CommandLine
+Imports Microsoft.VisualBasic.Drawing
+
+Module Program
+
+    Sub New()
+        Call Microsoft.VisualBasic.Imaging.Driver.Register(Function(s) SkiaImage.FromFile(s))
+    End Sub
+
+    Public Function Main() As Integer
+        Return GetType(Program).RunCLI(App.CommandLine, executeFile:=AddressOf PreviewFile, executeEmpty:=AddressOf Help)
+    End Function
+
+    Private Function Help() As Integer
+        Call Console.WriteLine("Usage: preview <image-file> [--width <display_width, should less than the console width>] [--true-color|--256-color]")
+        Return 0
+    End Function
+
+    Private Function PreviewFile(file As String, args As CommandLine) As Integer
+        Dim terminalWidth As Integer = args("--width") Or (Console.WindowWidth - 1)
+        Dim trueColor As Boolean = args("--true-color")
+        Dim c256Color As Boolean = args("--256-color")
+
+        If trueColor Then
+            ANSI.useTrueColor = True
+        End If
+        If c256Color Then
+            ANSI.useTrueColor = False
+        End If
+
+        Dim preview As String = ANSI.GenerateImagePreview(file, terminalWidth)
+        Call Console.Write(preview)
+        Return 0
+    End Function
+End Module
+
+```
