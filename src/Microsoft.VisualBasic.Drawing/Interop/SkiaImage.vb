@@ -148,7 +148,9 @@ Public Class SkiaImage : Inherits Image
     End Function
 
     Public Shared Narrowing Operator CType(img As SkiaImage) As Microsoft.VisualBasic.Imaging.Bitmap
-        Return FromStream(img.ConvertToBitmapStream)
+        Dim s As Stream = img.ConvertToBitmapStream()
+        Dim image As Bitmap = Bitmap.FromStream(s)
+        Return image
     End Operator
 
     Protected Overrides Function GetMemoryBitmap() As BitmapBuffer

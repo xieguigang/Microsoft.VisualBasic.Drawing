@@ -5,6 +5,12 @@ Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
 Module Program
+
+    Sub New()
+        Call Microsoft.VisualBasic.Imaging.Driver.Register(Function(s) SkiaImage.FromFile(s))
+    End Sub
+
+
     Sub Main(args As String())
         Call Main22222({"G:\mzkit\Rscript\Library\mzkit_app\test\msn_peaks\umap.png"})
         Call Pause()

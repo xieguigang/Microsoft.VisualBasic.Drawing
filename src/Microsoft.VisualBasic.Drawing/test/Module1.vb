@@ -13,13 +13,8 @@ Module ImagePreview
 
         Dim imagePath As String = args(0)
         Dim terminalWidth As Integer = If(args.Length > 1, Integer.Parse(args(1)), Console.WindowWidth - 1)
-
-        Try
-            Dim preview As String = GenerateImagePreview(imagePath, terminalWidth)
-            Console.Write(preview)
-        Catch ex As Exception
-            Console.WriteLine($"Error: {ex.Message}")
-        End Try
+        Dim preview As String = GenerateImagePreview(imagePath, terminalWidth)
+        Console.Write(preview)
     End Sub
 
     Function GenerateImagePreview(imagePath As String, terminalWidth As Integer) As String
