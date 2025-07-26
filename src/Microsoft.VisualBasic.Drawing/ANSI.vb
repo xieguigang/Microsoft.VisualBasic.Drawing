@@ -23,7 +23,9 @@ Public Module ANSI
     ''' </summary>
     ''' <param name="img"></param>
     ''' <param name="terminalWidth"></param>
-    ''' <returns>This function generates a string that represents the image in a format suitable for terminal display.</returns>
+    ''' <returns>This function generates a string that represents the image in 
+    ''' a format suitable for terminal display.
+    ''' </returns>
     <Extension>
     Public Function GenerateImagePreview(img As Image, terminalWidth As Integer) As String
         ' 计算新尺寸 (保持宽高比)
