@@ -36,6 +36,10 @@ Public Class Graphics : Inherits SkiaGraphics
         Call Me.New(width, height, TranslateColor(fill), dpi)
     End Sub
 
+    Sub New(size As Size, Optional fill As String = "#ffffff", Optional dpi As Integer = 100)
+        Call Me.New(size.Width, size.Height, fill, dpi)
+    End Sub
+
     Sub New(width As Integer, height As Integer, fill As Color, Optional dpi As Integer = 100)
         Call MyBase.New(width, height, dpi)
 
