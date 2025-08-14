@@ -8,6 +8,7 @@ Imports Microsoft.VisualBasic.Imaging.Math2D
 Imports SkiaSharp
 
 Public Class SkiaImage : Inherits Image
+    Implements IRasterMemory
 
     Public Overrides ReadOnly Property Size As Size
     Public ReadOnly Property Image As SKBitmap
@@ -160,7 +161,7 @@ Public Class SkiaImage : Inherits Image
     ''' keeps the transparent information of the skia image, and convert the skia image to a memory bitmap
     ''' </summary>
     ''' <returns></returns>
-    Protected Overrides Function GetMemoryBitmap() As BitmapBuffer
+    Protected Overrides Function GetMemoryBitmap() As BitmapBuffer Implements IRasterMemory.GetMemoryBuffer
         Return New BitmapBuffer(Image.Bytes, Size, channel:=4)
     End Function
 End Class
