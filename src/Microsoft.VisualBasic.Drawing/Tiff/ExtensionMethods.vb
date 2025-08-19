@@ -17,6 +17,7 @@
 
 
 Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
 
 Namespace Tiff
 

@@ -19,6 +19,8 @@
 Imports System.Security
 
 Namespace Tiff.Types
+
+
     Public Class Strip
         Public Property ImageData As Byte()
         Public Property StripNumber As UShort

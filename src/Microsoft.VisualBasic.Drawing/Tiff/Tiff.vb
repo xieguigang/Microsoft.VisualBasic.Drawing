@@ -17,6 +17,8 @@
 
 
 Imports System.IO
+Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
+Imports Microsoft.VisualBasic.Drawing.Tiff.Types
 
 Namespace Tiff
     Public Class Tiff

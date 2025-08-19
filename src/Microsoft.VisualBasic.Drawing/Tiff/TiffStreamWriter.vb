@@ -17,6 +17,8 @@
 
 
 Imports System.IO
+Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
+Imports Microsoft.VisualBasic.Drawing.Tiff.Types
 
 Namespace Tiff
     ''' <summary>
@@ -122,12 +124,9 @@ Namespace Tiff
             Next
         End Sub
 
-
         ''' <summary>
         ''' Updates the pointer for the next IFD record.
         ''' </summary>
-        ''' <param name="previousOffset"></param>
-        ''' <param name="imageOffset"></param>
         Friend Sub UpdateIFDPointer(ifdOffset As UInteger, nextIfdOffset As UInteger)
             ' read first word from this IFD
             Seek(ifdOffset, SeekOrigin.Begin)

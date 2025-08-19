@@ -15,6 +15,8 @@
 
 '    SPDX-License-Identifier: Apache-2.0
 
+Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
+
 Namespace Tiff.Types
     Public Class Image
         Public Property Tags As List(Of Tag) = New List(Of Tag)()
