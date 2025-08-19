@@ -96,36 +96,35 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, x, y)
     End Sub
 
-    Public Overloads Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single, color As Color, width As Single,
-                                  Optional dash As Single() = Nothing)
+    Public Overloads Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single,
+                                  color As Color,
+                                  width As Single,
+                                  Optional dash As SKPathEffect = Nothing)
 
         Using paint As New SKPaint With {
             .Color = color.AsSKColor,
             .StrokeWidth = width,
-            .Style = SKPaintStyle.Stroke
+            .Style = SKPaintStyle.Stroke,
+            .PathEffect = dash
         }
-            If Not dash.IsNullOrEmpty Then
-                paint.PathEffect = SKPathEffect.CreateDash(dash, 0)
-            End If
-
             Call m_canvas.DrawLine(x1, y1, x2, y2, paint)
         End Using
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, pt1 As PointF, pt2 As PointF)
-        Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width)
+        Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width, pen.LineDashStyle)
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, pt1 As Point, pt2 As Point)
-        Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width)
+        Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width, pen.LineDashStyle)
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, x1 As Integer, y1 As Integer, x2 As Integer, y2 As Integer)
-        Call DrawLine(x1, y1, x2, y2, pen.Color, pen.Width)
+        Call DrawLine(x1, y1, x2, y2, pen.Color, pen.Width, pen.LineDashStyle)
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, x1 As Single, y1 As Single, x2 As Single, y2 As Single)
-        Call DrawLine(x1, y1, x2, y2, pen.Color, pen.Width)
+        Call DrawLine(x1, y1, x2, y2, pen.Color, pen.Width, pen.LineDashStyle)
     End Sub
 
     Public Overloads Sub DrawPath(path As Polygon2D, color As Color, width As Single,
