@@ -17,6 +17,7 @@
 
 
 Imports System.IO
+Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
 
 Namespace Tiff
     Public Class TiffStreamReader
@@ -214,7 +215,7 @@ Namespace Tiff
             _Stream.Seek(0, SeekOrigin.Begin)
             Dim magic = ReadWord() ' header bytes are paired so endianness does not matter
 
-            If magic = &H4d4D Then
+            If magic = &H4D4D Then
                 IsBigEndian = True
             ElseIf magic = &H4949 Then
                 IsBigEndian = False
