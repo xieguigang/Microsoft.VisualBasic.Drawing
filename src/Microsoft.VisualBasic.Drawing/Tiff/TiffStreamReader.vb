@@ -149,10 +149,10 @@ Namespace Tiff
         End Function
 
         ''' <summary>
-        ''' Attempts to parse the given Tag into an appropriate Tag<T> and returns a boxed Tag value
+        ''' Attempts to parse the given Tag into an appropriate Tag&lt;T> and returns a boxed Tag value
         ''' </summary>
         ''' <param name="tag"></param>
-        ''' <returns></returns></summary>       
+        ''' <returns></returns>    
         Protected Function ParseTag(tag As Tag) As Tag
             Select Case tag.DataType
                 Case TagDataType.ASCII

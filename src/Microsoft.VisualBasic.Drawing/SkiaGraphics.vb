@@ -671,8 +671,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Public Overrides Function GetStringPath(s As String, rect As RectangleF, font As Font) As GraphicsPath
         Dim path As New SKPath
 
-        Using style As New SKPaint() With {.TextSize = font.Size, .Typeface = font.CreateSkiaTypeface}
-            path = style.GetTextPath(s, 0, 0)
+        Using style As New SKFont() With {.Size = font.Size, .Typeface = font.CreateSkiaTypeface}
+            path = style.GetTextPath(s, 0, SKTextEncoding.Utf8)
         End Using
 
         Dim glyphs = path.GetPoints(path.PointCount)
