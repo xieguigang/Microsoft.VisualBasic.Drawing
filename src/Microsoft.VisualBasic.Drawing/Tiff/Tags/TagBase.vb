@@ -18,7 +18,9 @@
 
 
 Namespace Tiff.Tags
+
     Public MustInherit Class TagBase
+
         Public Property Offset As UInteger
         Public Property ID As UShort
         Public Property DataType As TagDataType

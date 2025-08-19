@@ -133,6 +133,10 @@ Namespace Tiff
             Return result
         End Function
 
+        ''' <summary>
+        ''' read a general tag data
+        ''' </summary>
+        ''' <returns></returns>
         Public Function ReadTag() As Tag
             Dim tag = New Tag()
             tag.Offset = CUInt(_Stream.Position)

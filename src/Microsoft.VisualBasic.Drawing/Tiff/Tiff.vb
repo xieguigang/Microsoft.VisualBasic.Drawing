@@ -22,7 +22,7 @@ Imports Microsoft.VisualBasic.Drawing.Tiff.Types
 
 Namespace Tiff
     Public Class Tiff
-        Public Property Images As List(Of Image) = New List(Of Image)()
+        Public Property Images As New List(Of Image)()
         Public Property IsBigEndian As Boolean
 
         Public Sub New()

@@ -18,10 +18,13 @@
 Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
 
 Namespace Tiff.Types
+
     Public Class Image
-        Public Property Tags As List(Of Tag) = New List(Of Tag)()
-        Public Property Strips As List(Of Strip) = New List(Of Strip)()
-        Public Property SubImages As List(Of Image) = New List(Of Image)()
-        Public Property Exif As List(Of Tag)
+
+        Public Property Tags As New List(Of Tag)()
+        Public Property Strips As New List(Of Strip)()
+        Public Property SubImages As New List(Of Image)()
+        Public Property Exif As New List(Of Tag)
+
     End Class
 End Namespace

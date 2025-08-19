@@ -15,12 +15,15 @@
 
 '    SPDX-License-Identifier: Apache-2.0
 
+Imports Microsoft.VisualBasic.Text
+
 Namespace Tiff.Tags
+
     ''' <summary>
     ''' Represents a raw un-parsed tag as read from a TIFF IFD
     ''' </summary>
-    Public Class Tag
-        Inherits TagBase
+    Public Class Tag : Inherits TagBase
+
         Public Overrides Function GetString() As String
             Return "0x" & RawValue.PrettyPrint()
         End Function
@@ -34,8 +37,8 @@ Namespace Tiff.Tags
     ''' Represents a parsed tag with a defined type and fetched pointer values (if any).
     ''' </summary>
     ''' <typeparam name="T"></typeparam>
-    Public Class TagType(Of T)
-        Inherits Tag
+    Public Class TagType(Of T) : Inherits Tag
+
         ''' <summary>
         ''' Attempts to fetch a value and cast it to the given type.
         ''' </summary>
@@ -50,7 +53,7 @@ Namespace Tiff.Tags
             Dim valueStr = String.Empty
             Select Case DataType
                 Case TagDataType.ASCII
-                    valueStr = New String(CType(CType(CObj(Enumerable.ToArray(Values)), Char()), Char())).Replace(Microsoft.VisualBasic.Constants.vbNullChar, "")
+                    valueStr = New String(CType(CType(CObj(Enumerable.ToArray(Values)), Char()), Char())).Replace(ASCII.NUL, "")
                 Case TagDataType.Byte, TagDataType.Undefined
                     valueStr = CType(CObj(Enumerable.ToArray(Values)), Byte()).PrettyPrint()
                 Case Else
@@ -60,6 +63,7 @@ Namespace Tiff.Tags
         End Function
 
         Public Property Values As T() = New T(-1) {}
+
         Public Overrides Function ToString() As String
             Dim tagName As String
             If [Enum].IsDefined(GetType(BaselineTags), ID) Then
