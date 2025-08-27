@@ -41,7 +41,7 @@ Namespace Tiff
         End Sub
 
         Public Sub New(stream As Stream)
-            Using tiffStream = New TiffStreamReader(stream)
+            Using tiffStream As New TiffStreamReader(stream)
                 LoadImage(tiffStream)
             End Using
         End Sub

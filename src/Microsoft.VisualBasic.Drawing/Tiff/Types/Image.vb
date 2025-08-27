@@ -34,7 +34,7 @@ Namespace Tiff.Types
             Dim rowsPerStrip As Integer = 32 ' 自定义行数
             Dim stripCount As Integer = CInt(std.Ceiling(totalRows / CDbl(rowsPerStrip)))
             Dim currentOffset As UInteger = 0
-            Dim stripByteCounts As New List(Of Integer)
+            Dim stripByteCounts As New List(Of UInteger)
             Dim stripOffsets As New List(Of UInteger)
 
             For i As Integer = 0 To stripCount - 1
@@ -55,7 +55,7 @@ Namespace Tiff.Types
                 currentOffset += CUInt(stripBytes) ' 更新下一条带偏移
             Next
 
-            Dim lengthTag As New TagType(Of Integer) With {
+            Dim lengthTag As New TagType(Of UInteger) With {
                 .ID = CUShort(BaselineTags.StripByteCounts),
                 .Length = stripCount,
                 .DataType = TagDataType.SLong,
