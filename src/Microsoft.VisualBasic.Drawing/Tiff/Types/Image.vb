@@ -34,6 +34,7 @@ Namespace Tiff.Types
             Dim rowsPerStrip As Integer = 32 ' 自定义行数
             Dim stripCount As Integer = CInt(std.Ceiling(totalRows / CDbl(rowsPerStrip)))
             Dim currentOffset As UInteger = 0
+            Dim stripByteCounts As New List(Of UInteger)
 
             For i As Integer = 0 To stripCount - 1
                 Dim startRow As Integer = i * rowsPerStrip
@@ -49,11 +50,19 @@ Namespace Tiff.Types
                     .StripOffset = currentOffset ' 临时占位，实际偏移需在写入文件时计算
                 })
                 currentOffset += CUInt(stripBytes) ' 更新下一条带偏移
+                stripByteCounts.Add(stripBytes)
             Next
+
+            Dim lengthTag As New TagType(Of UInteger) With {
+                .ID = CUShort(BaselineTags.StripByteCounts),
+                .Length = stripCount,
+                .DataType = TagDataType.Long,
+                .Values = stripByteCounts.ToArray
+            }
 
             Return New Image With {
                 .Strips = strips,
-                .Tags = New List(Of Tag)
+                .Tags = New List(Of Tag) From {lengthTag}
             }
         End Function
 
