@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports SkiaSharp
 Imports Image = Microsoft.VisualBasic.Drawing.Tiff.Types.Image
@@ -12,6 +13,18 @@ Public Module TIFFTools
 
         For Each layer As SKBitmap In layers
             Call tiff.Images.Add(layer.ToImage)
+        Next
+
+        Call tiff.Save(file)
+        Call file.Flush()
+    End Sub
+
+    <Extension>
+    Public Sub SaveTiff(layers As IEnumerable(Of Microsoft.VisualBasic.Imaging.Image), file As Stream)
+        Dim tiff As New Tiff.Tiff()
+
+        For Each layer As Microsoft.VisualBasic.Imaging.Image In layers
+            Call tiff.Images.Add(Image.FromBitmap(CType(layer, Bitmap).MemoryBuffer))
         Next
 
         Call tiff.Save(file)

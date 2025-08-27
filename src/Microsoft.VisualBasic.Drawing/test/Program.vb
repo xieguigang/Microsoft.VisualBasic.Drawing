@@ -12,6 +12,7 @@ Module Program
 
 
     Sub Main(args As String())
+        Call tifftest.run()
         Call Main22222({"G:\mzkit\Rscript\Library\mzkit_app\test\msn_peaks\umap.png"})
         Call Pause()
 
