@@ -78,9 +78,15 @@ Namespace Tiff
 
             Dim lengthTag = ifd.tags.Where(Function(t) t.ID = CUShort(BaselineTags.StripByteCounts)).FirstOrDefault()
             Dim offsetTag = ifd.tags.Where(Function(t) t.ID = CUShort(BaselineTags.StripOffsets)).FirstOrDefault()
-            If offsetTag.Length <> stripCount OrElse lengthTag.Length <> stripCount Then
-                Throw New ArgumentException("The given IFD does not contain valid tags for StripByteCounts or StripOffsets. Data may be corrupt.")
+
+            If offsetTag Is Nothing OrElse
+                lengthTag Is Nothing OrElse
+                offsetTag.Length <> stripCount OrElse
+                lengthTag.Length <> stripCount Then
+
+                Throw New InvalidDataException("The given IFD does not contain valid tags for StripByteCounts or StripOffsets. Data may be corrupt.")
             End If
+
             lengthTag = MyBase.ParseTag(lengthTag)
             offsetTag = MyBase.ParseTag(offsetTag)
 
