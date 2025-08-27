@@ -21,25 +21,25 @@ Imports Microsoft.VisualBasic.Drawing.Tiff.Tags
 Imports Microsoft.VisualBasic.Drawing.Tiff.Types
 
 Namespace Tiff
-    Public Class TiffStreamReader
-        Inherits TiffStreamBase
+
+    Public Class TiffStreamReader : Inherits TiffStreamBase
+
         ''' <summary>
         ''' Initializes a new TiffStream.
         ''' </summary>
         ''' <param name="forceBigEndian">Optionally, force TiffStream to use Big-Endian mode for writing a new TIFF.</param>
         Public Sub New(Optional forceBigEndian As Boolean = False)
-            _Stream = New MemoryStream()
-            IsBigEndian = forceBigEndian
-            _IsWritable = True
+            Call Me.New(New MemoryStream, forceBigEndian)
         End Sub
 
         ''' <summary>
         ''' Initializes a new TiffStream from the given stream.
         ''' </summary>
         ''' <param name="stream"></param>
-        Public Sub New(stream As Stream)
+        Public Sub New(stream As Stream, Optional forceBigEndian As Boolean = False)
             _Stream = stream
             _IsWritable = _Stream.CanWrite
+            IsBigEndian = forceBigEndian
         End Sub
 
         Public Function ReadImage(offset As UInteger) As (image As Image, offset As UInteger)

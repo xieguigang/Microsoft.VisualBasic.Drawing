@@ -1,7 +1,8 @@
 ﻿Imports System.IO
 Imports System.Runtime.CompilerServices
-Imports Microsoft.VisualBasic.Drawing.Tiff.Types
+Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports SkiaSharp
+Imports Image = Microsoft.VisualBasic.Drawing.Tiff.Types.Image
 
 Public Module TIFFTools
 
@@ -19,8 +20,8 @@ Public Module TIFFTools
 
     <Extension>
     Private Function ToImage(bmp As SKBitmap) As Image
-        Dim image As New Image
-
-        Return image
+        Dim skimg As New SkiaImage(bmp)
+        Dim buffer As BitmapBuffer = skimg.ToBitmap.MemoryBuffer
+        Return Image.FromBitmap(buffer)
     End Function
 End Module

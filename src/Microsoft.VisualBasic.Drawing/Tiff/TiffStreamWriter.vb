@@ -24,9 +24,9 @@ Namespace Tiff
     ''' <summary>
     ''' Supports basic read/write functionality for a TIFF stream.
     ''' </summary>
-    Public Class TiffStreamWriter
-        Inherits TiffStreamReader
+    Public Class TiffStreamWriter : Inherits TiffStreamReader
         Implements IDisposable
+
         ''' <summary>
         ''' Initializes a new TiffStream.
         ''' </summary>
@@ -35,13 +35,12 @@ Namespace Tiff
             MyBase.New(forceBigEndian)
         End Sub
 
-
         ''' <summary>
         ''' Initializes a new TiffStream from the given stream.
         ''' </summary>
         ''' <param name="stream"></param>
-        Public Sub New(stream As Stream)
-            MyBase.New(stream)
+        Public Sub New(stream As Stream, Optional forceBigEndian As Boolean = False)
+            MyBase.New(stream, forceBigEndian)
         End Sub
 
 #Region "image I/O"
