@@ -24,9 +24,9 @@ Namespace Tiff
     ''' <summary>
     ''' Supports basic read/write functionality for a TIFF stream.
     ''' </summary>
-    Public Class TiffStreamWriter
-        Inherits TiffStreamReader
+    Public Class TiffStreamWriter : Inherits TiffStreamReader
         Implements IDisposable
+
         ''' <summary>
         ''' Initializes a new TiffStream.
         ''' </summary>
@@ -35,13 +35,12 @@ Namespace Tiff
             MyBase.New(forceBigEndian)
         End Sub
 
-
         ''' <summary>
         ''' Initializes a new TiffStream from the given stream.
         ''' </summary>
         ''' <param name="stream"></param>
-        Public Sub New(stream As Stream)
-            MyBase.New(stream)
+        Public Sub New(stream As Stream, Optional forceBigEndian As Boolean = False)
+            MyBase.New(stream, forceBigEndian)
         End Sub
 
 #Region "image I/O"
@@ -79,9 +78,15 @@ Namespace Tiff
 
             Dim lengthTag = ifd.tags.Where(Function(t) t.ID = CUShort(BaselineTags.StripByteCounts)).FirstOrDefault()
             Dim offsetTag = ifd.tags.Where(Function(t) t.ID = CUShort(BaselineTags.StripOffsets)).FirstOrDefault()
-            If offsetTag.Length <> stripCount OrElse lengthTag.Length <> stripCount Then
-                Throw New ArgumentException("The given IFD does not contain valid tags for StripByteCounts or StripOffsets. Data may be corrupt.")
+
+            If offsetTag Is Nothing OrElse
+                lengthTag Is Nothing OrElse
+                offsetTag.Length <> stripCount OrElse
+                lengthTag.Length <> stripCount Then
+
+                Throw New InvalidDataException("The given IFD does not contain valid tags for StripByteCounts or StripOffsets. Data may be corrupt.")
             End If
+
             lengthTag = MyBase.ParseTag(lengthTag)
             offsetTag = MyBase.ParseTag(offsetTag)
 

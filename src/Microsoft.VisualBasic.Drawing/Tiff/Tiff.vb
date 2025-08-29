@@ -41,7 +41,7 @@ Namespace Tiff
         End Sub
 
         Public Sub New(stream As Stream)
-            Using tiffStream = New TiffStreamReader(stream)
+            Using tiffStream As New TiffStreamReader(stream)
                 LoadImage(tiffStream)
             End Using
         End Sub
@@ -74,24 +74,14 @@ Namespace Tiff
         End Sub
 
         Public Sub Save(stream As Stream)
-            Using tiffStream = New TiffStreamWriter(forceBigEndian:=IsBigEndian)
-                WriteTo(tiffStream)
-
-
-                tiffStream.Seek(0, SeekOrigin.Begin)
-                tiffStream.CopyTo(stream)
+            Using tiffStream = New TiffStreamWriter(stream, forceBigEndian:=IsBigEndian)
+                Call WriteTo(tiffStream)
+                Call stream.Flush()
             End Using
         End Sub
 
         Public Sub Save(fileName As String)
-            Using tiffStream = New TiffStreamWriter(forceBigEndian:=IsBigEndian)
-                WriteTo(tiffStream)
-
-                Using stream = New FileStream(fileName, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read)
-                    tiffStream.Seek(0, SeekOrigin.Begin)
-                    tiffStream.CopyTo(stream)
-                End Using
-            End Using
+            Call Save(fileName.Open(FileMode.OpenOrCreate, doClear:=True, [readOnly]:=False))
         End Sub
 
         ''' <summary>

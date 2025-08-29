@@ -66,9 +66,14 @@ Namespace Tiff.Types
     '''  For deeper technical details, refer to the TIFF 6.0 specification or libraries like `libtiff`/`tifffile`.
     ''' </summary>
     Public Class Strip
+
         Public Property ImageData As Byte()
         Public Property StripNumber As UShort
         Public Property StripOffset As UInteger
+
+        Public Overrides Function ToString() As String
+            Return $"[#{StripNumber}] &{StripOffset.ToHexString} - " & StringFormats.Lanudry(bytes:=ImageData.Length)
+        End Function
 
         Public Function GetHash() As String
             Dim md5 = Cryptography.MD5.Create()
