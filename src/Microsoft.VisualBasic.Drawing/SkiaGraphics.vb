@@ -19,6 +19,10 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     Sub New(width As Integer, height As Integer, dpi As Integer)
         Call MyBase.New(dpi)
 
+        If width < 0 OrElse height < 0 Then
+            Throw New InvalidDataException($"negative canvas size is not valid! (width:{width}, height:{height})")
+        End If
+
         Size = New Size(width, height)
         canvasRect = SKRect.Create(width, height)
     End Sub
