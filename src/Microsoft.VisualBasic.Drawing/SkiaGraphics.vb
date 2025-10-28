@@ -1,9 +1,11 @@
 ﻿Imports System.Drawing
 Imports System.IO
 Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.ComponentModel.Algorithm.base
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Math2D
+Imports Microsoft.VisualBasic.Language.UnixBash
 Imports SkiaSharp
 
 ''' <summary>
@@ -56,7 +58,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
             If s Is Nothing Then
                 s = ""
-                Call $"the given string for drawing is nothing at stack trace: {vbCrLf}{Environment.StackTrace}".Warning
+                Call $"the given string for drawing is nothing at stack trace: {vbCrLf}{Environment.StackTrace}".warning
             End If
 
             Call textPain.MeasureText(s, textBounds)
@@ -356,11 +358,21 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawLines(pen As Pen, points() As PointF)
-        Throw New NotImplementedException()
+        Dim pt1 As PointF
+        Dim pt2 As PointF
+        Dim stroke As SKPathEffect = pen.LineDashStyle
+
+        For Each line As SlideWindow(Of PointF) In points.SlideWindows(2)
+            pt1 = line(0)
+            pt2 = line(1)
+
+            Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width, stroke)
+        Next
     End Sub
 
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawLines(pen As Pen, points() As Point)
-        Throw New NotImplementedException()
+        Call DrawLines(pen, points.Select(Function(p) New PointF(p.X, p.Y)).ToArray)
     End Sub
 
     Public Overrides Sub DrawPie(pen As Pen, rect As Rectangle, startAngle As Single, sweepAngle As Single)
@@ -380,7 +392,11 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawCircle(center As PointF, fill As Color, stroke As Pen, radius As Single)
-        Throw New NotImplementedException()
+        Call FillEllipse(New SolidBrush(fill), New RectangleF(center.X - radius, center.Y - radius, radius, radius))
+
+        If stroke IsNot Nothing Then
+            Call DrawEllipse(stroke, New RectangleF(center.X - radius, center.Y - radius, radius, radius))
+        End If
     End Sub
 
     Public Overrides Sub DrawPolygon(pen As Pen, points() As PointF)
