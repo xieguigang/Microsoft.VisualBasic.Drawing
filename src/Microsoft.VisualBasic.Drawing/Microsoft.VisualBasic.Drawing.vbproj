@@ -12,6 +12,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Configurations>Debug;Release;MEMI-Desktop;nuget_release</Configurations>
+    <PackageIcon>logo-knot.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
@@ -113,10 +114,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="3.119.1" />
-    <PackageReference Include="SkiaSharp.Extended" Version="3.0.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
+    <None Include="..\..\logo-knot.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="3.119.2-preview.1" />
+    <PackageReference Include="SkiaSharp.Extended" Version="3.1.0-preview.3" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.2-preview.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.2-preview.1" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
     <PackageReference Include="System.Buffers" Version="4.6.1" />
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
