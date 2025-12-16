@@ -8,6 +8,7 @@
     <StartupObject>SkiaWinForms.My.MyApplication</StartupObject>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;nuget_release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

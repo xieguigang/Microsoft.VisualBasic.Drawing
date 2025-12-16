@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.6.33829.357
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11304.174 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Microsoft.VisualBasic.Drawing", "Microsoft.VisualBasic.Drawing\Microsoft.VisualBasic.Drawing.vbproj", "{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}"
 EndProject
@@ -121,8 +121,8 @@ Global
 		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.NPSearch|x86.Build.0 = Release|Any CPU
 		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|Any CPU.Build.0 = Release|Any CPU
-		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|x64.ActiveCfg = Release|x64
-		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|x64.Build.0 = Release|x64
+		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|x64.ActiveCfg = nuget_release|x64
+		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|x64.Build.0 = nuget_release|x64
 		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|x86.ActiveCfg = Release|Any CPU
 		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.nuget_release|x86.Build.0 = Release|Any CPU
 		{8C72D521-9529-43DD-8BC9-9B6C0C9B8E8D}.PlantMAT|Any CPU.ActiveCfg = Release|Any CPU
@@ -409,8 +409,8 @@ Global
 		{91584DDC-76E9-467C-8596-AC668F739B94}.NPSearch|x86.Build.0 = Debug|Any CPU
 		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|Any CPU.ActiveCfg = Release|Any CPU
 		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|Any CPU.Build.0 = Release|Any CPU
-		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|x64.ActiveCfg = Release|x64
-		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|x64.Build.0 = Release|x64
+		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|x64.ActiveCfg = nuget_release|x64
+		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|x64.Build.0 = nuget_release|x64
 		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|x86.ActiveCfg = Release|Any CPU
 		{91584DDC-76E9-467C-8596-AC668F739B94}.nuget_release|x86.Build.0 = Release|Any CPU
 		{91584DDC-76E9-467C-8596-AC668F739B94}.PlantMAT|Any CPU.ActiveCfg = Debug|Any CPU
@@ -481,8 +481,8 @@ Global
 		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.NPSearch|x86.Build.0 = Debug|Any CPU
 		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|Any CPU.Build.0 = Release|Any CPU
-		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|x64.ActiveCfg = Release|x64
-		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|x64.Build.0 = Release|x64
+		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|x64.ActiveCfg = Debug|x64
+		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|x64.Build.0 = Debug|x64
 		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|x86.ActiveCfg = Release|Any CPU
 		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.nuget_release|x86.Build.0 = Release|Any CPU
 		{2CA15A67-950D-4FEA-9E58-178DBCCD62B6}.PlantMAT|Any CPU.ActiveCfg = Debug|Any CPU
@@ -697,8 +697,8 @@ Global
 		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.NPSearch|x86.Build.0 = Debug|Any CPU
 		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|Any CPU.ActiveCfg = Debug|Any CPU
 		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|Any CPU.Build.0 = Debug|Any CPU
-		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|x64.ActiveCfg = Debug|x64
-		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|x64.Build.0 = Debug|x64
+		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|x64.ActiveCfg = nuget_release|x64
+		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|x64.Build.0 = nuget_release|x64
 		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|x86.ActiveCfg = Debug|Any CPU
 		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.nuget_release|x86.Build.0 = Debug|Any CPU
 		{1FD16D1B-AED3-4A16-A8BB-0B9768FD269D}.PlantMAT|Any CPU.ActiveCfg = Debug|Any CPU
@@ -769,8 +769,8 @@ Global
 		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.NPSearch|x86.Build.0 = Debug|Any CPU
 		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|Any CPU.Build.0 = Debug|Any CPU
-		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|x64.ActiveCfg = Debug|Any CPU
-		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|x64.Build.0 = Debug|Any CPU
+		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|x64.ActiveCfg = nuget_release|x64
+		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|x64.Build.0 = nuget_release|x64
 		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|x86.ActiveCfg = Debug|Any CPU
 		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.nuget_release|x86.Build.0 = Debug|Any CPU
 		{C2AA4861-5EA6-4F26-B9E1-FA50E4E5B506}.PlantMAT|Any CPU.ActiveCfg = Debug|Any CPU
@@ -841,8 +841,8 @@ Global
 		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.NPSearch|x86.Build.0 = Debug|Any CPU
 		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|Any CPU.Build.0 = Release|Any CPU
-		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|x64.ActiveCfg = Release|Any CPU
-		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|x64.Build.0 = Release|Any CPU
+		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|x64.ActiveCfg = Release|x64
+		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|x64.Build.0 = Release|x64
 		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|x86.ActiveCfg = Release|Any CPU
 		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.nuget_release|x86.Build.0 = Release|Any CPU
 		{D4B30946-D487-401E-93A3-B7428F6A4D2B}.PlantMAT|Any CPU.ActiveCfg = Release|Any CPU
