@@ -14,6 +14,7 @@
     <Configurations>Debug;Release;MEMI-Desktop;nuget_release</Configurations>
     <PackageIcon>logo-knot.png</PackageIcon>
     <PackageTags>skiasharp;</PackageTags>
+    <PackageOutputPath>../../.nuget</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
