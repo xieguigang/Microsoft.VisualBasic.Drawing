@@ -1,4 +1,4 @@
-let nupkg_list  = list.files(relative_work(), pattern = "*.nupkg");
+let nupkg_list  = list.files(relative_work("../.nuget/"), pattern = "*.nupkg");
 let api_key     = ?"--key" || stop("nuget api key for publish the package must be provided!");
 let sourceName  = ?"--source" || "xieguigang_NuGet";
 
