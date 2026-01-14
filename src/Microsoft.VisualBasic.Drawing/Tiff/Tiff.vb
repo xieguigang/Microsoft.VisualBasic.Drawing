@@ -93,7 +93,7 @@ Namespace Tiff
             Dim offset = CUInt(tiffStream.SeekWord(0, SeekOrigin.End))
             If offset Mod 2 > 0 Then
                 tiffStream.WriteByte(&H0)
-                offset += 1
+                offset += 1UI
             End If ' advance if not on word boundary
             Return offset
         End Function

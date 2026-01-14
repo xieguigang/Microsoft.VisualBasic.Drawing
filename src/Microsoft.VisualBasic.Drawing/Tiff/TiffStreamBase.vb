@@ -46,9 +46,10 @@ Namespace Tiff
         End Sub
 
         Public Function ToArray() As Byte()
+            Dim bufferLen As Integer = CInt(_Stream.Length)
             _Stream.Seek(0, SeekOrigin.Begin)
-            Dim bytes = New Byte(_Stream.Length - 1) {}
-            _Stream.Read(bytes, 0, _Stream.Length)
+            Dim bytes = New Byte(bufferLen - 1) {}
+            _Stream.Read(bytes, 0, bufferLen)
             Return bytes
         End Function
 

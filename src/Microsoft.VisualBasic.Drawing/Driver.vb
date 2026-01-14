@@ -49,7 +49,7 @@ Public Module SkiaDriver
             Else
                 Using s As Stream = New MemoryStream
                     Call background.Save(s, ImageFormats.Png)
-                    Call s.Seek(0, Scan0)
+                    Call s.Seek(0, SeekOrigin.Begin)
                     Call s.Flush()
 
                     bitmap = SKBitmap.Decode(s)

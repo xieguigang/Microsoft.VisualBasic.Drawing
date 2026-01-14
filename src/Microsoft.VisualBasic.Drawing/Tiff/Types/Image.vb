@@ -51,19 +51,19 @@ Namespace Tiff.Types
                     .StripOffset = currentOffset ' 临时占位，实际偏移需在写入文件时计算
                 })
                 stripOffsets.Add(currentOffset)
-                stripByteCounts.Add(stripBytes)
+                stripByteCounts.Add(CUInt(stripBytes))
                 currentOffset += CUInt(stripBytes) ' 更新下一条带偏移
             Next
 
             Dim lengthTag As New TagType(Of UInteger) With {
                 .ID = CUShort(BaselineTags.StripByteCounts),
-                .Length = stripCount,
+                .Length = CUInt(stripCount),
                 .DataType = TagDataType.SLong,
                 .Values = stripByteCounts.ToArray
             }
             Dim offsetTag As New TagType(Of UInteger) With {
                 .ID = CUShort(BaselineTags.StripOffsets),
-                .Length = stripCount,
+                .Length = CUInt(stripCount),
                 .DataType = TagDataType.Long,
                 .Values = stripOffsets.ToArray
             }

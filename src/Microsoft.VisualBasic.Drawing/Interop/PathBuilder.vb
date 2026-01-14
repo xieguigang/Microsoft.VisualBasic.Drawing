@@ -1,5 +1,6 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.GraphicsPath
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Math
 Imports SkiaSharp
@@ -12,14 +13,14 @@ Module PathBuilder
 
         For Each op As GraphicsPath.op In path.AsEnumerable
             Select Case op.GetType
-                Case GetType(GraphicsPath.op_AddArc) : Call skia.AddArc(op)
-                Case GetType(GraphicsPath.op_AddBezier) : Call skia.AddBezier(op)
-                Case GetType(GraphicsPath.op_AddCurve) : Call skia.AddCurve(op)
-                Case GetType(GraphicsPath.op_AddEllipse) : Call skia.AddEllipse(op)
-                Case GetType(GraphicsPath.op_AddLine) : Call skia.AddLine(op)
-                Case GetType(GraphicsPath.op_AddLines) : Call skia.AddLines(op)
-                Case GetType(GraphicsPath.op_AddPolygon) : Call skia.AddPolygon(op)
-                Case GetType(GraphicsPath.op_AddRectangle) : Call skia.AddRectangle(op)
+                Case GetType(GraphicsPath.op_AddArc) : Call skia.AddArc(DirectCast(op, op_AddArc))
+                Case GetType(GraphicsPath.op_AddBezier) : Call skia.AddBezier(DirectCast(op, op_AddBezier))
+                Case GetType(GraphicsPath.op_AddCurve) : Call skia.AddCurve(DirectCast(op, op_AddCurve))
+                Case GetType(GraphicsPath.op_AddEllipse) : Call skia.AddEllipse(DirectCast(op, op_AddEllipse))
+                Case GetType(GraphicsPath.op_AddLine) : Call skia.AddLine(DirectCast(op, op_AddLine))
+                Case GetType(GraphicsPath.op_AddLines) : Call skia.AddLines(DirectCast(op, op_AddLines))
+                Case GetType(GraphicsPath.op_AddPolygon) : Call skia.AddPolygon(DirectCast(op, op_AddPolygon))
+                Case GetType(GraphicsPath.op_AddRectangle) : Call skia.AddRectangle(DirectCast(op, op_AddRectangle))
 
                 Case GetType(GraphicsPath.op_Reset) : Call skia.Reset()
                 Case GetType(GraphicsPath.op_CloseFigure) : Call skia.Close()
