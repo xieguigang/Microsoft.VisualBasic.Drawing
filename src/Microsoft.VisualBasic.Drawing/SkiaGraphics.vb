@@ -5,7 +5,6 @@ Imports Microsoft.VisualBasic.ComponentModel.Algorithm.base
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Math2D
-Imports Microsoft.VisualBasic.Language.UnixBash
 Imports SkiaSharp
 
 ''' <summary>
@@ -141,10 +140,10 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             Dim x = path.xpoints
             Dim y = path.ypoints
 
-            Call skpath.MoveTo(x(0), y(0))
+            Call skpath.MoveTo(CSng(x(0)), CSng(y(0)))
 
             For i As Integer = 1 To x.Length - 1
-                Call skpath.LineTo(x(i), y(i))
+                Call skpath.LineTo(CSng(x(i)), CSng(y(i)))
             Next
 
             Call skpath.Close()

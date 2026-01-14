@@ -85,8 +85,8 @@ Module PathBuilder
 
         Call skia.ArcTo(
             New SKRect(arc.rect.Left, arc.rect.Top, arc.rect.Right, arc.rect.Bottom),
-            startAngleRad,
-            sweepAngleRad,
+            CSng(startAngleRad),
+            CSng(sweepAngleRad),
             False
         )
     End Sub

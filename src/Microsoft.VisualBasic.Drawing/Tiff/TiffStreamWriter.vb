@@ -151,7 +151,8 @@ Namespace Tiff
         Public Sub WriteTagPlaceholder(tag As Tag)
             Dim offset = _Stream.Position
             WriteWord(tag.ID)
-            WriteWord(tag.DataType)
+            ' cast [enum] DataType as ushort
+            WriteWord(CUShort(tag.DataType))
             WriteDWord(tag.Length)
             WriteDWord(0)
 
@@ -253,25 +254,25 @@ Namespace Tiff
 
         Private Sub WriteValue(Of T As Structure)(value As T)
             If GetType(T) Is GetType(Byte) Then
-                MyBase.WriteByte(CObj(value))
+                MyBase.WriteByte(CByte(CObj(value)))
             ElseIf GetType(T) Is GetType(Char) Then
-                MyBase.WriteByte(Microsoft.VisualBasic.AscW(CChar(CObj(value))))
+                MyBase.WriteByte(CByte(Strings.AscW(CChar(CObj(value)))))
             ElseIf GetType(T) Is GetType(Double) Then
-                WriteDouble(CObj(value))
+                WriteDouble(CDbl(CObj(value)))
             ElseIf GetType(T) Is GetType(Single) Then
-                WriteFloat(CObj(value))
+                WriteFloat(CSng(CObj(value)))
             ElseIf GetType(T) Is GetType(UInteger) Then
-                WriteDWord(CObj(value))
+                WriteDWord(CUInt(CObj(value)))
             ElseIf GetType(T) Is GetType(Integer) Then
-                WriteLong(CObj(value))
+                WriteLong(CInt(CObj(value)))
             ElseIf GetType(T) Is GetType(Short) Then
-                WriteShort(CObj(value))
+                WriteShort(CShort(CObj(value)))
             ElseIf GetType(T) Is GetType(UShort) Then
-                WriteWord(CObj(value))
+                WriteWord(CUShort(CObj(value)))
             ElseIf GetType(T) Is GetType(Rational) Then
-                WriteRational(CObj(value))
+                WriteRational(CType(CObj(value), Rational))
             ElseIf GetType(T) Is GetType(SRational) Then
-                WriteSRational(CObj(value))
+                WriteSRational(CType(CObj(value), SRational))
             Else
                 Throw New ArgumentException($"Can't write value of type {GetType(T).ToString()}")
             End If
