@@ -7,7 +7,11 @@ Public Module SkiaTools
 
     <Extension>
     Public Function ConvertToPngFile(svg As SkiaSharp.Extended.Svg.SKSvg) As SKImage
-        Using bitmap As New SKBitmap(svg.Picture.CullRect.Width, svg.Picture.CullRect.Height)
+        Dim box = svg.Picture.CullRect
+        Dim w As Integer = CInt(box.Width)
+        Dim h As Integer = CInt(box.Height)
+
+        Using bitmap As New SKBitmap(w, h)
             Using canvas As New SKCanvas(bitmap)
                 Call canvas.DrawPicture(svg.Picture)
                 Return SKImage.FromBitmap(bitmap)

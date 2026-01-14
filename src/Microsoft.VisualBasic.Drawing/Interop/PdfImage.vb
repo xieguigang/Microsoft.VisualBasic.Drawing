@@ -18,12 +18,11 @@ Public Class PdfImage : Inherits GraphicsData
         End Get
     End Property
 
-    Dim g As PdfGraphics
+    Dim img As PdfGraphics
 
     Public Sub New(img As Object, size As Size, padding As Padding)
         MyBase.New(img, size, padding)
-
-        g = img
+        Me.img = DirectCast(img, PdfGraphics)
     End Sub
 
     Public Overrides Function GetDataURI() As DataURI
@@ -43,7 +42,7 @@ Public Class PdfImage : Inherits GraphicsData
     End Function
 
     Public Overrides Function Save(out As Stream) As Boolean
-        Call g.Save(out)
+        Call img.Save(out)
         Return True
     End Function
 End Class

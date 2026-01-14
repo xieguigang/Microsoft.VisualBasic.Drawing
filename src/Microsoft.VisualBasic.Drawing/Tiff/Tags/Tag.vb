@@ -46,7 +46,7 @@ Namespace Tiff.Tags
         ''' <param name="index"></param>
         ''' <returns></returns>
         Public Overrides Function GetValue(Of V)(index As Integer) As V
-            Return CObj(Values(index))
+            Return CType(CObj(Values(index)), V)
         End Function
 
         Public Overrides Function GetString() As String

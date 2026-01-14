@@ -92,20 +92,21 @@ Namespace Tiff
             offsets = Me.ParseTag(offsets)
             byteLengths = Me.ParseTag(byteLengths)
 
-            Dim strips = New Strip(offsets.Length - 1) {}
+            Dim stripSize As Integer = CInt(offsets.Length)
+            Dim strips = New Strip(stripSize - 1) {}
 
-            For i As UShort = 0 To offsets.Length - 1
+            For i As Integer = 0 To stripSize - 1
                 Dim offset = offsets.GetValue(Of UInteger)(i)
-                Dim len = byteLengths.GetValue(Of UInteger)(i)
+                Dim len As Integer = CInt(byteLengths.GetValue(Of UInteger)(i))
                 Dim bytes = New Byte(len - 1) {}
                 _Stream.Seek(offset, SeekOrigin.Begin)
                 _Stream.Read(bytes, 0, CInt(len))
 
                 strips(i) = New Strip With {
-    .ImageData = bytes,
-    .StripNumber = i,
-    .StripOffset = offset
-}
+                    .ImageData = bytes,
+                    .StripNumber = CUShort(i),
+                    .StripOffset = offset
+                }
             Next
 
             Return strips
@@ -182,15 +183,15 @@ Namespace Tiff
 
         Protected Function ParseTag(Of T As Structure)(tag As Tag) As TagType(Of T)
             Dim startingOffet = _Stream.Position
-
-            Dim parsedTag = New TagType(Of T)() With {
-    .ID = tag.ID,
-    .Length = tag.Length,
-    .Offset = tag.Offset,
-    .RawValue = tag.RawValue,
-    .DataType = tag.DataType,
-    .Values = New T(tag.Length - 1) {}
-}
+            Dim len As Integer = CInt(tag.Length)
+            Dim parsedTag As New TagType(Of T)() With {
+                .ID = tag.ID,
+                .Length = tag.Length,
+                .Offset = tag.Offset,
+                .RawValue = tag.RawValue,
+                .DataType = tag.DataType,
+                .Values = New T(len - 1) {}
+            }
 
             ' seek data portion of the raw tag
             _Stream.Seek(tag.Offset + 8, SeekOrigin.Begin)
@@ -203,7 +204,7 @@ Namespace Tiff
             End If
 
             ' read actual values into tag.Values
-            For i As Integer = 0 To tag.Length - 1
+            For i As Integer = 0 To len - 1
                 parsedTag.Values(i) = ReadValue(Of T)()
             Next
 
@@ -267,7 +268,7 @@ Namespace Tiff
             End If
 
             If obj IsNot Nothing Then
-                Return obj
+                Return CType(obj, T)
             Else
                 Throw New ArgumentException($"Can't read value of type {GetType(T).ToString()}")
             End If
