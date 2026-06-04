@@ -1,10 +1,7 @@
-﻿Imports System
-Imports System.Runtime.Serialization
+﻿Namespace Tiff
 
-Namespace Tiff
+    Public Class TiffWriteException : Inherits Exception
 
-    Public Class TiffWriteException
-        Inherits Exception
         Public Sub New()
         End Sub
 
@@ -14,10 +11,6 @@ Namespace Tiff
 
         Public Sub New(message As String, innerException As Exception)
             MyBase.New(message, innerException)
-        End Sub
-
-        Protected Sub New(info As SerializationInfo, context As StreamingContext)
-            MyBase.New(info, context)
         End Sub
     End Class
 End Namespace
