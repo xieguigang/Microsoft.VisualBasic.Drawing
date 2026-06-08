@@ -12,7 +12,7 @@ Imports Pen = Microsoft.VisualBasic.Imaging.Pen
 ''' <summary>
 ''' Helper for interop with gdi+ in .net-windows
 ''' </summary>
-Public Module Interop
+Public Module SkiaInterop
 
     <Extension>
     Public Function AsRectangle(rect As RectangleF) As SKRect
