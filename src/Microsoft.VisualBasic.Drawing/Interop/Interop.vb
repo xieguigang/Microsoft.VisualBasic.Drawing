@@ -3,6 +3,11 @@ Imports System.IO
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports SkiaSharp
+Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
+Imports Font = Microsoft.VisualBasic.Imaging.Font
+Imports FontStyle = Microsoft.VisualBasic.Imaging.FontStyle
+Imports Image = Microsoft.VisualBasic.Imaging.Image
+Imports Pen = Microsoft.VisualBasic.Imaging.Pen
 
 ''' <summary>
 ''' Helper for interop with gdi+ in .net-windows

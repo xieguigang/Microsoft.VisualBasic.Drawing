@@ -6,6 +6,8 @@ Imports Microsoft.VisualBasic.Imaging.SVG
 Imports Microsoft.VisualBasic.Imaging.SVG.XML
 Imports Microsoft.VisualBasic.MIME.Html.CSS
 Imports SkiaSharp
+Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
+Imports Image = Microsoft.VisualBasic.Imaging.Image
 
 Public Module SkiaDriver
 

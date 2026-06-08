@@ -4,6 +4,8 @@ Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
+Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
+Imports Image = Microsoft.VisualBasic.Imaging.Image
 
 ''' <summary>
 ''' A wrapper of the skia sharp canvas object for raster image drawing
