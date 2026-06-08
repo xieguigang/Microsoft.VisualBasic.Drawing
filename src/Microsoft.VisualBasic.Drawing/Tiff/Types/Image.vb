@@ -28,7 +28,7 @@ Namespace Tiff.Types
         Public Property SubImages As New List(Of Image)()
         Public Property Exif As New List(Of Tag)
 
-        Public Shared Function FromBitmap(bitmap As BitmapBuffer) As Image
+        Public Shared Function FromBitmap(bitmap As VisualBasic.Imaging.BitmapImage.BitmapBuffer) As Image
             Dim strips As New List(Of Strip)
             Dim totalRows As Integer = bitmap.Height
             Dim rowsPerStrip As Integer = 32 ' 自定义行数

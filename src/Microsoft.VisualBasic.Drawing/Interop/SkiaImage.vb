@@ -69,7 +69,7 @@ Public Class SkiaImage : Inherits Image
 
     Public Shared Function SaveRasterImage(image As SKBitmap, s As Stream, format As ImageFormats) As Boolean
         If format = ImageFormats.Bmp Then
-            Dim m_data As New BitmapBuffer(image.Bytes, New Size(image.Width, image.Height), channel:=4)
+            Dim m_data As New BitmapImage.BitmapBuffer(image.Bytes, New Size(image.Width, image.Height), channel:=4)
             Dim bitmap As New Bitmap(m_data)
 
             Try
@@ -145,7 +145,7 @@ Public Class SkiaImage : Inherits Image
     ''' <returns></returns>
     Protected Overrides Function ConvertToBitmapStream() As MemoryStream
         Dim s As New MemoryStream
-        Dim m_data As New BitmapBuffer(Image.Bytes, Size, channel:=4)
+        Dim m_data As New BitmapImage.BitmapBuffer(Image.Bytes, Size, channel:=4)
         Dim bitmap As New Bitmap(m_data)
         Call bitmap.Save(s, ImageFormats.Bmp)
         Call s.Seek(Scan0, SeekOrigin.Begin)
@@ -161,7 +161,7 @@ Public Class SkiaImage : Inherits Image
     ''' keeps the transparent information of the skia image, and convert the skia image to a memory bitmap
     ''' </summary>
     ''' <returns></returns>
-    Public Overrides Function GetMemoryBitmap() As BitmapBuffer Implements IRasterMemory.GetMemoryBuffer
-        Return New BitmapBuffer(Image.Bytes, Size, channel:=4)
+    Public Overrides Function GetMemoryBitmap() As BitmapImage.BitmapBuffer Implements IRasterMemory.GetMemoryBuffer
+        Return New BitmapImage.BitmapBuffer(Image.Bytes, Size, channel:=4)
     End Function
 End Class

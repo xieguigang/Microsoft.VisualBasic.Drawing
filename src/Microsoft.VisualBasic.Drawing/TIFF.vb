@@ -33,7 +33,7 @@ Public Module TIFFTools
     <Extension>
     Private Function ToImage(bmp As SKBitmap) As Image
         Dim skimg As New SkiaImage(bmp)
-        Dim buffer As BitmapBuffer = skimg.GetMemoryBitmap
+        Dim buffer As VisualBasic.Imaging.BitmapImage.BitmapBuffer = skimg.GetMemoryBitmap
         Return Image.FromBitmap(buffer)
     End Function
 End Module
