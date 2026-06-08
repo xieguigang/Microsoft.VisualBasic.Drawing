@@ -2,7 +2,8 @@
 Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports Microsoft.VisualBasic.ApplicationServices.Terminal
-Imports Microsoft.VisualBasic.Imaging
+Imports BitmapBuffer = Microsoft.VisualBasic.Imaging.BitmapImage.BitmapBuffer
+Imports Image = Microsoft.VisualBasic.Imaging.Image
 
 ''' <summary>
 ''' Display images in ansii escape sequences
@@ -31,13 +32,13 @@ Public Module ANSI
         ' 计算新尺寸 (保持宽高比)
         Dim aspectRatio As Single = img.Height / CSng(img.Width)
         Dim newHeight As Integer = CInt((terminalWidth * aspectRatio) * 0.8)
-        Dim scaledImg As Bitmap
+        Dim scaledImg As Microsoft.VisualBasic.Imaging.BitmapImage.BitmapBuffer
 
         ' 创建缩放后的位图
         Using gfx As New Graphics(terminalWidth, newHeight)
             gfx.DrawImage(img, 0, 0, terminalWidth, newHeight)
             gfx.Flush()
-            scaledImg = DirectCast(gfx.ImageResource, SkiaImage).ToBitmap
+            scaledImg = BitmapBuffer.FromImage(gfx.ImageResource)
         End Using
 
         ' 生成 ANSI 序列
