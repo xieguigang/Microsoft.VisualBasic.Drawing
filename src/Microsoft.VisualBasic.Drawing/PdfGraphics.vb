@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports SkiaSharp
 
@@ -39,7 +40,7 @@ Public Class PdfGraphics : Inherits SkiaGraphics
         End Try
     End Sub
 
-    Public Overrides Function Save(Stream As Stream, format As Imaging.ImageFormats) As Boolean
+    Public Overrides Function Save(Stream As Stream, format As ImageFormats) As Boolean
         Try
             Call Save(Stream)
         Catch ex As Exception
