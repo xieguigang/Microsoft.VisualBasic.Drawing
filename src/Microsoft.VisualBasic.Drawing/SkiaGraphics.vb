@@ -54,19 +54,19 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Using textPain As New SKPaint With {
            .IsAntialias = True,
            .Style = SKPaintStyle.Fill,
-           .Color = color.AsSKColor,
-           .TextSize = fontSize,
-           .Typeface = SKTypeface.FromFamilyName(fontName)
+           .Color = color.AsSKColor
         }
             Dim textBounds As New SKRect
+            Dim skfont As New SKFont(SKTypeface.FromFamilyName(fontName), fontSize)
+            Dim text As SKTextBlob = SKTextBlob.Create(s, skfont)
 
             If s Is Nothing Then
                 s = ""
                 Call $"the given string for drawing is nothing at stack trace: {vbCrLf}{Environment.StackTrace}".warning
             End If
 
-            Call textPain.MeasureText(s, textBounds)
-            Call m_canvas.DrawText(s, x, y + textBounds.Height, textPain)
+            Call skfont.MeasureText(s, textBounds, textPain)
+            Call m_canvas.DrawText(text, x, y + textBounds.Height, textPain)
         End Using
     End Sub
 
@@ -83,20 +83,20 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
                                     ByRef y As Single, angle As Single)
 
         Using paint As New SKPaint With {
-                .TextSize = font.Size,
                 .Color = DirectCast(brush, SolidBrush).Color.AsSKColor,
                 .IsAntialias = True,
                 .Style = SKPaintStyle.Fill
-            }
+            }, skfont As New SKFont(SKTypeface.FromFamilyName(font.Name), font.Size)
 
             Dim textBounds As New SKRect
+            Dim txt = SKTextBlob.Create(s, skfont)
 
             ' get text bounds size
-            paint.MeasureText(s, textBounds)
+            Call skfont.MeasureText(s, textBounds, paint)
 
             m_canvas.Translate(x, y)
             m_canvas.RotateDegrees(angle)
-            m_canvas.DrawText(s, -textBounds.MidX, -textBounds.MidY, paint)
+            m_canvas.DrawText(txt, -textBounds.MidX, -textBounds.MidY, paint)
             m_canvas.RotateDegrees(-angle)
             m_canvas.Translate(-x, -y)
         End Using
@@ -325,10 +325,12 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
     Public Overrides Sub DrawImage(image As Image, x As Single, y As Single, width As Single, height As Single)
         Using blender As New SKPaint With {
-            .IsAntialias = True,
-            .FilterQuality = SKFilterQuality.High
+            .IsAntialias = True
         }
-            Call m_canvas.DrawImage(image.AsSKImage, New SKRect(x, y, x + width, y + height), blender)
+            Dim rect As New SKRect(x, y, x + width, y + height)
+            Dim opt = SKSamplingOptions.Default
+
+            Call m_canvas.DrawImage(image.AsSKImage, rect, opt, blender)
         End Using
     End Sub
 
@@ -520,21 +522,11 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     Public Overrides Sub FillPie(brush As Brush, x As Single, y As Single, width As Single, height As Single, startAngle As Single, sweepAngle As Single)
         Using path As New SKPath
-            ' Dim startRadians As Single = startAngle * (std.PI / 180)
-            ' Dim sweepRadians As Single = sweepAngle * (std.PI / 180)
-            'Dim radiusX As Single = width / 2
-            'Dim radiusY As Single = height / 2
-
-            'Call path.MoveTo(New SKPoint(x, y))
-            'Call path.ArcTo(New SKRect(x - radiusX, y - radiusY, x + radiusX, y + radiusY),
-            '       startAngle, sweepAngle, False)
-            'Call path.LineTo(New SKPoint(x, y))
-
             Using paint As New SKPaint With {
                 .Style = SKPaintStyle.Fill,
                 .Color = DirectCast(brush, SolidBrush).Color.AsSKColor
             }
-                ' Call m_canvas.DrawPath(path, paint)
+
                 Call m_canvas.DrawArc(New SKRect(x, y, x + width, y + height), startAngle, sweepAngle, True, paint)
             End Using
         End Using
@@ -647,14 +639,11 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overloads Function MeasureString(text As String, fontName As String, fontSize As Single) As (Width As Single, Height As Single)
-        Using paint As New SKPaint With {
-            .TextSize = fontSize,
-            .IsAntialias = True,
-            .Typeface = SKTypeface.FromFamilyName(fontName)
-        }
+        Using paint As New SKPaint With {.IsAntialias = True},
+            font As New SKFont(typeface:=SKTypeface.FromFamilyName(fontName), size:=fontSize)
 
             Dim textBounds As New SKRect
-            Call paint.MeasureText(text, textBounds)
+            Call font.MeasureText(text, textBounds, paint)
 
             Return (textBounds.Width, textBounds.Height)
         End Using
