@@ -1,5 +1,6 @@
 ﻿Imports System.Drawing
 Imports System.IO
+Imports System.Reflection
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.Imaging
 Imports SkiaSharp
@@ -232,7 +233,7 @@ Public Module SkiaInterop
             Return Nothing
         End If
 
-        Return SKShader.CreateImage(skImg, SKShaderTileMode.Repeat)
+        Return SKShader.CreateImage(skImg)
     End Function
 
     <Extension>

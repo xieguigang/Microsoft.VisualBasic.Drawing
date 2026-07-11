@@ -11,6 +11,7 @@ Imports Font = Microsoft.VisualBasic.Imaging.Font
 Imports Image = Microsoft.VisualBasic.Imaging.Image
 Imports Pen = Microsoft.VisualBasic.Imaging.Pen
 Imports SolidBrush = Microsoft.VisualBasic.Imaging.SolidBrush
+Imports std = System.Math
 
 ''' <summary>
 ''' the abstract wrapper for the skiasharp library
@@ -746,7 +747,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         End If
 
         m_clipSaveCount = m_canvas.Save()
-        Call m_canvas.ClipRect(rect.AsRectangle, SKClipOperation.Replace, True)
+        Call m_canvas.ClipRect(rect.AsRectangle, SKClipOperation.Difference, True)
         m_lastClipRect = rect
     End Sub
 
@@ -967,13 +968,13 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         For i As Integer = 0 To 3
             Dim x As Double = src(i).X
             Dim y As Double = src(i).Y
-            Dim X As Double = dst(i).X
-            Dim Y As Double = dst(i).Y
+            Dim X2 As Double = dst(i).X
+            Dim Y2 As Double = dst(i).Y
 
-            A(2 * i) = {x, y, 1, 0, 0, 0, -x * X, -y * X}
-            b(2 * i) = X
-            A(2 * i + 1) = {0, 0, 0, x, y, 1, -x * Y, -y * Y}
-            b(2 * i + 1) = Y
+            A(2 * i) = {x, y, 1, 0, 0, 0, -x * X2, -y * X2}
+            b(2 * i) = X2
+            A(2 * i + 1) = {0, 0, 0, x, y, 1, -x * Y2, -y * Y2}
+            b(2 * i + 1) = Y2
         Next
 
         Dim h As Double() = SolveLinear(A, b)
@@ -1002,7 +1003,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             Dim piv As Integer = i
 
             For k As Integer = i + 1 To n - 1
-                If Math.Abs(A(k)(i)) > Math.Abs(A(piv)(i)) Then
+                If std.Abs(A(k)(i)) > std.Abs(A(piv)(i)) Then
                     piv = k
                 End If
             Next
