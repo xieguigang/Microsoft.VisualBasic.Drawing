@@ -23,12 +23,10 @@ Public Module SkiaDriver
     Public Function MeasureString(text As String, font As Font) As SizeF
         Dim textBounds As New SKRect
 
-        Using paint As New SKPaint With {
-            .TextSize = font.Size,
-            .IsAntialias = True,
-            .Typeface = SKTypeface.FromFamilyName(font.Name)
-        }
-            Call paint.MeasureText(text, textBounds)
+        Using paint As New SKPaint With {.IsAntialias = True},
+            skfont As New SKFont(SKTypeface.FromFamilyName(font.Name), font.Size)
+
+            Call skfont.MeasureText(text, textBounds, paint)
 
             Return New SizeF(textBounds.Width + 1, textBounds.Height + 1)
         End Using
