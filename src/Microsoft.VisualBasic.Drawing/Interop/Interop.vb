@@ -121,6 +121,120 @@ Public Module SkiaInterop
         }
     End Function
 
+    ''' <summary>
+    ''' convert a brush object (from Microsoft.VisualBasic.Imaging) into a skia paint
+    ''' for fill operations. supports solid / linear gradient / texture brush in a
+    ''' best-effort manner and degrades gracefully (no exception) for unknown types.
+    ''' </summary>
+    <Extension>
+    Public Function CreatePaint(brush As Brush) As SKPaint
+        Dim paint As New SKPaint With {
+            .Style = SKPaintStyle.Fill,
+            .IsAntialias = True
+        }
+
+        If TypeOf brush Is SolidBrush Then
+            paint.Color = DirectCast(brush, SolidBrush).Color.AsSKColor
+            Return paint
+        End If
+
+        Dim btype As Type = brush.GetType()
+        Dim tname As String = btype.Name
+
+        If tname.Contains("Gradient") Then
+            Dim shader As SKShader = TryBuildGradientShader(brush, btype)
+
+            If shader IsNot Nothing Then
+                paint.Shader = shader
+                Return paint
+            End If
+        ElseIf tname.Contains("Texture") Then
+            Dim shader As SKShader = TryBuildTextureShader(brush, btype)
+
+            If shader IsNot Nothing Then
+                paint.Shader = shader
+                Return paint
+            End If
+        End If
+
+        Call $"The brush type '{tname}' is not supported by the skia backend, using transparent black as fallback.".warning
+        paint.Color = SKColors.Transparent
+        Return paint
+    End Function
+
+    Private Function TryBuildGradientShader(brush As Brush, btype As Type) As SKShader
+        Dim rectProp As PropertyInfo = btype.GetProperty("Rectangle")
+        Dim rect As RectangleF = RectangleF.Empty
+
+        If rectProp IsNot Nothing Then
+            Dim rv As Object = rectProp.GetValue(brush)
+
+            If rv IsNot Nothing Then
+                Dim gr As Rectangle = DirectCast(rv, Rectangle)
+                rect = New RectangleF(gr.X, gr.Y, gr.Width, gr.Height)
+            End If
+        End If
+
+        Dim colsProp As PropertyInfo = btype.GetProperty("LinearColors")
+        Dim cols As Color() = Nothing
+
+        If colsProp IsNot Nothing Then
+            cols = TryCast(colsProp.GetValue(brush), Color())
+        End If
+
+        If cols Is Nothing OrElse cols.Length < 2 Then
+            Dim c1 As PropertyInfo = btype.GetProperty("Color1")
+            Dim c2 As PropertyInfo = btype.GetProperty("Color2")
+
+            If c1 IsNot Nothing AndAlso c2 IsNot Nothing Then
+                Dim v1 As Object = c1.GetValue(brush)
+                Dim v2 As Object = c2.GetValue(brush)
+
+                If v1 IsNot Nothing AndAlso v2 IsNot Nothing Then
+                    cols = {DirectCast(v1, Color), DirectCast(v2, Color)}
+                End If
+            End If
+        End If
+
+        If cols Is Nothing OrElse cols.Length < 2 Then
+            Return Nothing
+        End If
+
+        Dim startP As New SKPoint(rect.Left, rect.Top)
+        Dim endP As New SKPoint(rect.Right, rect.Bottom)
+
+        If rect.IsEmpty Then
+            startP = New SKPoint(0, 0)
+            endP = New SKPoint(100, 100)
+        End If
+
+        Dim skColors = cols.Select(Function(c) c.AsSKColor).ToArray()
+
+        Return SKShader.CreateLinearGradient(startP, endP, skColors, SKShaderTileMode.Clamp)
+    End Function
+
+    Private Function TryBuildTextureShader(brush As Brush, btype As Type) As SKShader
+        Dim imgProp As PropertyInfo = btype.GetProperty("Image")
+
+        If imgProp Is Nothing Then
+            Return Nothing
+        End If
+
+        Dim img As Object = imgProp.GetValue(brush)
+
+        If img Is Nothing Then
+            Return Nothing
+        End If
+
+        Dim skImg As SKImage = AsSKImage(DirectCast(img, Image))
+
+        If skImg Is Nothing Then
+            Return Nothing
+        End If
+
+        Return SKShader.CreateImage(skImg, SKShaderTileMode.Repeat)
+    End Function
+
     <Extension>
     Public Function CreateSkiaFont(font As Font) As SKFont
         Dim typeface = font.CreateSkiaTypeface
