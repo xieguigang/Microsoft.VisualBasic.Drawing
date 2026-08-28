@@ -798,8 +798,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Return SkiaDriver.MeasureString(text, font)
     End Function
 
-    Public Overrides Function GetContextInfo() As Object
-        Return m_canvas
+    Public Overrides Function GetContextInfo() As GraphicsContextInfo
+        Return New GraphicsContextInfo With {.Context = m_canvas}
     End Function
 
     Public Overrides Function IsVisible(rect As Rectangle) As Boolean
