@@ -16,6 +16,16 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="4.151.2" />
+    <PackageReference Include="SkiaSharp.Extended" Version="3.0.0" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.151.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.151.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="4.151.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.151.2" />
+    <PackageReference Include="System.Security.Permissions" Version="10.0.11" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
