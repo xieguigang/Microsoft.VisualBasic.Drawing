@@ -15,7 +15,7 @@
     <PackageIcon>logo-knot.png</PackageIcon>
     <PackageTags>skiasharp;</PackageTags>
     <PackageOutputPath>../../.nuget</PackageOutputPath>
-    <OutputPath>../../.nuget</OutputPath>
+    <OutputPath>../../../GCModeller\src\runtime\sciBASIC#\.nuget</OutputPath>
     <OptionStrict>On</OptionStrict>
   </PropertyGroup>
 
