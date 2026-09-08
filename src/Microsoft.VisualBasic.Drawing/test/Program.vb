@@ -56,37 +56,6 @@ Module Program
         Pause()
     End Sub
 
-    Sub simpleNativeDrawTest()
-        Dim width = 500
-        Dim height = 100
-        Dim bitmap As New SKBitmap(width, height)
-        Dim text = "Hello World"
-
-        Using canvas As New SKCanvas(bitmap)
-            canvas.Clear(SKColors.White)
-
-            Dim paint As New SKPaint With
-        {
-            .Color = SKColors.Black, ' �ı���ɫ
-            .TextSize = 48,          ' �ı���С
-            .IsAntialias = True ' ���ÿ����
-        }
-            Dim textBounds = New SKRect()
-            paint.MeasureText(text, textBounds)
-
-            Dim x = (width - textBounds.Width) / 2
-            Dim y = (height - textBounds.Height) / 2 + textBounds.Height
-
-            canvas.DrawText(text, x, y, paint)
-        End Using
-
-        Using encoded = bitmap.Encode(SKEncodedImageFormat.Bmp, 100)
-            Using stream = System.IO.File.OpenWrite("hello_world.png")
-                encoded.SaveTo(stream)
-            End Using
-        End Using
-    End Sub
-
     Private Sub testDriver()
         SkiaDriver.Register()
     End Sub
