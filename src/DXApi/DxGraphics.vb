@@ -133,12 +133,132 @@ Public Class DxGraphics : Inherits IGraphics
         transform = IdentityMatrix()
 
         renderTarget = New DxRenderTarget(DxDevice.Default, width, height, If(dpi <= 0, 96.0F, CSng(dpi)))
-        brushes = New DxBrushCache(renderTarget.Target, renderTarget.Device.Factory2D, renderTarget.Device.FactoryWrite)
-        batch = New DxPolygonBatch(renderTarget.Device.Factory2D, renderTarget.Target)
+
+        Call RefreshTarget()
 
         If Not fill.IsEmpty Then
             Call ClearCanvas(fill)
         End If
+    End Sub
+
+    ''' <summary>
+    ''' create a gpu accelerated drawing canvas on top of the given render
+    ''' surface, this is how the winforms control hosts its swap chain canvas.
+    ''' </summary>
+    ''' <remarks>
+    ''' the surface is owned by the caller: disposing this graphics object
+    ''' releases the device dependent drawing resources only.
+    ''' </remarks>
+    Friend Sub New(surface As DxRenderSurface, fill As Color, Optional dpi As Integer = 96)
+        Call MyBase.New(dpi)
+
+        _Size = New Size(surface.Width, surface.Height)
+        transform = IdentityMatrix()
+        renderTarget = surface
+
+        Call RefreshTarget()
+
+        If Not fill.IsEmpty Then
+            Call ClearCanvas(fill)
+        End If
+    End Sub
+
+    ' /********************************************************************************/
+    '  the frame boundary of a window canvas
+    ' /********************************************************************************/
+
+    ''' <summary>
+    ''' open a new drawing frame
+    ''' </summary>
+    ''' <remarks>
+    ''' A window swap chain canvas draws one frame per paint request, so the
+    ''' transform and the clip stack are reset here and the frame is submitted
+    ''' through <see cref="EndFrame"/>.
+    '''
+    ''' When the previous frame was lost (a removed gpu device), the swap chain
+    ''' and every device dependent resource is rebuilt before the new frame
+    ''' starts, so that the caller does not have to handle the device loss at
+    ''' all.
+    ''' </remarks>
+    Public Sub BeginFrame()
+        If m_released Then
+            Return
+        End If
+
+        If renderTarget.NeedsRecreate Then
+            ' the previous frame was lost, the pending figures can not be
+            ' rasterized any more and the whole target is replaced below
+            Call batch.Discard()
+            Call clips.Clear()
+            transform = IdentityMatrix()
+
+            Call renderTarget.Recreate()
+            Call RefreshTarget()
+        Else
+            Call PopAllClips()
+            transform = IdentityMatrix()
+
+            Call renderTarget.Target.SetTransform(transform)
+        End If
+
+        Call renderTarget.BeginDraw()
+    End Sub
+
+    ''' <summary>
+    ''' finish the current drawing frame and present it onto the screen
+    ''' </summary>
+    Public Sub EndFrame()
+        If m_released Then
+            Return
+        End If
+
+        Call EndBatch()
+        Call renderTarget.EndDraw()
+    End Sub
+
+    ''' <summary>
+    ''' resize the gpu canvas, every device dependent resource is rebuilt on
+    ''' the new size.
+    ''' </summary>
+    Public Sub ResizeCanvas(newWidth As Integer, newHeight As Integer)
+        If m_released OrElse newWidth <= 0 OrElse newHeight <= 0 Then
+            Return
+        End If
+
+        If newWidth = renderTarget.Width AndAlso newHeight = renderTarget.Height Then
+            Return
+        End If
+
+        ' submit the pending polygons onto the old target before it is released
+        Call EndBatch()
+        Call PopAllClips()
+
+        Call renderTarget.Resize(newWidth, newHeight)
+        Call RefreshTarget()
+
+        _Size = New Size(newWidth, newHeight)
+    End Sub
+
+    ''' <summary>
+    ''' rebuild the device dependent drawing resources of the current render
+    ''' target: the brush cache and the polygon batch submitter.
+    ''' </summary>
+    ''' <remarks>
+    ''' every direct2d brush, stroke style and text format is bound to the
+    ''' render target that has created it, so all of them are dropped and
+    ''' rebuilt when the render target is recreated.
+    ''' </remarks>
+    Private Sub RefreshTarget()
+        If batch IsNot Nothing Then
+            Call batch.Dispose()
+        End If
+
+        If brushes IsNot Nothing Then
+            Call brushes.Dispose()
+        End If
+
+        brushes = New DxBrushCache(renderTarget.Target, renderTarget.Device.Factory2D, renderTarget.Device.FactoryWrite)
+        batch = New DxPolygonBatch(renderTarget.Device.Factory2D, renderTarget.Target)
     End Sub
 
     ''' <summary>
