@@ -24,6 +24,14 @@ Public Class DxGraphics : Inherits IGraphics
         MyBase.New(dpi)
     End Sub
 
+    ''' <summary>
+    ''' create canvas graphics with raaster image as drawing background
+    ''' </summary>
+    ''' <param name="background"></param>
+    Sub New(background As Bitmap)
+
+    End Sub
+
     Public Overrides Sub AddMetafileComment(data() As Byte)
         Throw New NotImplementedException()
     End Sub
