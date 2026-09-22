@@ -131,9 +131,23 @@ Public Class DxGraphics : Inherits IGraphics
 
         log($"vtable = 0x{vt.ToInt64():X}, this = 0x{raw.ToInt64():X}")
 
-        For i As Integer = 3 To 41
+        For i As Integer = 3 To 55
             log($"  slot {i}: 0x{Marshal.ReadIntPtr(vt, i * IntPtr.Size).ToInt64():X}")
         Next
+
+        For Each slot As Integer In {42, 45, 46, 47}
+            Try
+                Dim getter = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, slot * IntPtr.Size))
+
+                log($"  getter slot {slot} => 0x{getter(raw):X}")
+            Catch ex As Exception
+                log($"  getter slot {slot} FAIL: {ex.Message}")
+            End Try
+        Next
+
+        Marshal.Release(raw)
+
+        Return "probe finished (dump + getters)"
 
         Try
             Dim getPixelFormat = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 42 * IntPtr.Size))
