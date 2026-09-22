@@ -15,39 +15,32 @@ Module DxSmoke
         Console.WriteLine("[2] canvas created, device = " & g.DeviceDescription)
         Console.WriteLine(g.Probe())
 
-        Call g.Flush()
-        Console.WriteLine("[2.1] flush ok (no com out param)")
-
-        Call g.SetClip(New Rectangle(0, 0, 400, 300))
-        Console.WriteLine("[2.2] clip ok")
-
-        Call g.ResetClip()
-        Console.WriteLine("[2.3] reset clip ok")
-
-        Call g.FillRectangle(New SolidBrush(Color.Red), New Rectangle(10, 10, 100, 50))
-        Console.WriteLine("[3] fill rectangle ok")
-
-        Call g.FillPolygon(New SolidBrush(Color.Green), {
+        Call step_("clear", Sub() g.Clear(Color.White))
+        Call step_("setclip", Sub() g.SetClip(New Rectangle(0, 0, 400, 300)))
+        Call step_("resetclip", Sub() g.ResetClip())
+        Call step_("translate", Sub() g.TranslateTransform(0, 0))
+        Call step_("flushbatch", Sub() g.FlushBatch())
+        Call step_("flush", Sub() g.Flush())
+        Call step_("fillrect", Sub() g.FillRectangle(New SolidBrush(Color.Red), New Rectangle(10, 10, 100, 50)))
+        Call step_("fillpolygon", Sub() g.FillPolygon(New SolidBrush(Color.Green), {
             New PointF(120, 20), New PointF(200, 30), New PointF(180, 90), New PointF(130, 80)
-        })
-        Console.WriteLine("[4] fill polygon ok")
-
-        Call g.DrawPolygon(New Pen(Color.Blue, 2), {
+        }))
+        Call step_("drawpolygon", Sub() g.DrawPolygon(New Pen(Color.Blue, 2), {
             New PointF(220, 20), New PointF(300, 30), New PointF(280, 90), New PointF(230, 80)
-        })
-        Console.WriteLine("[5] draw polygon ok")
+        }))
+        Call step_("drawline", Sub() g.DrawLine(New Pen(Color.Black, 1), 0, 0, 399, 299))
+        Call step_("drawellipse", Sub() g.DrawEllipse(New Pen(Color.Purple, 2), New Rectangle(20, 120, 80, 60)))
+        Call step_("readback", Sub() Console.WriteLine("     size = " & g.GetRasterImage().Size.ToString))
+        Call step_("save", Sub() g.Save("./dx_smoke.png", ImageFormats.Png))
+        Call step_("dispose", Sub() g.Dispose())
+    End Sub
 
-        Call g.FlushBatch()
-        Console.WriteLine("[6] batch flushed")
-
-        Dim img = g.GetRasterImage()
-
-        Console.WriteLine("[7] read back ok, size = " & img.Size.ToString)
-
-        Call img.Save("./dx_smoke.png", ImageFormats.Png)
-        Console.WriteLine("[8] saved ./dx_smoke.png")
-
-        Call g.Dispose()
-        Console.WriteLine("[9] done")
+    Private Sub step_(name As String, action As Action)
+        Try
+            Call action()
+            Console.WriteLine($" [ok  ] {name}")
+        Catch ex As Exception
+            Console.WriteLine($" [fail] {name} -> {ex.GetType.Name}: {ex.Message}")
+        End Try
     End Sub
 End Module
