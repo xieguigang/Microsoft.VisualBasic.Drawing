@@ -4,8 +4,6 @@ Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Linq
 Imports std = System.Math
 
-Imports Native
-
 ''' <summary>
 ''' The direct2d geometry constructor: converts the gdi+ style drawing
 ''' primitive into a ID2D1Geometry object so that it can be rasterized
@@ -198,13 +196,13 @@ Friend Module DxPathBuilder
         Dim sink As ID2D1GeometrySink = Nothing
         Dim geometry As ID2D1PathGeometry = NewGeometry(factory, sink)
         Dim startPoint As D2D1_POINT_2F
-        Dim arc As D2D1_ARC_SEGMENT
+        Dim segment As D2D1_ARC_SEGMENT
 
-        Call GetArc(rect, startAngle, sweepAngle, startPoint, arc)
+        Call GetArc(rect, startAngle, sweepAngle, startPoint, segment)
 
         Try
             Call sink.BeginFigure(startPoint, D2D1_FIGURE_BEGIN.FILLED)
-            Call sink.AddArc(arc)
+            Call sink.AddArc(segment)
             Call sink.EndFigure(D2D1_FIGURE_END.OPEN)
         Finally
             Call CloseGeometry(sink)
@@ -222,18 +220,18 @@ Friend Module DxPathBuilder
         Dim sink As ID2D1GeometrySink = Nothing
         Dim geometry As ID2D1PathGeometry = NewGeometry(factory, sink)
         Dim startPoint As D2D1_POINT_2F
-        Dim arc As D2D1_ARC_SEGMENT
+        Dim segment As D2D1_ARC_SEGMENT
         Dim center As New D2D1_POINT_2F With {
             .x = rect.Left + rect.Width / 2.0F,
             .y = rect.Top + rect.Height / 2.0F
         }
 
-        Call GetArc(rect, startAngle, sweepAngle, startPoint, arc)
+        Call GetArc(rect, startAngle, sweepAngle, startPoint, segment)
 
         Try
             Call sink.BeginFigure(center, D2D1_FIGURE_BEGIN.FILLED)
             Call sink.AddLine(startPoint)
-            Call sink.AddArc(arc)
+            Call sink.AddArc(segment)
             Call sink.EndFigure(D2D1_FIGURE_END.CLOSED)
         Finally
             Call CloseGeometry(sink)

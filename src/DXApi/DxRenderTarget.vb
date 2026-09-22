@@ -1,7 +1,5 @@
 Imports System.Runtime.InteropServices
 
-Imports Native
-
 ''' <summary>
 ''' An off screen gpu canvas: a d3d11 texture that is shared with direct2d
 ''' through a dxgi surface.

@@ -1,16 +1,14 @@
 Imports System.Runtime.InteropServices
 
-Namespace Native
-
-    ''' <summary>
-    ''' The Direct2D (d2d1.dll) interop declarations.
-    ''' </summary>
-    ''' <remarks>
-    ''' Direct2D is the real 2d drawing engine in this project: the polygon,
-    ''' rectangle, ellipse, arc, bezier, text and image drawing are all
-    ''' rasterized on the gpu through the ID2D1RenderTarget interface.
-    ''' </remarks>
-    Friend Module D2D1
+''' <summary>
+''' The Direct2D (d2d1.dll) interop declarations.
+''' </summary>
+''' <remarks>
+''' Direct2D is the real 2d drawing engine in this project: the polygon,
+''' rectangle, ellipse, arc, bezier, text and image drawing are all
+''' rasterized on the gpu through the ID2D1RenderTarget interface.
+''' </remarks>
+Friend Module D2D1
 
         ''' <summary>
         ''' create the direct2d factory object
@@ -312,4 +310,3 @@ Namespace Native
         ' slot 48
         <PreserveSig> Function IsSupported(ByRef props As D2D1_RENDER_TARGET_PROPERTIES) As Integer
     End Interface
-End Namespace

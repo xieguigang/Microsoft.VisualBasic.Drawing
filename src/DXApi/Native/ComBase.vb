@@ -3,11 +3,9 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports std = System.Math
 
-Namespace Native
-
-    ''' <summary>
-    ''' The common helper api for the directx com interop layer
-    ''' </summary>
+''' <summary>
+''' The common helper api for the directx com interop layer
+''' </summary>
     ''' <remarks>
     ''' All of the native resource wrapper in this project is pure managed code:
     ''' the directx api is imported via <see cref="DllImportAttribute"/> and the
@@ -444,4 +442,3 @@ Namespace Native
         SINGLE_THREADED = 0
         MULTI_THREADED = 1
     End Enum
-End Namespace

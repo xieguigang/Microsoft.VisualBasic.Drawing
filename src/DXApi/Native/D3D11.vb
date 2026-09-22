@@ -1,16 +1,14 @@
 Imports System.Runtime.InteropServices
 
-Namespace Native
-
-    ''' <summary>
-    ''' The D3D11 (d3d11.dll) interop declarations.
-    ''' </summary>
-    ''' <remarks>
-    ''' D3D11 is used here as the gpu device host: it creates the off-screen
-    ''' texture which is shared with Direct2D through a dxgi surface, and it
-    ''' also performs the pixel read back through a staging texture.
-    ''' </remarks>
-    Friend Module D3D11
+''' <summary>
+''' The D3D11 (d3d11.dll) interop declarations.
+''' </summary>
+''' <remarks>
+''' D3D11 is used here as the gpu device host: it creates the off-screen
+''' texture which is shared with Direct2D through a dxgi surface, and it
+''' also performs the pixel read back through a staging texture.
+''' </remarks>
+Friend Module D3D11
 
         Friend Const D3D11_SDK_VERSION As UInteger = 7
 
@@ -277,4 +275,3 @@ Namespace Native
         ' slot 47
         <PreserveSig> Sub CopyResource(dst As ID3D11Resource, src As ID3D11Resource)
     End Interface
-End Namespace

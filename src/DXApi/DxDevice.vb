@@ -1,7 +1,5 @@
 Imports System.Runtime.InteropServices
 
-Imports Native
-
 ''' <summary>
 ''' The gpu device wrapper of the directx engine: a d3d11 device with the
 ''' BGRA support flag, its immediate context, the direct2d factory and the

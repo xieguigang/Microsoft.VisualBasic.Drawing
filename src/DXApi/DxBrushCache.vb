@@ -4,8 +4,6 @@ Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.Imaging
 Imports std = System.Math
 
-Imports Native
-
 Imports Brush = Microsoft.VisualBasic.Imaging.Brush
 Imports Font = Microsoft.VisualBasic.Imaging.Font
 Imports Image = Microsoft.VisualBasic.Imaging.Image

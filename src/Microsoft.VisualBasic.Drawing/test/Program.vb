@@ -13,6 +13,15 @@ Module Program
 
 
     Sub Main(args As String())
+        If args.Any(Function(a) a = "--dx" OrElse a = "-dx") Then
+            ' run the directx polygon benchmark only
+            Call DxBenchmark.Run()
+            Return
+        End If
+
+        ' the directx gpu canvas demo: drawing a large amount of polygons
+        Call DxBenchmark.Run()
+
         Call tifftest.run()
         Call Main22222({"G:\mzkit\Rscript\Library\mzkit_app\test\msn_peaks\umap.png"})
         Call Pause()

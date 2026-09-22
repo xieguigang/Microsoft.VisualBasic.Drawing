@@ -1,7 +1,5 @@
 Imports System.Runtime.InteropServices
 
-Imports Native
-
 ''' <summary>
 ''' The polygon batch submitter.
 ''' </summary>

@@ -1,12 +1,10 @@
 Imports System.Runtime.InteropServices
 
-Namespace Native
-
-    ''' <summary>
-    ''' The DXGI (dxgi.dll) interop declarations, only the subset that is required
-    ''' for creating a shared surface between D3D11 and Direct2D is declared here.
-    ''' </summary>
-    Friend Module DXGI
+''' <summary>
+''' The DXGI (dxgi.dll) interop declarations, only the subset that is required
+''' for creating a shared surface between D3D11 and Direct2D is declared here.
+''' </summary>
+Friend Module DXGI
 
         ''' <summary>
         ''' DXGI_FORMAT enumeration (subset)
@@ -48,4 +46,3 @@ Namespace Native
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
     Friend Interface IDXGISurface
     End Interface
-End Namespace

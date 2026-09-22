@@ -1,12 +1,10 @@
 Imports System.Runtime.InteropServices
 
-Namespace Native
-
-    ''' <summary>
-    ''' The DirectWrite (dwrite.dll) interop declarations, used for the text
-    ''' layout and the text metrics calculation.
-    ''' </summary>
-    Friend Module DWrite
+''' <summary>
+''' The DirectWrite (dwrite.dll) interop declarations, used for the text
+''' layout and the text metrics calculation.
+''' </summary>
+Friend Module DWrite
 
         Friend ReadOnly IID_IDWriteFactory As New Guid("b859ee5a-d838-4b5b-a2e8-1adc7d93db48")
 
@@ -194,19 +192,19 @@ Namespace Native
         ' slot 43
         <PreserveSig> Function GetMaxHeight() As Single
         ' slot 44
-        <PreserveSig> Function GetFontCollection(position As UInteger, ByRef collection As IntPtr, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontCollection(position As UInteger, ByRef collection As IntPtr, ByRef range As IntPtr) As Integer
         ' slot 45
-        <PreserveSig> Function GetFontFamilyNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontFamilyNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
         ' slot 46
-        <PreserveSig> Function GetFontFamilyName(position As UInteger, name As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontFamilyName(position As UInteger, name As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
         ' slot 47
-        <PreserveSig> Function GetFontWeight(position As UInteger, ByRef weight As Integer, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontWeight(position As UInteger, ByRef weight As Integer, ByRef range As IntPtr) As Integer
         ' slot 48
-        <PreserveSig> Function GetFontStyle(position As UInteger, ByRef style As Integer, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontStyle(position As UInteger, ByRef style As Integer, ByRef range As IntPtr) As Integer
         ' slot 49
-        <PreserveSig> Function GetFontStretch(position As UInteger, ByRef stretch As Integer, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontStretch(position As UInteger, ByRef stretch As Integer, ByRef range As IntPtr) As Integer
         ' slot 50
-        <PreserveSig> Function GetFontSize(position As UInteger, ByRef size As Single, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetFontSize(position As UInteger, ByRef size As Single, ByRef range As IntPtr) As Integer
         ' slot 51
         <PreserveSig> Function GetUnderline(position As UInteger, ByRef hasUnderline As Integer, ByRef range As IntPtr) As Integer
         ' slot 52
@@ -218,9 +216,9 @@ Namespace Native
         ' slot 55
         <PreserveSig> Function GetTypography(position As UInteger, ByRef typography As IntPtr, ByRef range As IntPtr) As Integer
         ' slot 56
-        <PreserveSig> Function GetLocaleNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetLocaleNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
         ' slot 57
-        <PreserveSig> Function GetLocaleName(position As UInteger, localeName As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Overloads Function GetLocaleName(position As UInteger, localeName As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
         ' slot 58
         <PreserveSig> Function Draw(clientDrawingContext As IntPtr, renderer As IntPtr, originX As Single, originY As Single) As Integer
         ' slot 59
@@ -281,4 +279,3 @@ Namespace Native
             maxHeight As Single,
             <Out> ByRef textLayout As IDWriteTextLayout) As Integer
     End Interface
-End Namespace
