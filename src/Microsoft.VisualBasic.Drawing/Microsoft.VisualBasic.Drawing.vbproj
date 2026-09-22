@@ -18,8 +18,8 @@
     <PackageOutputPath>../../.nuget</PackageOutputPath>
     <OutputPath>../../../GCModeller\src\runtime\sciBASIC#\.nuget</OutputPath>
     <OptionStrict>On</OptionStrict>
-    <Version>1.0.9762.10518</Version>
-    <AssemblyVersion>1.0.9762.10518</AssemblyVersion>
+    <Version>1.0.9762.11310</Version>
+    <AssemblyVersion>1.0.9762.11310</AssemblyVersion>
     <AssemblyTitle>Microsoft.VisualBasic.Drawing</AssemblyTitle>
     <Title>Cross Platform SkiaSharp Drawing Backend</Title>
     <Description>A cross platform replacement of the System.Drawing graphics library, built on top of SkiaSharp, that helps migrate sciBASIC.NET based applications to .NET 8 and higher. One drawing API is served by three interchangeable drivers - the GDI compatible raster bitmap backend (Graphics), the SVG vector writer (SvgGraphics) and the PDF document writer (PdfGraphics) - so the same drawing code renders to bitmap, SVG or PDF output. The library also provides the raster image codec bridge (PNG / BMP / WebP / JPEG / GIF / ICO), multi layer scientific TIFF output, pen dash effects, brush gradient and texture shaders, a true color / 256 color ANSI terminal image viewer and the driver registration entry point for the Microsoft.VisualBasic.Imaging framework.</Description>
