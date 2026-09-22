@@ -118,6 +118,28 @@ Imports std = System.Math
             Return New D2D1_POINT_2F With {.x = pt.X, .y = pt.Y}
         End Function
 
+        ''' <summary>
+        ''' pack two 32 bit values into one 64 bit argument slot
+        ''' </summary>
+        ''' <remarks>
+        ''' A com interface method that takes a small struct (8 bytes or less)
+        ''' by value can not be declared correctly in the vb.net interop layer,
+        ''' such a parameter is declared as a 64 bit integer here and the two
+        ''' structure members are packed into it.
+        ''' </remarks>
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
+        Friend Function Pack64(low As Integer, high As Integer) As Long
+            Return (CLng(high) << 32) Or (CLng(low) And &HFFFFFFFFL)
+        End Function
+
+        ''' <summary>
+        ''' pack a D2D1_POINT_2F structure into one 64 bit argument slot
+        ''' </summary>
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
+        Friend Function Pack64(pt As D2D1_POINT_2F) As Long
+            Return Pack64(BitConverter.SingleToInt32Bits(pt.x), BitConverter.SingleToInt32Bits(pt.y))
+        End Function
+
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Friend Function IdentityMatrix() As D2D1_MATRIX_3X2_F
             Return New D2D1_MATRIX_3X2_F With {

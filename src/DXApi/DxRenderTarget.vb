@@ -104,23 +104,38 @@ Friend Class DxRenderTarget : Implements IDisposable
 
         _Target = ComObject(Of ID2D1RenderTarget)(rawTarget)
 
-        ' DEBUG force the interface pointer of the render target into the rcw cache
-        Dim forced As IntPtr = IntPtr.Zero
-        Dim unkTarget As IntPtr = Marshal.GetIUnknownForObject(_Target)
-        Dim hrForce As Integer = Marshal.QueryInterface(unkTarget, GetType(IRtProbe).GUID, forced)
-
-        Marshal.Release(unkTarget)
-
-        If forced <> IntPtr.Zero Then
-            Dim warm = Marshal.GetTypedObjectForIUnknown(forced, GetType(IRtProbe))
-
-            GC.KeepAlive(warm)
-        End If
-
         ' the dxgi surface render target requires an explicit begin/end draw pair
-        Call _Target.BeginDraw()
+        Try
+            Call _Target.BeginDraw()
+            Console.WriteLine("DEBUG BeginDraw ok")
+        Catch ex As Exception
+            Console.WriteLine("DEBUG BeginDraw fail: " & ex.Message)
+        End Try
+
+        Try
+            Dim t As D2D1_MATRIX_3X2_F = IdentityMatrix()
+
+            Call _Target.SetTransform(t)
+            Console.WriteLine("DEBUG SetTransform ok")
+        Catch ex As Exception
+            Console.WriteLine("DEBUG SetTransform fail: " & ex.Message)
+        End Try
 
         drawing = True
+    End Sub
+
+    ''' <summary>
+    ''' DEBUG ONLY
+    ''' </summary>
+    Friend Sub DebugPing(where As String)
+        Try
+            Dim t As D2D1_MATRIX_3X2_F = IdentityMatrix()
+
+            Call _Target.SetTransform(t)
+            Console.WriteLine($"DEBUG ping [{where}] ok")
+        Catch ex As Exception
+            Console.WriteLine($"DEBUG ping [{where}] fail: {ex.Message}")
+        End Try
     End Sub
 
     ''' <summary>

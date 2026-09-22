@@ -297,52 +297,6 @@ Friend Interface ID2D1Factory
     <PreserveSig> Function CreateDxgiSurfaceRenderTarget(surface As IntPtr, ByRef props As D2D1_RENDER_TARGET_PROPERTIES, <Out> ByRef target As IntPtr) As Integer
 End Interface
 
-' DEBUG ONLY: a probe interface with the ID2D1RenderTarget iid
-<ComImport>
-<Guid("2cd90694-12e2-11dc-9fed-001143a055f9")>
-<InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-Friend Interface IRtProbe
-    <PreserveSig> Sub GetFactory(<Out> ByRef factory As IntPtr)
-    <PreserveSig> Sub D01()
-    <PreserveSig> Sub D02()
-    <PreserveSig> Sub D03()
-    <PreserveSig> Sub D04()
-    <PreserveSig> Sub D05()
-    <PreserveSig> Sub D06()
-    <PreserveSig> Sub D07()
-    <PreserveSig> Sub D08()
-    <PreserveSig> Sub D09()
-    <PreserveSig> Sub D10()
-    <PreserveSig> Sub D11()
-    <PreserveSig> Sub D12()
-    <PreserveSig> Sub D13()
-    <PreserveSig> Sub D14()
-    <PreserveSig> Sub D15()
-    <PreserveSig> Sub D16()
-    <PreserveSig> Sub D17()
-    <PreserveSig> Sub D18()
-    <PreserveSig> Sub D19()
-    <PreserveSig> Sub D20()
-    <PreserveSig> Sub D21()
-    <PreserveSig> Sub D22()
-    <PreserveSig> Sub D23()
-    <PreserveSig> Sub D24()
-    <PreserveSig> Sub D25()
-    <PreserveSig> Sub D26()
-    <PreserveSig> Sub D27()
-    <PreserveSig> Sub D28()
-    <PreserveSig> Sub D29()
-    <PreserveSig> Sub D30()
-    <PreserveSig> Sub D31()
-    <PreserveSig> Sub D32()
-    <PreserveSig> Sub D33()
-    <PreserveSig> Sub D34()
-    <PreserveSig> Sub D35()
-    <PreserveSig> Sub D36()
-    <PreserveSig> Sub D37()
-    <PreserveSig> Sub D38()
-End Interface
-
 <ComImport>
 <Guid("2cd90694-12e2-11dc-9fed-001143a055f9")>
 <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
@@ -400,9 +354,9 @@ Friend Interface ID2D1RenderTarget
     ' slot 27
     <PreserveSig> Sub DrawText(text As IntPtr, length As UInteger, textFormat As IDWriteTextFormat, ByRef layoutRect As D2D1_RECT_F, brush As ID2D1Brush, options As Integer, measuringMode As Integer)
     ' slot 28
-    <PreserveSig> Sub DrawTextLayout(origin As D2D1_POINT_2F, layout As IDWriteTextLayout, brush As ID2D1Brush, options As Integer)
+    <PreserveSig> Sub DrawTextLayout(origin As Long, layout As IDWriteTextLayout, brush As ID2D1Brush, options As Integer)
     ' slot 29
-    <PreserveSig> Sub DrawGlyphRun(origin As D2D1_POINT_2F, glyphRun As IntPtr, brush As ID2D1Brush, measuringMode As Integer)
+    <PreserveSig> Sub DrawGlyphRun(origin As Long, glyphRun As IntPtr, brush As ID2D1Brush, measuringMode As Integer)
 
     ' slot 30
     <PreserveSig> Sub SetTransform(ByRef transform As D2D1_MATRIX_3X2_F)

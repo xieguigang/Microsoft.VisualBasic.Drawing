@@ -88,124 +88,6 @@ Public Class DxGraphics : Inherits IGraphics
         End Get
     End Property
 
-    ''' <summary>
-    ''' DEBUG ONLY: query interface probe
-    ''' </summary>
-    Public Function Probe() As String
-        Dim log As New Action(Of String)(AddressOf Console.WriteLine)
-
-        For Each t As Type In {GetType(ID2D1RenderTarget), GetType(ID2D1Resource), GetType(ID2D1Factory), GetType(ID3D11Device)}
-            Dim p As IntPtr = IntPtr.Zero
-            Dim unk As IntPtr = Marshal.GetIUnknownForObject(If(t Is GetType(ID3D11Device), CObj(renderTarget.Device.Device), CObj(renderTarget.Target)))
-            Dim hr As Integer = Marshal.QueryInterface(unk, t.GUID, p)
-
-            log($"QI {t.Name} {{{t.GUID}}} => 0x{hr:X8}, ptr=0x{p.ToInt64():X}")
-            Marshal.Release(unk)
-
-            If p <> IntPtr.Zero Then
-                Marshal.Release(p)
-            End If
-        Next
-
-        log($"target is com object: {Marshal.IsComObject(renderTarget.Target)}")
-
-        Try
-            Dim unk2 As IntPtr = Marshal.GetIUnknownForObject(renderTarget.Target)
-            Dim p2 As IntPtr = IntPtr.Zero
-            Dim hr2 As Integer = Marshal.QueryInterface(unk2, GetType(IRtProbe).GUID, p2)
-
-            Marshal.Release(unk2)
-
-            Dim probeObj = ComObject(Of IRtProbe)(p2)
-            Dim factoryPtr As IntPtr
-
-            probeObj.GetFactory(factoryPtr)
-            log($"minimal probe dispatch OK, factory=0x{factoryPtr.ToInt64():X}")
-        Catch ex As Exception
-            log("minimal probe dispatch FAIL: " & ex.Message)
-        End Try
-
-        ' raw vtable probing
-        Dim raw As IntPtr = Marshal.GetIUnknownForObject(renderTarget.Target)
-        Dim vt As IntPtr = Marshal.ReadIntPtr(raw)
-
-        log($"vtable = 0x{vt.ToInt64():X}, this = 0x{raw.ToInt64():X}")
-
-        For i As Integer = 3 To 55
-            log($"  slot {i}: 0x{Marshal.ReadIntPtr(vt, i * IntPtr.Size).ToInt64():X}")
-        Next
-
-        For Each slot As Integer In {42, 45, 46, 47}
-            Try
-                Dim getter = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, slot * IntPtr.Size))
-
-                log($"  getter slot {slot} => 0x{getter(raw):X}")
-            Catch ex As Exception
-                log($"  getter slot {slot} FAIL: {ex.Message}")
-            End Try
-        Next
-
-        Marshal.Release(raw)
-
-        Return "probe finished (dump + getters)"
-
-        Try
-            Dim getPixelFormat = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 42 * IntPtr.Size))
-
-            log($"raw vtable slot 42 (GetPixelFormat) => 0x{getPixelFormat(raw):X} (expect 0x100000057)")
-        Catch ex As Exception
-            log("raw vtable slot 42 FAIL: " & ex.Message)
-        End Try
-
-        Try
-            Dim getPixelSize = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 46 * IntPtr.Size))
-
-            log($"raw vtable slot 46 (GetPixelSize) => 0x{getPixelSize(raw):X} (expect 0x12C00000190)")
-        Catch ex As Exception
-            log("raw vtable slot 46 FAIL: " & ex.Message)
-        End Try
-
-        Try
-            Dim flushRaw = Marshal.GetDelegateForFunctionPointer(Of DxEndDraw)(Marshal.ReadIntPtr(vt, 34 * IntPtr.Size))
-            Dim hr4 As Integer = flushRaw(raw, IntPtr.Zero, IntPtr.Zero)
-
-            log($"raw vtable slot 34 (Flush) => 0x{hr4:X8}")
-        Catch ex As Exception
-            log("raw vtable slot 34 FAIL: " & ex.Message)
-        End Try
-
-        Dim brushPtr As IntPtr = IntPtr.Zero
-
-        Try
-            Dim createBrush = Marshal.GetDelegateForFunctionPointer(Of DxCreateSolidBrush)(Marshal.ReadIntPtr(vt, 8 * IntPtr.Size))
-            Dim red As D2D1_COLOR_F = ToColorF(Color.Red)
-            Dim hr5 As Integer = createBrush(raw, red, IntPtr.Zero, brushPtr)
-
-            log($"raw vtable slot 8 (CreateSolidColorBrush) => 0x{hr5:X8}, brush=0x{brushPtr.ToInt64():X}")
-        Catch ex As Exception
-            log("raw vtable slot 8 FAIL: " & ex.Message)
-        End Try
-
-        Try
-            Dim fillRect = Marshal.GetDelegateForFunctionPointer(Of DxFillRectangle)(Marshal.ReadIntPtr(vt, 17 * IntPtr.Size))
-            Dim rectF As D2D1_RECT_F = ToRectF(New Rectangle(10, 10, 100, 50))
-
-            fillRect(raw, rectF, brushPtr)
-            log("raw vtable slot 17 (FillRectangle) OK")
-        Catch ex As Exception
-            log("raw vtable slot 17 FAIL: " & ex.Message)
-        End Try
-
-        Try
-            log($"raw vtable slot 42 again => 0x{Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 42 * IntPtr.Size))(raw):X}")
-        Catch ex As Exception
-            log("raw vtable slot 42 (again) FAIL: " & ex.Message)
-        End Try
-
-        Marshal.Release(raw)
-
-        Return "probe finished"
-    End Function
 
     ''' <summary>
     ''' a short description of the underlying gpu device
@@ -241,8 +123,12 @@ Public Class DxGraphics : Inherits IGraphics
         transform = IdentityMatrix()
 
         renderTarget = New DxRenderTarget(DxDevice.Default, width, height, If(dpi <= 0, 96.0F, CSng(dpi)))
+        Call renderTarget.DebugPing("before brush cache")
+
         brushes = New DxBrushCache(renderTarget.Target, renderTarget.Device.Factory2D, renderTarget.Device.FactoryWrite)
         batch = New DxPolygonBatch(renderTarget.Device.Factory2D, renderTarget.Target)
+
+        Call renderTarget.DebugPing("after brush cache")
 
         If Not fill.IsEmpty Then
             Call ClearCanvas(fill)
@@ -390,7 +276,7 @@ Public Class DxGraphics : Inherits IGraphics
 
             Call ThrowIfFailed(
                 renderTarget.Target.CreateBitmap(
-                    New D2D1_SIZE_U With {.width = CUInt(image.Width), .height = CUInt(image.Height)},
+                    Pack64(image.Width, image.Height),
                     handle.AddrOfPinnedObject(),
                     CUInt(stride), props, bitmap),
                 "ID2D1RenderTarget::CreateBitmap"
@@ -773,7 +659,7 @@ Public Class DxGraphics : Inherits IGraphics
 
     Public Overrides Sub DrawLine(pen As Pen, pt1 As System.Drawing.PointF, pt2 As System.Drawing.PointF)
         Call EndBatch()
-        Call renderTarget.Target.DrawLine(ToPoint2F(pt1), ToPoint2F(pt2), brushes.GetBrush(pen.Color), pen.Width, brushes.GetStrokeStyle(pen))
+        Call renderTarget.Target.DrawLine(Pack64(ToPoint2F(pt1)), Pack64(ToPoint2F(pt2)), brushes.GetBrush(pen.Color), pen.Width, brushes.GetStrokeStyle(pen))
     End Sub
 
     Public Overrides Sub DrawLine(pen As Pen, pt1 As System.Drawing.Point, pt2 As System.Drawing.Point)
