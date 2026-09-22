@@ -17,8 +17,13 @@
     <PackageOutputPath>../../.nuget</PackageOutputPath>
     <OutputPath>../../../GCModeller\src\runtime\sciBASIC#\.nuget</OutputPath>
     <OptionStrict>On</OptionStrict>
-    <Version>1.0.9758.20045</Version>
-    <AssemblyVersion>1.0.9758.20045</AssemblyVersion>
+    <Version>1.0.9762.10518</Version>
+    <AssemblyVersion>1.0.9762.10518</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='nuget_release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>../../../GCModeller/src/runtime/sciBASIC#/.nuget/</OutputPath>
   </PropertyGroup>
 
 
