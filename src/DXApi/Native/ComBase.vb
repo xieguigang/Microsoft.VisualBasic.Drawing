@@ -179,6 +179,13 @@ Imports std = System.Math
         End Function
     End Module
 
+    ' DEBUG ONLY delegates for the raw vtable probing
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Friend Delegate Sub DxVoidNoArg(this As IntPtr)
+
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Friend Delegate Sub DxVoidRefColor(this As IntPtr, ByRef color As D2D1_COLOR_F)
+
     Friend Module DxConstants
 
         Friend ReadOnly IID_IDXGISurface As New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")

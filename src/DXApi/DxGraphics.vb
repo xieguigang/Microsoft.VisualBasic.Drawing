@@ -92,14 +92,14 @@ Public Class DxGraphics : Inherits IGraphics
     ''' DEBUG ONLY: query interface probe
     ''' </summary>
     Public Function Probe() As String
-        Dim sb As New System.Text.StringBuilder()
+        Dim log As New Action(Of String)(AddressOf Console.WriteLine)
 
         For Each t As Type In {GetType(ID2D1RenderTarget), GetType(ID2D1Resource), GetType(ID2D1Factory), GetType(ID3D11Device)}
             Dim p As IntPtr = IntPtr.Zero
             Dim unk As IntPtr = Marshal.GetIUnknownForObject(If(t Is GetType(ID3D11Device), CObj(renderTarget.Device.Device), CObj(renderTarget.Target)))
             Dim hr As Integer = Marshal.QueryInterface(unk, t.GUID, p)
 
-            sb.AppendLine($"QI {t.Name} {{{t.GUID}}} => 0x{hr:X8}, ptr=0x{p.ToInt64():X}")
+            log($"QI {t.Name} {{{t.GUID}}} => 0x{hr:X8}, ptr=0x{p.ToInt64():X}")
             Marshal.Release(unk)
 
             If p <> IntPtr.Zero Then
@@ -107,7 +107,7 @@ Public Class DxGraphics : Inherits IGraphics
             End If
         Next
 
-        sb.AppendLine($"target is com object: {Marshal.IsComObject(renderTarget.Target)}")
+        log($"target is com object: {Marshal.IsComObject(renderTarget.Target)}")
 
         Try
             Dim unk2 As IntPtr = Marshal.GetIUnknownForObject(renderTarget.Target)
@@ -120,12 +120,43 @@ Public Class DxGraphics : Inherits IGraphics
             Dim factoryPtr As IntPtr
 
             probeObj.GetFactory(factoryPtr)
-            sb.AppendLine($"minimal probe dispatch OK, factory=0x{factoryPtr.ToInt64():X}")
+            log($"minimal probe dispatch OK, factory=0x{factoryPtr.ToInt64():X}")
         Catch ex As Exception
-            sb.AppendLine("minimal probe dispatch FAIL: " & ex.Message)
+            log("minimal probe dispatch FAIL: " & ex.Message)
         End Try
 
-        Return sb.ToString()
+        ' raw vtable probing
+        Dim raw As IntPtr = Marshal.GetIUnknownForObject(renderTarget.Target)
+        Dim vt As IntPtr = Marshal.ReadIntPtr(raw)
+
+        log($"vtable = 0x{vt.ToInt64():X}, this = 0x{raw.ToInt64():X}")
+
+        For i As Integer = 3 To 41
+            log($"  slot {i}: 0x{Marshal.ReadIntPtr(vt, i * IntPtr.Size).ToInt64():X}")
+        Next
+
+        Try
+            Dim beginDraw = Marshal.GetDelegateForFunctionPointer(Of DxVoidNoArg)(Marshal.ReadIntPtr(vt, 40 * IntPtr.Size))
+
+            beginDraw(raw)
+            log("raw vtable slot 40 (BeginDraw) OK")
+        Catch ex As Exception
+            log("raw vtable slot 40 FAIL: " & ex.Message)
+        End Try
+
+        Try
+            Dim clearRaw = Marshal.GetDelegateForFunctionPointer(Of DxVoidRefColor)(Marshal.ReadIntPtr(vt, 39 * IntPtr.Size))
+            Dim white As D2D1_COLOR_F = ToColorF(Color.White)
+
+            clearRaw(raw, white)
+            log("raw vtable slot 39 (Clear) OK")
+        Catch ex As Exception
+            log("raw vtable slot 39 FAIL: " & ex.Message)
+        End Try
+
+        Marshal.Release(raw)
+
+        Return "probe finished"
     End Function
 
     ''' <summary>
