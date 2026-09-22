@@ -90,6 +90,13 @@ Public Class DxGraphics : Inherits IGraphics
 
 
     ''' <summary>
+    ''' DEBUG ONLY
+    ''' </summary>
+    Public Sub DebugPing(where As String)
+        Call renderTarget.DebugPing(where)
+    End Sub
+
+    ''' <summary>
     ''' a short description of the underlying gpu device
     ''' </summary>
     Public ReadOnly Property DeviceDescription As String
@@ -130,9 +137,18 @@ Public Class DxGraphics : Inherits IGraphics
 
         Call renderTarget.DebugPing("after brush cache")
 
+        Console.WriteLine("DEBUG fill.IsEmpty = " & fill.IsEmpty)
+
         If Not fill.IsEmpty Then
-            Call ClearCanvas(fill)
+            Try
+                Call ClearCanvas(fill)
+                Console.WriteLine("DEBUG ClearCanvas ok")
+            Catch ex As Exception
+                Console.WriteLine("DEBUG ClearCanvas fail: " & ex.Message)
+            End Try
         End If
+
+        Call renderTarget.DebugPing("ctor end")
     End Sub
 
     ''' <summary>

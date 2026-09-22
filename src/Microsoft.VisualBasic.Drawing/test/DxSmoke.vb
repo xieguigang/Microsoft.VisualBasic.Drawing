@@ -14,6 +14,7 @@ Module DxSmoke
 
         Console.WriteLine("[2] canvas created, device = " & g.DeviceDescription)
 
+        Call g.DebugPing("smoke start")
         Call step_("fillrect", Sub() g.FillRectangle(New SolidBrush(Color.Red), New Rectangle(10, 10, 100, 50)))
         Call step_("fillpolygon", Sub() g.FillPolygon(New SolidBrush(Color.Green), {
             New PointF(120, 20), New PointF(200, 30), New PointF(180, 90), New PointF(130, 80)
