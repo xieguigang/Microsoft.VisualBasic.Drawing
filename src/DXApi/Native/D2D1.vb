@@ -215,8 +215,10 @@ Friend Module D2D1
     <ComImport>
     <Guid("2cd90694-12e2-11dc-9fed-001143a055f9")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Friend Interface ID2D1RenderTarget : Inherits ID2D1Resource
+    Friend Interface ID2D1RenderTarget
 
+        ' slot 3, inherited from ID2D1Resource
+        <PreserveSig> Sub GetFactory(<Out> ByRef factory As IntPtr)
         ' slot 4
         <PreserveSig> Function CreateBitmap(size As D2D1_SIZE_U, srcData As IntPtr, pitch As UInteger, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
         ' slot 5
