@@ -33,11 +33,21 @@ Public Class DxGraphics : Inherits IGraphics
     Implements SaveGdiBitmap
 
     ''' <summary>
-    ''' the off screen gpu canvas
+    ''' the gpu canvas that receives the drawing commands, this is either a
+    ''' fixed size off screen texture or a window swap chain.
     ''' </summary>
-    Friend ReadOnly renderTarget As DxRenderTarget
-    Friend ReadOnly brushes As DxBrushCache
-    Friend ReadOnly batch As DxPolygonBatch
+    Friend ReadOnly renderTarget As DxRenderSurface
+
+    ''' <summary>
+    ''' the brush, stroke style and text format cache of the render target
+    ''' </summary>
+    ''' <remarks>
+    ''' a direct2d brush is owned by the render target that has created it, so
+    ''' both of these caches are rebuilt whenever the render target is
+    ''' recreated (on a resize or on a removed gpu device).
+    ''' </remarks>
+    Friend brushes As DxBrushCache
+    Friend batch As DxPolygonBatch
 
     ''' <summary>
     ''' the axis aligned clip rectangles that are pushed on the render target

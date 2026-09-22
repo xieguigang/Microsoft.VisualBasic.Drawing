@@ -187,6 +187,41 @@ Friend Class DxPolygonBatch : Implements IDisposable
     End Sub
 
     ''' <summary>
+    ''' drop the accumulated polygon primitives without submitting them
+    ''' </summary>
+    ''' <remarks>
+    ''' This is required when the render target that owns the pending geometry
+    ''' is not usable any more (a removed gpu device for example): the pending
+    ''' figures can not be rasterized any more, so they are released directly
+    ''' instead of being drawn.
+    ''' </remarks>
+    Friend Sub Discard()
+        If geometry Is Nothing Then
+            Return
+        End If
+
+        Dim path As ID2D1PathGeometry = geometry
+        Dim sinkRef As ID2D1GeometrySink = sink
+        Dim writerRef As DxSinkWriter = writer
+
+        geometry = Nothing
+        sink = Nothing
+        writer = Nothing
+        figures = 0
+        brush = Nothing
+        strokeStyle = Nothing
+        brushKey = 0
+
+        Try
+            writerRef.Release()
+        Catch
+        End Try
+
+        Call SafeRelease(sinkRef)
+        Call SafeRelease(path)
+    End Sub
+
+    ''' <summary>
     ''' the brush key of the current pending batch, -1 means nothing pending
     ''' </summary>
     Friend ReadOnly Property CurrentKey As Integer

@@ -16,6 +16,27 @@ Imports std = System.Math
 
         Friend Const S_OK As Integer = 0
         Friend Const D2DERR_RECREATE_TARGET As Integer = &H88990012
+        Friend Const D2DERR_UNSUPPORTED_PIXEL_FORMAT As Integer = &H8899000B
+        ''' <summary>the gpu device has been removed, the whole device has to be recreated</summary>
+        Friend Const DXGI_ERROR_DEVICE_REMOVED As Integer = &H887A0005
+        ''' <summary>the gpu device has been reset</summary>
+        Friend Const DXGI_ERROR_DEVICE_RESET As Integer = &H887A000C
+        ''' <summary>the gpu is still busy with the previous frame</summary>
+        Friend Const DXGI_ERROR_WAS_STILL_DRAWING As Integer = &H887A000B
+
+        ''' <summary>
+        ''' does the hresult mean that the rendering device or the render target
+        ''' is not usable any more?
+        ''' </summary>
+        ''' <remarks>
+        ''' when this is the case, the swap chain and the direct2d render target
+        ''' must be recreated before the next drawing command is submitted.
+        ''' </remarks>
+        Friend Function IsDeviceLost(hr As Integer) As Boolean
+            Return hr = DXGI_ERROR_DEVICE_REMOVED OrElse
+                hr = DXGI_ERROR_DEVICE_RESET OrElse
+                hr = D2DERR_RECREATE_TARGET
+        End Function
 
         ''' <summary>
         ''' check the HRESULT value of a directx api call
@@ -204,6 +225,8 @@ Imports std = System.Math
     Friend Module DxConstants
 
         Friend ReadOnly IID_IDXGISurface As New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")
+        Friend ReadOnly IID_IDXGIFactory2 As New Guid("50c83a1c-e072-4c48-87b0-3630fa36a6d0")
+        Friend ReadOnly IID_IDXGISwapChain As New Guid("310d36a0-d02c-4a0a-aa04-6a9d23b8886a")
     End Module
 
     ' /********************************************************************************/
