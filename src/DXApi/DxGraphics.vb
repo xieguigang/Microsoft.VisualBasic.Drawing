@@ -116,11 +116,11 @@ Public Class DxGraphics : Inherits IGraphics
 
             Marshal.Release(unk2)
 
-            Dim probe = ComObject(Of IRtProbe)(p2)
-            Dim f As IntPtr
+            Dim probeObj = ComObject(Of IRtProbe)(p2)
+            Dim factoryPtr As IntPtr
 
-            probe.GetFactory(f)
-            sb.AppendLine($"minimal probe dispatch OK, factory=0x{f.ToInt64():X}")
+            probeObj.GetFactory(factoryPtr)
+            sb.AppendLine($"minimal probe dispatch OK, factory=0x{factoryPtr.ToInt64():X}")
         Catch ex As Exception
             sb.AppendLine("minimal probe dispatch FAIL: " & ex.Message)
         End Try
