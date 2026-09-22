@@ -171,9 +171,9 @@ Public Class DxGraphics : Inherits IGraphics
     ''' <summary>
     ''' append a polygon primitive into the batch submitter
     ''' </summary>
-    Private Sub PolygonPrimitive(points As D2D1_POINT_2F(), stroke As Boolean,
+    Private Sub PolygonPrimitive(points As PointF(), stroke As Boolean,
                                  brush As ID2D1Brush,
-                                 key As String,
+                                 key As Integer,
                                  Optional width As Single = 1.0F,
                                  Optional style As ID2D1StrokeStyle = Nothing)
 
@@ -184,10 +184,37 @@ Public Class DxGraphics : Inherits IGraphics
         End If
     End Sub
 
-    Private Function PenKey(pen As Pen) As String
-        Dim dash As Single() = If(pen.DashPattern, New Single() {})
+    ''' <summary>
+    ''' build a cheap hash key of the pen object, the key is used by the
+    ''' polygon batch submitter to detect a brush change
+    ''' </summary>
+    Friend Shared Function PenKey(pen As Pen) As Integer
+        Dim hash As Integer = pen.Color.ToArgb()
 
-        Return $"{pen.Color.ToArgb()}|{pen.Width}|{CInt(pen.DashStyle)}|{CInt(pen.StartCap)}|{CInt(pen.EndCap)}|{CInt(pen.LineJoin)}|{String.Join(",", dash)}"
+        hash = MixHash(hash, BitConverter.SingleToInt32Bits(pen.Width))
+        hash = MixHash(hash, CInt(pen.DashStyle))
+        hash = MixHash(hash, CInt(pen.StartCap))
+        hash = MixHash(hash, CInt(pen.EndCap))
+        hash = MixHash(hash, CInt(pen.DashCap))
+        hash = MixHash(hash, CInt(pen.LineJoin))
+        hash = MixHash(hash, BitConverter.SingleToInt32Bits(pen.DashOffset))
+        hash = MixHash(hash, BitConverter.SingleToInt32Bits(pen.MiterLimit))
+
+        If pen.DashPattern IsNot Nothing Then
+            For Each dash As Single In pen.DashPattern
+                hash = MixHash(hash, BitConverter.SingleToInt32Bits(dash))
+            Next
+        End If
+
+        Return hash
+    End Function
+
+    ''' <summary>
+    ''' mix a hash value without any checked arithmetic overflow
+    ''' </summary>
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Private Shared Function MixHash(hash As Integer, value As Integer) As Integer
+        Return ((hash << 5) Or (hash >> 27)) Xor value
     End Function
 
     Private Sub PushClip(rect As RectangleF)
@@ -701,9 +728,9 @@ Public Class DxGraphics : Inherits IGraphics
         End If
 
         Dim fill As ID2D1Brush = brushes.GetBrush(brush)
-        Dim key As String = Brush.SolidColor(brush).ToArgb().ToString()
+        Dim key As Integer = Brush.SolidColor(brush).ToArgb()
 
-        Call PolygonPrimitive(ToPoints(points), stroke:=False, brush:=fill, key:=key)
+        Call PolygonPrimitive(points, stroke:=False, brush:=fill, key:=key)
     End Sub
 
     Public Overrides Sub FillPolygon(brush As Brush, points() As System.Drawing.Point)
@@ -719,14 +746,22 @@ Public Class DxGraphics : Inherits IGraphics
             Return
         End If
 
-        Call PolygonPrimitive(
-            ToPoints(points),
-            stroke:=True,
-            brush:=brushes.GetBrush(pen.Color),
-            key:=PenKey(pen),
-            width:=pen.Width,
-            style:=brushes.GetStrokeStyle(pen)
-        )
+        Dim key As Integer = PenKey(pen)
+
+        ' only resolve the brush and the stroke style when a new batch is
+        ' required, this keeps the per primitive overhead minimal
+        If batch.CurrentKey <> key OrElse Not batch.CurrentIsStroke Then
+            Call PolygonPrimitive(
+                points,
+                stroke:=True,
+                brush:=brushes.GetBrush(pen.Color),
+                key:=key,
+                width:=pen.Width,
+                style:=brushes.GetStrokeStyle(pen)
+            )
+        Else
+            Call PolygonPrimitive(points, stroke:=True, brush:=Nothing, key:=key, width:=pen.Width)
+        End If
     End Sub
 
     Public Overrides Sub DrawPolygon(pen As Pen, points() As System.Drawing.Point)

@@ -1,3 +1,4 @@
+Imports System.Drawing
 Imports System.Runtime.InteropServices
 
 ''' <summary>
@@ -14,6 +15,10 @@ Imports System.Runtime.InteropServices
 ''' one draw call, so the per primitive overhead is reduced from O(n) to
 ''' O(n / batch_size).
 '''
+''' The vertex buffer of the figure is written into a pinned scratch buffer
+''' that is owned by this submitter, so that no managed array has to be
+''' allocated and marshalled for each polygon primitive.
+'''
 ''' The fill mode of the batch geometry is D2D1_FILL_MODE_WINDING, so that
 ''' the overlapped area of two polygons is still filled, which keeps the same
 ''' visual result as drawing the polygons one by one.
@@ -24,19 +29,34 @@ Friend Class DxPolygonBatch : Implements IDisposable
     ''' flush the geometry after this amount of figures so that the memory
     ''' cost of a single batch is bounded.
     ''' </summary>
-    Private Const MAX_FIGURES As Integer = 4096
+    Private Const MAX_FIGURES As Integer = 512
+
+    ''' <summary>
+    ''' the vertex capacity of the pinned scratch buffer
+    ''' </summary>
+    Private Const MAX_SCRATCH_POINTS As Integer = 512
 
     Private ReadOnly factory As ID2D1Factory
     Private ReadOnly target As ID2D1RenderTarget
 
+    ''' <summary>
+    ''' a pinned managed vertex buffer, it is reused by every polygon so that
+    ''' no per primitive allocation is required
+    ''' </summary>
+    Private ReadOnly scratch As Single()
+    Private scratchHandle As GCHandle
+    Private scratchPtr As IntPtr
+
     Private geometry As ID2D1PathGeometry = Nothing
     Private sink As ID2D1GeometrySink = Nothing
+    Private writer As DxSinkWriter = Nothing
     Private brush As ID2D1Brush = Nothing
     Private strokeStyle As ID2D1StrokeStyle = Nothing
-    Private brushKey As String = Nothing
+    Private brushKey As Integer = 0
     Private isStroke As Boolean = False
     Private strokeWidth As Single = 1.0F
     Private figures As Integer = 0
+    Private m_disposed As Boolean = False
 
     ''' <summary>
     ''' the amount of the polygon primitives that are accumulated in the
@@ -51,6 +71,9 @@ Friend Class DxPolygonBatch : Implements IDisposable
     Friend Sub New(factory2d As ID2D1Factory, renderTarget As ID2D1RenderTarget)
         factory = factory2d
         target = renderTarget
+        scratch = New Single(MAX_SCRATCH_POINTS * 2 - 1) {}
+        scratchHandle = GCHandle.Alloc(scratch, GCHandleType.Pinned)
+        scratchPtr = scratchHandle.AddrOfPinnedObject()
     End Sub
 
     ''' <summary>
@@ -63,7 +86,7 @@ Friend Class DxPolygonBatch : Implements IDisposable
     ''' <param name="key">
     ''' the brush cache key, a new batch is required when the key is changed
     ''' </param>
-    Friend Sub AddPolygon(points As D2D1_POINT_2F(), stroke As Boolean, key As String,
+    Friend Sub AddPolygon(points As PointF(), stroke As Boolean, key As Integer,
                           fillBrush As ID2D1Brush,
                           Optional width As Single = 1.0F,
                           Optional style As ID2D1StrokeStyle = Nothing)
@@ -90,7 +113,8 @@ Friend Class DxPolygonBatch : Implements IDisposable
             Call ThrowIfFailed(path.Open(sinkPtr), "ID2D1PathGeometry::Open")
 
             sink = ComObject(Of ID2D1GeometrySink)(sinkPtr)
-            Call sink.SetFillMode(D2D1_FILL_MODE.WINDING)
+            writer = New DxSinkWriter(sink)
+            writer.SetFillMode(D2D1_FILL_MODE.WINDING)
 
             geometry = path
             brushKey = key
@@ -101,16 +125,23 @@ Friend Class DxPolygonBatch : Implements IDisposable
             figures = 0
         End If
 
-        Call sink.BeginFigure(points(0), D2D1_FIGURE_BEGIN.FILLED)
+        Call writer.BeginFigure(New D2D1_POINT_2F With {.x = points(0).X, .y = points(0).Y})
 
         If points.Length > 1 Then
-            Dim tail As D2D1_POINT_2F() = New D2D1_POINT_2F(points.Length - 2) {}
+            If points.Length <= MAX_SCRATCH_POINTS Then
+                For i As Integer = 0 To points.Length - 1
+                    scratch(i * 2) = points(i).X
+                    scratch(i * 2 + 1) = points(i).Y
+                Next
 
-            Call Array.Copy(points, 1, tail, 0, tail.Length)
-            Call sink.AddLines(tail, CUInt(tail.Length))
+                Call writer.AddLines(New IntPtr(scratchPtr.ToInt64() + 8L), CUInt(points.Length - 1))
+            Else
+                ' a polygon that is larger than the scratch buffer
+                Call DxPathBuilder.AddLines(sink, DxPathBuilder.ToPoints(points), 1)
+            End If
         End If
 
-        Call sink.EndFigure(D2D1_FIGURE_END.CLOSED)
+        writer.EndFigureClosed()
 
         figures += 1
 
@@ -129,13 +160,15 @@ Friend Class DxPolygonBatch : Implements IDisposable
 
         Dim path As ID2D1PathGeometry = geometry
         Dim sinkRef As ID2D1GeometrySink = sink
+        Dim writerRef As DxSinkWriter = writer
 
         geometry = Nothing
         sink = Nothing
+        writer = Nothing
         figures = 0
 
         Try
-            Call ThrowIfFailed(sinkRef.Close(), "ID2D1GeometrySink::Close")
+            writerRef.Close()
 
             If isStroke Then
                 Call target.DrawGeometry(path, brush, strokeWidth, strokeStyle)
@@ -143,17 +176,56 @@ Friend Class DxPolygonBatch : Implements IDisposable
                 Call target.FillGeometry(path, brush, Nothing)
             End If
         Finally
+            writerRef.Release()
             Call SafeRelease(sinkRef)
             Call SafeRelease(path)
         End Try
 
         brush = Nothing
         strokeStyle = Nothing
-        brushKey = Nothing
+        brushKey = 0
+    End Sub
+
+    ''' <summary>
+    ''' the brush key of the current pending batch, -1 means nothing pending
+    ''' </summary>
+    Friend ReadOnly Property CurrentKey As Integer
+        Get
+            If geometry Is Nothing Then
+                Return -1
+            End If
+
+            Return brushKey
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' is the pending batch a stroke batch?
+    ''' </summary>
+    Friend ReadOnly Property CurrentIsStroke As Boolean
+        Get
+            Return geometry IsNot Nothing AndAlso isStroke
+        End Get
+    End Property
+
+    Private Sub Dispose(disposing As Boolean)
+        If m_disposed Then
+            Return
+        End If
+
+        m_disposed = True
+
+        Call Flush()
+
+        If scratchHandle.IsAllocated Then
+            Call scratchHandle.Free()
+        End If
+
+        scratchPtr = IntPtr.Zero
     End Sub
 
     Public Sub Dispose() Implements IDisposable.Dispose
-        Call Flush()
+        Call Dispose(True)
         GC.SuppressFinalize(Me)
     End Sub
 End Class

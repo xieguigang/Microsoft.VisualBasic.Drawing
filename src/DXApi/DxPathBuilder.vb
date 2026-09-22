@@ -1,5 +1,6 @@
 Imports System.Drawing
 Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Linq
 Imports std = System.Math
@@ -73,18 +74,34 @@ Friend Module DxPathBuilder
     End Sub
 
     ''' <summary>
+    ''' append the polygon vertex buffer into the geometry sink, the vertex
+    ''' buffer is pinned during the call so that no extra copy is required.
+    ''' </summary>
+    ''' <param name="offset">
+    ''' the index of the first vertex that should be appended, the vertex
+    ''' before the offset is consumed by the BeginFigure call
+    ''' </param>
+    Friend Sub AddLines(sink As ID2D1GeometrySink, points As D2D1_POINT_2F(), offset As Integer)
+        If points.Length <= offset Then
+            Return
+        End If
+
+        Dim count As Integer = points.Length - offset
+        Dim handle As GCHandle = GCHandle.Alloc(points, GCHandleType.Pinned)
+
+        Try
+            Call sink.AddLines(New IntPtr(handle.AddrOfPinnedObject().ToInt64() + offset * 8L), CUInt(count))
+        Finally
+            Call handle.Free()
+        End Try
+    End Sub
+
+    ''' <summary>
     ''' AddLines of the polygon, the first point is consumed by the BeginFigure
     ''' call so that only the remaining points are appended here.
     ''' </summary>
     Private Sub AddTail(sink As ID2D1GeometrySink, points As D2D1_POINT_2F())
-        If points.Length <= 1 Then
-            Return
-        End If
-
-        Dim tail As D2D1_POINT_2F() = New D2D1_POINT_2F(points.Length - 2) {}
-
-        Call Array.Copy(points, 1, tail, 0, tail.Length)
-        Call sink.AddLines(tail, CUInt(tail.Length))
+        Call AddLines(sink, points, 1)
     End Sub
 
     ' /********************************************************************************/

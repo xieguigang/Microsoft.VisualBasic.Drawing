@@ -64,9 +64,10 @@ Friend Class DxDevice : Implements IDisposable
         Dim device As ID3D11Device = Nothing
         Dim context As ID3D11DeviceContext = Nothing
         Dim featureLevel As UInteger = 0
+        Dim driver As D3D_DRIVER_TYPE = D3D_DRIVER_TYPE.HARDWARE
         Dim hr As Integer = D3D11.D3D11CreateDevice(
             IntPtr.Zero,
-            D3D_DRIVER_TYPE.HARDWARE,
+            driver,
             IntPtr.Zero,
             CUInt(D3D11_CREATE_DEVICE_FLAG.BGRA_SUPPORT),
             levels, CUInt(levels.Length),
@@ -78,10 +79,11 @@ Friend Class DxDevice : Implements IDisposable
             ' no gpu device available, fallback to the WARP software rasterizer
             device = Nothing
             context = Nothing
+            driver = D3D_DRIVER_TYPE.WARP
 
             hr = D3D11.D3D11CreateDevice(
                 IntPtr.Zero,
-                D3D_DRIVER_TYPE.WARP,
+                driver,
                 IntPtr.Zero,
                 CUInt(D3D11_CREATE_DEVICE_FLAG.BGRA_SUPPORT),
                 levels, CUInt(levels.Length),
@@ -95,7 +97,7 @@ Friend Class DxDevice : Implements IDisposable
         _Device = device
         _Context = context
         _FeatureLevel = featureLevel
-        _DriverType = If(featureLevel >= &HB000, D3D_DRIVER_TYPE.HARDWARE, D3D_DRIVER_TYPE.WARP)
+        _DriverType = driver
 
         ' create the direct2d factory
         Dim factory2d As ID2D1Factory = Nothing

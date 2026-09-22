@@ -159,10 +159,34 @@ Friend Class DxBrushCache : Implements IDisposable
     End Function
 
     ''' <summary>
+    ''' does the pen describe a plain solid stroke line?
+    ''' </summary>
+    Friend Shared Function IsDefaultStroke(pen As Pen) As Boolean
+        If pen.DashStyle <> DashStyle.Solid Then
+            Return False
+        End If
+
+        If pen.DashPattern IsNot Nothing AndAlso pen.DashPattern.Length > 0 Then
+            Return False
+        End If
+
+        If pen.DashOffset <> 0 OrElse pen.MiterLimit > 0 Then
+            Return False
+        End If
+
+        Return pen.StartCap = LineCap.Flat AndAlso pen.EndCap = LineCap.Flat AndAlso pen.LineJoin = LineJoin.Miter
+    End Function
+
+    ''' <summary>
     ''' get or create the direct2d stroke style of the given pen object
     ''' </summary>
+    ''' <remarks>
+    ''' a default pen (solid line, butt cap and miter join) does not require a
+    ''' stroke style object at all, so that the fastest path is taken for the
+    ''' most common case.
+    ''' </remarks>
     Friend Function GetStrokeStyle(pen As Pen) As ID2D1StrokeStyle
-        If pen Is Nothing Then
+        If pen Is Nothing OrElse IsDefaultStroke(pen) Then
             Return Nothing
         End If
 

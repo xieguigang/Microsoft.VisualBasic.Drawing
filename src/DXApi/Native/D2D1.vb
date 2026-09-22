@@ -227,7 +227,7 @@ Friend Interface ID2D1SimplifiedGeometrySink
     ' slot 5
     <PreserveSig> Sub BeginFigure(startPoint As D2D1_POINT_2F, figureBegin As D2D1_FIGURE_BEGIN)
     ' slot 6
-    <PreserveSig> Sub AddLines(<MarshalAs(UnmanagedType.LPArray)> points As D2D1_POINT_2F(), count As UInteger)
+    <PreserveSig> Sub AddLines(points As IntPtr, count As UInteger)
     ' slot 7
     <PreserveSig> Sub AddBeziers(<MarshalAs(UnmanagedType.LPArray)> beziers As D2D1_BEZIER_SEGMENT(), count As UInteger)
     ' slot 8
@@ -245,7 +245,7 @@ Friend Interface ID2D1GeometrySink
     <PreserveSig> Sub SetFillMode(fillMode As D2D1_FILL_MODE)
     <PreserveSig> Sub SetSegmentFlags(vertexFlags As Integer)
     <PreserveSig> Sub BeginFigure(startPoint As D2D1_POINT_2F, figureBegin As D2D1_FIGURE_BEGIN)
-    <PreserveSig> Sub AddLines(<MarshalAs(UnmanagedType.LPArray)> points As D2D1_POINT_2F(), count As UInteger)
+    <PreserveSig> Sub AddLines(points As IntPtr, count As UInteger)
     <PreserveSig> Sub AddBeziers(<MarshalAs(UnmanagedType.LPArray)> beziers As D2D1_BEZIER_SEGMENT(), count As UInteger)
     <PreserveSig> Sub EndFigure(figureEnd As D2D1_FIGURE_END)
     <PreserveSig> Function Close() As Integer
