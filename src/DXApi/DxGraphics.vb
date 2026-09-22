@@ -288,15 +288,17 @@ Public Class DxGraphics : Inherits IGraphics
                 .dpiX = 96.0F,
                 .dpiY = 96.0F
             }
-            Dim bitmap As ID2D1Bitmap = Nothing
+            Dim bitmapPtr As IntPtr = IntPtr.Zero
 
             Call ThrowIfFailed(
                 renderTarget.Target.CreateBitmap(
                     Pack64(image.Width, image.Height),
                     handle.AddrOfPinnedObject(),
-                    CUInt(stride), props, bitmap),
+                    CUInt(stride), props, bitmapPtr),
                 "ID2D1RenderTarget::CreateBitmap"
             )
+
+            Dim bitmap As ID2D1Bitmap = ComObject(Of ID2D1Bitmap)(bitmapPtr)
 
             Try
                 Call renderTarget.Target.DrawBitmap(bitmap, ToRectF(dest), 1.0F, D2D1_BITMAP_INTERPOLATION_MODE.LINEAR, IntPtr.Zero)

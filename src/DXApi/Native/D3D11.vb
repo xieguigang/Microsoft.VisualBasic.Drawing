@@ -198,7 +198,7 @@ Friend Module D3D11
     Friend Interface ID3D11Device
         <PreserveSig> Function CreateBuffer(desc As IntPtr, initialData As IntPtr, <Out> ByRef buffer As IntPtr) As Integer
         <PreserveSig> Function CreateTexture1D(desc As IntPtr, initialData As IntPtr, <Out> ByRef texture As IntPtr) As Integer
-        <PreserveSig> Function CreateTexture2D(ByRef desc As D3D11_TEXTURE2D_DESC, initialData As IntPtr, <Out> ByRef texture As ID3D11Texture2D) As Integer
+        <PreserveSig> Function CreateTexture2D(ByRef desc As D3D11_TEXTURE2D_DESC, initialData As IntPtr, <Out> ByRef texture As IntPtr) As Integer
     End Interface
 
     ''' <summary>

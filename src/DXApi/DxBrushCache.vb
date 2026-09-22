@@ -128,29 +128,30 @@ Friend Class DxBrushCache : Implements IDisposable
             }
         Next
 
-        Dim collection As ID2D1GradientStopCollection = Nothing
+        Dim collectionPtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            target.CreateGradientStopCollection(stops, CUInt(stops.Length), D2D1_GAMMA.G22, D2D1_EXTEND_MODE.CLAMP, collection),
+            target.CreateGradientStopCollection(stops, CUInt(stops.Length), D2D1_GAMMA.G22, D2D1_EXTEND_MODE.CLAMP, collectionPtr),
             "ID2D1RenderTarget::CreateGradientStopCollection"
         )
 
+        Dim collection As ID2D1GradientStopCollection = ComObject(Of ID2D1GradientStopCollection)(collectionPtr)
         Dim props As New D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES With {
             .startPoint = New D2D1_POINT_2F With {.x = cx - dirX * half, .y = cy - dirY * half},
             .endPoint = New D2D1_POINT_2F With {.x = cx + dirX * half, .y = cy + dirY * half}
         }
-        Dim gradient As ID2D1Brush = Nothing
+        Dim gradientPtr As IntPtr = IntPtr.Zero
 
         Try
             Call ThrowIfFailed(
-                target.CreateLinearGradientBrush(props, IntPtr.Zero, collection, gradient),
+                target.CreateLinearGradientBrush(props, IntPtr.Zero, collection, gradientPtr),
                 "ID2D1RenderTarget::CreateLinearGradientBrush"
             )
         Finally
             Call SafeRelease(collection)
         End Try
 
-        gradients(key) = gradient
+        gradients(key) = ComObject(Of ID2D1Brush)(gradientPtr)
 
         Return gradient
     End Function
@@ -180,12 +181,16 @@ Friend Class DxBrushCache : Implements IDisposable
             .dashStyle = CInt(pen.DashStyle),
             .dashOffset = pen.DashOffset
         }
+        ' direct2d requires a null dash buffer when the dash array is empty
+        Dim dashBuffer As Single() = If(dash.Length > 0, dash, Nothing)
+        Dim stylePtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            factory.CreateStrokeStyle(props, dash, CUInt(dash.Length), style),
+            factory.CreateStrokeStyle(props, dashBuffer, CUInt(dash.Length), stylePtr),
             "ID2D1Factory::CreateStrokeStyle"
         )
 
+        style = ComObject(Of ID2D1StrokeStyle)(stylePtr)
         styles(key) = style
 
         Return style
@@ -204,12 +209,14 @@ Friend Class DxBrushCache : Implements IDisposable
 
         Dim weight As Integer = If(font.Bold, DWRITE_FONT_WEIGHT.BOLD, DWRITE_FONT_WEIGHT.NORMAL)
         Dim style As Integer = If(font.Italic, DWRITE_FONT_STYLE.ITALIC, DWRITE_FONT_STYLE.NORMAL)
+        Dim formatPtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            writeFactory.CreateTextFormat(font.Name, IntPtr.Zero, weight, style, DWRITE_FONT_STRETCH.NORMAL, font.Size, "en-us", format),
+            writeFactory.CreateTextFormat(font.Name, IntPtr.Zero, weight, style, DWRITE_FONT_STRETCH.NORMAL, font.Size, "en-us", formatPtr),
             "IDWriteFactory::CreateTextFormat"
         )
 
+        format = ComObject(Of IDWriteTextFormat)(formatPtr)
         formats(key) = format
 
         Return format
@@ -224,12 +231,14 @@ Friend Class DxBrushCache : Implements IDisposable
         End If
 
         Dim format As IDWriteTextFormat = GetTextFormat(font)
-        Dim layout As IDWriteTextLayout = Nothing
+        Dim layoutPtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            writeFactory.CreateTextLayout(text, CUInt(text.Length), format, maxWidth, 1.0E+07F, layout),
+            writeFactory.CreateTextLayout(text, CUInt(text.Length), format, maxWidth, 1.0E+07F, layoutPtr),
             "IDWriteFactory::CreateTextLayout"
         )
+
+        Dim layout As IDWriteTextLayout = ComObject(Of IDWriteTextLayout)(layoutPtr)
 
         Try
             Dim metrics As DWRITE_TEXT_METRICS

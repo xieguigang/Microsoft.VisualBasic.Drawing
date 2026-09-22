@@ -58,28 +58,28 @@ Friend Class DxRenderTarget : Implements IDisposable
             .CPUAccessFlags = 0,
             .MiscFlags = 0
         }
-        Dim tex As ID3D11Texture2D = Nothing
+        Dim texPtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            device.Device.CreateTexture2D(desc, IntPtr.Zero, tex),
+            device.Device.CreateTexture2D(desc, IntPtr.Zero, texPtr),
             "ID3D11Device::CreateTexture2D"
         )
 
-        texture = tex
+        texture = ComObject(Of ID3D11Texture2D)(texPtr)
 
         ' the staging texture for the pixel read back
         desc.Usage = D3D11_USAGE.STAGING
         desc.BindFlags = 0
         desc.CPUAccessFlags = CUInt(D3D11_CPU_ACCESS_FLAG.READ)
 
-        Dim stage As ID3D11Texture2D = Nothing
+        Dim stagePtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            device.Device.CreateTexture2D(desc, IntPtr.Zero, stage),
+            device.Device.CreateTexture2D(desc, IntPtr.Zero, stagePtr),
             "ID3D11Device::CreateTexture2D(staging)"
         )
 
-        staging = stage
+        staging = ComObject(Of ID3D11Texture2D)(stagePtr)
 
         ' share the texture with direct2d
         surface = ComQuery(texture, DxConstants.IID_IDXGISurface, "IDXGISurface")
