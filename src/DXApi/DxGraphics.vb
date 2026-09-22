@@ -136,15 +136,6 @@ Public Class DxGraphics : Inherits IGraphics
         Next
 
         Try
-            Dim beginDraw = Marshal.GetDelegateForFunctionPointer(Of DxVoidNoArg)(Marshal.ReadIntPtr(vt, 40 * IntPtr.Size))
-
-            beginDraw(raw)
-            log("raw vtable slot 40 (BeginDraw) OK")
-        Catch ex As Exception
-            log("raw vtable slot 40 FAIL: " & ex.Message)
-        End Try
-
-        Try
             Dim clearRaw = Marshal.GetDelegateForFunctionPointer(Of DxVoidRefColor)(Marshal.ReadIntPtr(vt, 39 * IntPtr.Size))
             Dim white As D2D1_COLOR_F = ToColorF(Color.White)
 
@@ -152,6 +143,37 @@ Public Class DxGraphics : Inherits IGraphics
             log("raw vtable slot 39 (Clear) OK")
         Catch ex As Exception
             log("raw vtable slot 39 FAIL: " & ex.Message)
+        End Try
+
+        Try
+            Dim flushRaw = Marshal.GetDelegateForFunctionPointer(Of DxEndDraw)(Marshal.ReadIntPtr(vt, 34 * IntPtr.Size))
+            Dim hr4 As Integer = flushRaw(raw, IntPtr.Zero, IntPtr.Zero)
+
+            log($"raw vtable slot 34 (Flush) => 0x{hr4:X8}")
+        Catch ex As Exception
+            log("raw vtable slot 34 FAIL: " & ex.Message)
+        End Try
+
+        Dim brushPtr As IntPtr = IntPtr.Zero
+
+        Try
+            Dim createBrush = Marshal.GetDelegateForFunctionPointer(Of DxCreateSolidBrush)(Marshal.ReadIntPtr(vt, 8 * IntPtr.Size))
+            Dim red As D2D1_COLOR_F = ToColorF(Color.Red)
+            Dim hr5 As Integer = createBrush(raw, red, IntPtr.Zero, brushPtr)
+
+            log($"raw vtable slot 8 (CreateSolidColorBrush) => 0x{hr5:X8}, brush=0x{brushPtr.ToInt64():X}")
+        Catch ex As Exception
+            log("raw vtable slot 8 FAIL: " & ex.Message)
+        End Try
+
+        Try
+            Dim fillRect = Marshal.GetDelegateForFunctionPointer(Of DxFillRectangle)(Marshal.ReadIntPtr(vt, 17 * IntPtr.Size))
+            Dim rectF As D2D1_RECT_F = ToRectF(New Rectangle(10, 10, 100, 50))
+
+            fillRect(raw, rectF, brushPtr)
+            log("raw vtable slot 17 (FillRectangle) OK")
+        Catch ex As Exception
+            log("raw vtable slot 17 FAIL: " & ex.Message)
         End Try
 
         Marshal.Release(raw)

@@ -104,8 +104,8 @@ Friend Class DxRenderTarget : Implements IDisposable
 
         _Target = ComObject(Of ID2D1RenderTarget)(rawTarget)
 
-        ' the dxgi surface render target requires an explicit begin/end draw pair
-        Call target.BeginDraw()
+        ' DEBUG the dxgi surface render target requires an explicit begin/end draw pair
+        ' Call target.BeginDraw()
 
         drawing = True
     End Sub

@@ -186,6 +186,15 @@ Imports std = System.Math
     <UnmanagedFunctionPointer(CallingConvention.StdCall)>
     Friend Delegate Sub DxVoidRefColor(this As IntPtr, ByRef color As D2D1_COLOR_F)
 
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Friend Delegate Function DxEndDraw(this As IntPtr, tag1 As IntPtr, tag2 As IntPtr) As Integer
+
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Friend Delegate Function DxCreateSolidBrush(this As IntPtr, ByRef color As D2D1_COLOR_F, props As IntPtr, ByRef brush As IntPtr) As Integer
+
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Friend Delegate Sub DxFillRectangle(this As IntPtr, ByRef rect As D2D1_RECT_F, brush As IntPtr)
+
     Friend Module DxConstants
 
         Friend ReadOnly IID_IDXGISurface As New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")
