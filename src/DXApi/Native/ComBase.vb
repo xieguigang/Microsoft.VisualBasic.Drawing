@@ -195,6 +195,9 @@ Imports std = System.Math
     <UnmanagedFunctionPointer(CallingConvention.StdCall)>
     Friend Delegate Sub DxFillRectangle(this As IntPtr, ByRef rect As D2D1_RECT_F, brush As IntPtr)
 
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Friend Delegate Function DxGetLong(this As IntPtr) As Long
+
     Friend Module DxConstants
 
         Friend ReadOnly IID_IDXGISurface As New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")

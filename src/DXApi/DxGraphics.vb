@@ -167,6 +167,30 @@ Public Class DxGraphics : Inherits IGraphics
         End Try
 
         Try
+            Dim getPixelFormat = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 42 * IntPtr.Size))
+
+            log($"raw vtable slot 42 (GetPixelFormat) => 0x{getPixelFormat(raw):X} (expect 0x100000057)")
+        Catch ex As Exception
+            log("raw vtable slot 42 FAIL: " & ex.Message)
+        End Try
+
+        Try
+            Dim getSize = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 45 * IntPtr.Size))
+
+            log($"raw vtable slot 45 (GetSize) => 0x{getSize(raw):X}")
+        Catch ex As Exception
+            log("raw vtable slot 45 FAIL: " & ex.Message)
+        End Try
+
+        Try
+            Dim getPixelSize = Marshal.GetDelegateForFunctionPointer(Of DxGetLong)(Marshal.ReadIntPtr(vt, 46 * IntPtr.Size))
+
+            log($"raw vtable slot 46 (GetPixelSize) => 0x{getPixelSize(raw):X} (expect 0x12C00000190)")
+        Catch ex As Exception
+            log("raw vtable slot 46 FAIL: " & ex.Message)
+        End Try
+
+        Try
             Dim clearRaw = Marshal.GetDelegateForFunctionPointer(Of DxVoidRefColor)(Marshal.ReadIntPtr(vt, 39 * IntPtr.Size))
             Dim white As D2D1_COLOR_F = ToColorF(Color.White)
 
