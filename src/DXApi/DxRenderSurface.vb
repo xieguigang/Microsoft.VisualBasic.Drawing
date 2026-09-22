@@ -147,7 +147,7 @@ Friend MustInherit Class DxRenderSurface : Implements IDisposable
         deferred = False
 
         Throw New NotSupportedException(
-            $"the render surface {GetType().Name} does not support the pixel read back"
+            "the render surface " & Me.GetType().Name & " does not support the pixel read back"
         )
     End Function
 
