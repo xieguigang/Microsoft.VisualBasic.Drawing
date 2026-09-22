@@ -17,6 +17,8 @@
     <PackageOutputPath>../../.nuget</PackageOutputPath>
     <OutputPath>../../../GCModeller\src\runtime\sciBASIC#\.nuget</OutputPath>
     <OptionStrict>On</OptionStrict>
+    <Version>1.0.9758.20045</Version>
+    <AssemblyVersion>1.0.9758.20045</AssemblyVersion>
   </PropertyGroup>
 
 
