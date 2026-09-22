@@ -89,6 +89,30 @@ Public Class DxGraphics : Inherits IGraphics
     End Property
 
     ''' <summary>
+    ''' DEBUG ONLY: query interface probe
+    ''' </summary>
+    Public Function Probe() As String
+        Dim sb As New System.Text.StringBuilder()
+
+        For Each t As Type In {GetType(ID2D1RenderTarget), GetType(ID2D1Resource), GetType(ID2D1Factory), GetType(ID3D11Device)}
+            Dim p As IntPtr = IntPtr.Zero
+            Dim unk As IntPtr = Marshal.GetIUnknownForObject(If(t Is GetType(ID3D11Device), CObj(renderTarget.Device.Device), CObj(renderTarget.Target)))
+            Dim hr As Integer = Marshal.QueryInterface(unk, t.GUID, p)
+
+            sb.AppendLine($"QI {t.Name} {{{t.GUID}}} => 0x{hr:X8}, ptr=0x{p.ToInt64():X}")
+            Marshal.Release(unk)
+
+            If p <> IntPtr.Zero Then
+                Marshal.Release(p)
+            End If
+        Next
+
+        sb.AppendLine($"target is com object: {Marshal.IsComObject(renderTarget.Target)}")
+
+        Return sb.ToString()
+    End Function
+
+    ''' <summary>
     ''' a short description of the underlying gpu device
     ''' </summary>
     Public ReadOnly Property DeviceDescription As String

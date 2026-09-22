@@ -13,6 +13,7 @@ Module DxSmoke
         Dim g As New DxGraphics(400, 300, "#ffffff")
 
         Console.WriteLine("[2] canvas created, device = " & g.DeviceDescription)
+        Console.WriteLine(g.Probe())
 
         Call g.Flush()
         Console.WriteLine("[2.1] flush ok (no com out param)")
