@@ -104,6 +104,19 @@ Friend Class DxRenderTarget : Implements IDisposable
 
         _Target = ComObject(Of ID2D1RenderTarget)(rawTarget)
 
+        ' DEBUG force the interface pointer of the render target into the rcw cache
+        Dim forced As IntPtr = IntPtr.Zero
+        Dim unkTarget As IntPtr = Marshal.GetIUnknownForObject(_Target)
+        Dim hrForce As Integer = Marshal.QueryInterface(unkTarget, GetType(IRtProbe).GUID, forced)
+
+        Marshal.Release(unkTarget)
+
+        If forced <> IntPtr.Zero Then
+            Dim warm = Marshal.GetTypedObjectForIUnknown(forced, GetType(IRtProbe))
+
+            GC.KeepAlive(warm)
+        End If
+
         ' the dxgi surface render target requires an explicit begin/end draw pair
         Call _Target.BeginDraw()
 

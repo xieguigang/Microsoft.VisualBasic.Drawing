@@ -337,17 +337,22 @@ Public Class DxGraphics : Inherits IGraphics
 
         Dim format As IDWriteTextFormat = brushes.GetTextFormat(font)
         Dim fill As ID2D1Brush = brushes.GetBrush(brush)
+        Dim textPtr As IntPtr = Marshal.StringToCoTaskMemUni(s)
 
-        If angle = 0.0F Then
-            Call renderTarget.Target.DrawText(s, CUInt(s.Length), format, rect, fill, D2D1_DRAW_TEXT_OPTIONS.NONE, DWRITE_MEASURING_MODE.NATURAL)
-        Else
-            Dim current As D2D1_MATRIX_3X2_F = transform
-            Dim rotated As D2D1_MATRIX_3X2_F = Multiply(current, RotationMatrix(angle, originX, originY))
+        Try
+            If angle = 0.0F Then
+                Call renderTarget.Target.DrawText(textPtr, CUInt(s.Length), format, rect, fill, D2D1_DRAW_TEXT_OPTIONS.NONE, DWRITE_MEASURING_MODE.NATURAL)
+            Else
+                Dim current As D2D1_MATRIX_3X2_F = transform
+                Dim rotated As D2D1_MATRIX_3X2_F = Multiply(current, RotationMatrix(angle, originX, originY))
 
-            Call renderTarget.Target.SetTransform(rotated)
-            Call renderTarget.Target.DrawText(s, CUInt(s.Length), format, rect, fill, D2D1_DRAW_TEXT_OPTIONS.NONE, DWRITE_MEASURING_MODE.NATURAL)
-            Call renderTarget.Target.SetTransform(current)
-        End If
+                Call renderTarget.Target.SetTransform(rotated)
+                Call renderTarget.Target.DrawText(textPtr, CUInt(s.Length), format, rect, fill, D2D1_DRAW_TEXT_OPTIONS.NONE, DWRITE_MEASURING_MODE.NATURAL)
+                Call renderTarget.Target.SetTransform(current)
+            End If
+        Finally
+            Call Marshal.ZeroFreeCoTaskMemUnicode(textPtr)
+        End Try
     End Sub
 
     Private Sub DrawImageCore(image As Image, dest As RectangleF)

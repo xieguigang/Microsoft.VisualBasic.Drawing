@@ -297,12 +297,50 @@ Friend Interface ID2D1Factory
     <PreserveSig> Function CreateDxgiSurfaceRenderTarget(surface As IntPtr, ByRef props As D2D1_RENDER_TARGET_PROPERTIES, <Out> ByRef target As IntPtr) As Integer
 End Interface
 
-' DEBUG ONLY: a minimal probe interface with the ID2D1RenderTarget iid
+' DEBUG ONLY: a probe interface with the ID2D1RenderTarget iid
 <ComImport>
 <Guid("2cd90694-12e2-11dc-9fed-001143a055f9")>
 <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
 Friend Interface IRtProbe
     <PreserveSig> Sub GetFactory(<Out> ByRef factory As IntPtr)
+    <PreserveSig> Sub D01()
+    <PreserveSig> Sub D02()
+    <PreserveSig> Sub D03()
+    <PreserveSig> Sub D04()
+    <PreserveSig> Sub D05()
+    <PreserveSig> Sub D06()
+    <PreserveSig> Sub D07()
+    <PreserveSig> Sub D08()
+    <PreserveSig> Sub D09()
+    <PreserveSig> Sub D10()
+    <PreserveSig> Sub D11()
+    <PreserveSig> Sub D12()
+    <PreserveSig> Sub D13()
+    <PreserveSig> Sub D14()
+    <PreserveSig> Sub D15()
+    <PreserveSig> Sub D16()
+    <PreserveSig> Sub D17()
+    <PreserveSig> Sub D18()
+    <PreserveSig> Sub D19()
+    <PreserveSig> Sub D20()
+    <PreserveSig> Sub D21()
+    <PreserveSig> Sub D22()
+    <PreserveSig> Sub D23()
+    <PreserveSig> Sub D24()
+    <PreserveSig> Sub D25()
+    <PreserveSig> Sub D26()
+    <PreserveSig> Sub D27()
+    <PreserveSig> Sub D28()
+    <PreserveSig> Sub D29()
+    <PreserveSig> Sub D30()
+    <PreserveSig> Sub D31()
+    <PreserveSig> Sub D32()
+    <PreserveSig> Sub D33()
+    <PreserveSig> Sub D34()
+    <PreserveSig> Sub D35()
+    <PreserveSig> Sub D36()
+    <PreserveSig> Sub D37()
+    <PreserveSig> Sub D38()
 End Interface
 
 <ComImport>
@@ -313,7 +351,7 @@ Friend Interface ID2D1RenderTarget
     ' slot 3, ID2D1Resource
     <PreserveSig> Sub GetFactory(<Out> ByRef factory As IntPtr)
     ' slot 4
-    <PreserveSig> Function CreateBitmap(size As D2D1_SIZE_U, srcData As IntPtr, pitch As UInteger, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
+    <PreserveSig> Function CreateBitmap(size As Long, srcData As IntPtr, pitch As UInteger, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
     ' slot 5
     <PreserveSig> Function CreateBitmapFromWicBitmap(wicSource As IntPtr, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
     ' slot 6
@@ -336,7 +374,7 @@ Friend Interface ID2D1RenderTarget
     <PreserveSig> Function CreateMesh(<Out> ByRef mesh As IntPtr) As Integer
 
     ' slot 15
-    <PreserveSig> Sub DrawLine(p0 As D2D1_POINT_2F, p1 As D2D1_POINT_2F, brush As ID2D1Brush, strokeWidth As Single, strokeStyle As ID2D1StrokeStyle)
+    <PreserveSig> Sub DrawLine(p0 As Long, p1 As Long, brush As ID2D1Brush, strokeWidth As Single, strokeStyle As ID2D1StrokeStyle)
     ' slot 16
     <PreserveSig> Sub DrawRectangle(ByRef rect As D2D1_RECT_F, brush As ID2D1Brush, strokeWidth As Single, strokeStyle As ID2D1StrokeStyle)
     ' slot 17
@@ -360,7 +398,7 @@ Friend Interface ID2D1RenderTarget
     ' slot 26
     <PreserveSig> Sub DrawBitmap(bitmap As ID2D1Bitmap, ByRef destRect As D2D1_RECT_F, opacity As Single, interpolationMode As Integer, srcRect As IntPtr)
     ' slot 27
-    <PreserveSig> Sub DrawText(<MarshalAs(UnmanagedType.LPWStr)> text As String, length As UInteger, textFormat As IDWriteTextFormat, ByRef layoutRect As D2D1_RECT_F, brush As ID2D1Brush, options As Integer, measuringMode As Integer)
+    <PreserveSig> Sub DrawText(text As IntPtr, length As UInteger, textFormat As IDWriteTextFormat, ByRef layoutRect As D2D1_RECT_F, brush As ID2D1Brush, options As Integer, measuringMode As Integer)
     ' slot 28
     <PreserveSig> Sub DrawTextLayout(origin As D2D1_POINT_2F, layout As IDWriteTextLayout, brush As ID2D1Brush, options As Integer)
     ' slot 29
