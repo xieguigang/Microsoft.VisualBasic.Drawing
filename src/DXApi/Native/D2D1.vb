@@ -363,23 +363,53 @@ Friend Interface ID2D1RenderTarget
     ' slot 31
     <PreserveSig> Sub GetTransform(<Out> ByRef transform As D2D1_MATRIX_3X2_F)
     ' slot 32
-    <PreserveSig> Sub PushLayer(layerParams As IntPtr, layer As IntPtr)
+    <PreserveSig> Sub SetAntialiasMode(antialiasMode As Integer)
     ' slot 33
-    <PreserveSig> Sub PopLayer()
+    <PreserveSig> Function GetAntialiasMode() As Integer
     ' slot 34
-    <PreserveSig> Function Flush(ByRef tag1 As Long, ByRef tag2 As Long) As Integer
+    <PreserveSig> Sub SetTextAntialiasMode(textAntialiasMode As Integer)
     ' slot 35
-    <PreserveSig> Sub SaveDrawingState(block As IntPtr)
+    <PreserveSig> Function GetTextAntialiasMode() As Integer
     ' slot 36
-    <PreserveSig> Sub RestoreDrawingState(block As IntPtr)
+    <PreserveSig> Sub SetTextRenderingParams(textRenderingParams As IntPtr)
     ' slot 37
-    <PreserveSig> Sub PushAxisAlignedClip(ByRef clipRect As D2D1_RECT_F, antialiasMode As Integer)
+    <PreserveSig> Sub GetTextRenderingParams(<Out> ByRef textRenderingParams As IntPtr)
     ' slot 38
-    <PreserveSig> Sub PopAxisAlignedClip()
+    <PreserveSig> Sub SetTags(tag1 As ULong, tag2 As ULong)
     ' slot 39
-    <PreserveSig> Sub Clear(ByRef clearColor As D2D1_COLOR_F)
+    <PreserveSig> Sub GetTags(<Out> ByRef tag1 As ULong, <Out> ByRef tag2 As ULong)
     ' slot 40
-    <PreserveSig> Sub BeginDraw()
+    <PreserveSig> Sub PushLayer(layerParams As IntPtr, layer As IntPtr)
     ' slot 41
-    <PreserveSig> Function EndDraw(ByRef tag1 As Long, ByRef tag2 As Long) As Integer
+    <PreserveSig> Sub PopLayer()
+    ' slot 42
+    <PreserveSig> Function Flush(ByRef tag1 As ULong, ByRef tag2 As ULong) As Integer
+    ' slot 43
+    <PreserveSig> Sub SaveDrawingState(block As IntPtr)
+    ' slot 44
+    <PreserveSig> Sub RestoreDrawingState(block As IntPtr)
+    ' slot 45
+    <PreserveSig> Sub PushAxisAlignedClip(ByRef clipRect As D2D1_RECT_F, antialiasMode As Integer)
+    ' slot 46
+    <PreserveSig> Sub PopAxisAlignedClip()
+    ' slot 47
+    <PreserveSig> Sub Clear(ByRef clearColor As D2D1_COLOR_F)
+    ' slot 48
+    <PreserveSig> Sub BeginDraw()
+    ' slot 49
+    <PreserveSig> Function EndDraw(ByRef tag1 As ULong, ByRef tag2 As ULong) As Integer
+    ' slot 50
+    <PreserveSig> Function GetPixelFormat() As Long
+    ' slot 51
+    <PreserveSig> Sub SetDpi(dpiX As Single, dpiY As Single)
+    ' slot 52
+    <PreserveSig> Sub GetDpi(<Out> ByRef dpiX As Single, <Out> ByRef dpiY As Single)
+    ' slot 53
+    <PreserveSig> Function GetSize() As Long
+    ' slot 54
+    <PreserveSig> Function GetPixelSize() As Long
+    ' slot 55
+    <PreserveSig> Function GetMaximumBitmapSize() As UInteger
+    ' slot 56
+    <PreserveSig> Function IsSupported(ByRef props As D2D1_RENDER_TARGET_PROPERTIES) As Integer
 End Interface

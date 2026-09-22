@@ -201,25 +201,6 @@ Imports std = System.Math
         End Function
     End Module
 
-    ' DEBUG ONLY delegates for the raw vtable probing
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Friend Delegate Sub DxVoidNoArg(this As IntPtr)
-
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Friend Delegate Sub DxVoidRefColor(this As IntPtr, ByRef color As D2D1_COLOR_F)
-
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Friend Delegate Function DxEndDraw(this As IntPtr, tag1 As IntPtr, tag2 As IntPtr) As Integer
-
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Friend Delegate Function DxCreateSolidBrush(this As IntPtr, ByRef color As D2D1_COLOR_F, props As IntPtr, ByRef brush As IntPtr) As Integer
-
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Friend Delegate Sub DxFillRectangle(this As IntPtr, ByRef rect As D2D1_RECT_F, brush As IntPtr)
-
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Friend Delegate Function DxGetLong(this As IntPtr) As Long
-
     Friend Module DxConstants
 
         Friend ReadOnly IID_IDXGISurface As New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")
