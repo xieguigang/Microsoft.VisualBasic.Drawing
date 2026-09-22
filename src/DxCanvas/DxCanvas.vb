@@ -349,12 +349,11 @@ Partial Public Class DxCanvas
                     ' presents) the frame by itself
                     m_capturedImage = m_graphics.GetRasterImage()
 
-                    If m_captureFile Is Nothing Then
-                        m_captureResult = True
-                    Else
-                        m_captureResult = m_capturedImage.Save(m_captureFile, m_captureFormat)
+                    If m_captureFile IsNot Nothing Then
+                        Call m_capturedImage.Save(m_captureFile, m_captureFormat)
                     End If
 
+                    m_captureResult = True
                     m_lastError = Nothing
                 Catch ex As Exception
                     m_capturedImage = Nothing

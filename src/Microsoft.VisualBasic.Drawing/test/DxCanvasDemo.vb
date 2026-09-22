@@ -76,13 +76,17 @@ Module DxCanvasDemo
                 Call autoClose.Stop()
                 Call repaint.Stop()
 
-                ' export the last frame, this also proves that the pixel read
-                ' back of the swap chain back buffer works
+                ' the file export api of the control, this also proves that the
+                ' pixel read back of the swap chain back buffer works
+                If Not form.SaveCanvas(file) Then
+                    captured = "the SaveImage export failed: " & form.LastError
+                End If
+
+                ' the image object variant, it is used to verify the captured
+                ' frame content numerically
                 Dim frame As ImagingBitmap = form.CaptureFrame()
 
                 If frame IsNot Nothing Then
-                    Call frame.Save(file, ImageFormats.Png)
-
                     captured = describeFrame(frame, form.BackgroundColor)
                 End If
 
