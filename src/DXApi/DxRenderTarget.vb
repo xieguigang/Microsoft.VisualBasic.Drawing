@@ -95,14 +95,14 @@ Friend Class DxRenderTarget : Implements IDisposable
             .usage = D2D1_RENDER_TARGET_USAGE.NONE,
             .minLevel = D2D1_FEATURE_LEVEL.DEFAULT
         }
-        Dim target As ID2D1RenderTarget = Nothing
+        Dim rawTarget As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            device.Factory2D.CreateDxgiSurfaceRenderTarget(surface, props, target),
+            device.Factory2D.CreateDxgiSurfaceRenderTarget(surface, props, rawTarget),
             "ID2D1Factory::CreateDxgiSurfaceRenderTarget"
         )
 
-        _Target = target
+        _Target = ComObject(Of ID2D1RenderTarget)(rawTarget)
 
         ' the dxgi surface render target requires an explicit begin/end draw pair
         Call target.BeginDraw()

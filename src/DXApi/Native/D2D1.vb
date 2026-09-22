@@ -294,7 +294,7 @@ Friend Interface ID2D1Factory
     ' slot 14
     <PreserveSig> Function CreateHwndRenderTarget(ByRef props As D2D1_RENDER_TARGET_PROPERTIES, hwndProps As IntPtr, <Out> ByRef target As IntPtr) As Integer
     ' slot 15
-    <PreserveSig> Function CreateDxgiSurfaceRenderTarget(surface As IntPtr, ByRef props As D2D1_RENDER_TARGET_PROPERTIES, <Out> ByRef target As ID2D1RenderTarget) As Integer
+    <PreserveSig> Function CreateDxgiSurfaceRenderTarget(surface As IntPtr, ByRef props As D2D1_RENDER_TARGET_PROPERTIES, <Out> ByRef target As IntPtr) As Integer
 End Interface
 
 <ComImport>
@@ -382,18 +382,4 @@ Friend Interface ID2D1RenderTarget
     <PreserveSig> Sub BeginDraw()
     ' slot 41
     <PreserveSig> Function EndDraw(tag1 As IntPtr, tag2 As IntPtr) As Integer
-    ' slot 42
-    <PreserveSig> Function GetPixelFormat() As D2D1_PIXEL_FORMAT
-    ' slot 43
-    <PreserveSig> Sub SetDpi(dpiX As Single, dpiY As Single)
-    ' slot 44
-    <PreserveSig> Sub GetDpi(<Out> ByRef dpiX As Single, <Out> ByRef dpiY As Single)
-    ' slot 45
-    <PreserveSig> Function GetSize() As D2D1_SIZE_F
-    ' slot 46
-    <PreserveSig> Function GetPixelSize() As D2D1_SIZE_U
-    ' slot 47
-    <PreserveSig> Function GetMaximumBitmapSize() As UInteger
-    ' slot 48
-    <PreserveSig> Function IsSupported(ByRef props As D2D1_RENDER_TARGET_PROPERTIES) As Integer
 End Interface

@@ -62,6 +62,27 @@ Imports std = System.Math
             Return p
         End Function
 
+        ''' <summary>
+        ''' Wrap a raw com interface pointer as a strongly typed runtime callable
+        ''' wrapper object.
+        ''' </summary>
+        ''' <remarks>
+        ''' A com object that is created through the out parameter of another com
+        ''' method is wrapped by the clr as an untyped System.__ComObject, and
+        ''' such an object can not be dispatched through the interface method
+        ''' stub (QueryInterface on an untyped rcw always fails). creating the
+        ''' runtime callable wrapper explicitly with the target interface type
+        ''' here makes the interface pointer cacheable so that the interface
+        ''' method can be dispatched correctly.
+        ''' </remarks>
+        Friend Function ComObject(Of T As Class)(raw As IntPtr) As T
+            If raw = IntPtr.Zero Then
+                Return Nothing
+            End If
+
+            Return DirectCast(Marshal.GetTypedObjectForIUnknown(raw, GetType(T)), T)
+        End Function
+
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Friend Function ToColorF(color As Color) As D2D1_COLOR_F
             Return New D2D1_COLOR_F With {
