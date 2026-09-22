@@ -3,6 +3,7 @@ Imports System.Drawing
 Imports System.Windows.Forms
 Imports Microsoft.VisualBasic.Drawing.DirectX
 Imports Microsoft.VisualBasic.Imaging
+Imports ImagingBitmap = Microsoft.VisualBasic.Imaging.Bitmap
 
 ''' <summary>
 ''' The winforms demo of the <see cref="DxCanvas"/> control: the window hosts
@@ -36,19 +37,19 @@ Module DxCanvasDemo
         End If
 
         Call Application.EnableVisualStyles()
-
         Call printHeader(polygonCount)
 
         Call Application.Run(New DxCanvasDemoForm(polygonCount))
     End Sub
 
     ''' <summary>
-    ''' open the demo window and close it automatically after the given amount of
-    ''' seconds, then print the frame statistics of that run.
+    ''' open the demo window, repaint it on a fixed interval, close it after the
+    ''' given amount of seconds and then print the frame statistics of that run.
     ''' </summary>
     ''' <remarks>
-    ''' this is the headless friendly mode that is used to verify the control
-    ''' without a user interaction.
+    ''' This is the headless friendly mode that is used to verify the control
+    ''' without any user interaction: the first frame is reported separately
+    ''' because it pays for the gpu warm up and the scene generation.
     ''' </remarks>
     Sub RunSmoke(Optional polygonCount As Integer = 0, Optional seconds As Integer = 3)
         If polygonCount <= 0 Then
@@ -59,19 +60,42 @@ Module DxCanvasDemo
         Call printHeader(polygonCount)
 
         Dim form As New DxCanvasDemoForm(polygonCount)
+        Dim repaint As New Timer With {.Interval = 100}
         Dim autoClose As New Timer With {.Interval = seconds * 1000}
+        Dim file As String = "./dxcanvas_smoke.png"
+        Dim captured As String = "(the frame capture failed)"
 
+        AddHandler repaint.Tick,
+            Sub(sender As Object, e As EventArgs)
+                ' invalidating the form would not repaint the canvas: the parent
+                ' clips the child window out of its own update region
+                Call form.InvalidateCanvas()
+            End Sub
         AddHandler autoClose.Tick,
             Sub(sender As Object, e As EventArgs)
                 Call autoClose.Stop()
+                Call repaint.Stop()
+
+                ' export the last frame, this also proves that the pixel read
+                ' back of the swap chain back buffer works
+                Dim frame As ImagingBitmap = form.CaptureFrame()
+
+                If frame IsNot Nothing Then
+                    Call frame.Save(file, ImageFormats.Png)
+
+                    captured = describeFrame(frame, form.BackgroundColor)
+                End If
+
                 Call form.Close()
             End Sub
 
+        Call repaint.Start()
         Call autoClose.Start()
 
         Try
             Call Application.Run(form)
         Finally
+            Call repaint.Dispose()
             Call autoClose.Dispose()
         End Try
 
@@ -79,11 +103,51 @@ Module DxCanvasDemo
         Console.WriteLine($" device             : {form.DeviceDescription}")
         Console.WriteLine($" polygons per frame : {form.PolygonCount.ToString("N0")}")
         Console.WriteLine($" frames presented   : {form.FrameCount}")
+        Console.WriteLine($" first frame        : {form.FirstFrameMs} ms  (gpu warm up + scene setup)")
+        Console.WriteLine($" average frame      : {form.AverageFrameMs.ToString("F2")} ms  (steady state)")
         Console.WriteLine($" last frame         : {form.LastFrameMs} ms")
-        Console.WriteLine($" average frame      : {form.AverageFrameMs.ToString("F2")} ms")
         Console.WriteLine($" rendering error    : {If(form.LastError, "(none)")}")
+        Console.WriteLine($" captured frame     : {captured}")
+        Console.WriteLine($" exported image     : {IO.Path.GetFullPath(file)}")
         Console.WriteLine("-----------------------------------------------------------------")
     End Sub
+
+    ''' <summary>
+    ''' build a short textual summary of a captured frame, this proves that the
+    ''' polygons are really rasterized by the gpu pipeline
+    ''' </summary>
+    Private Function describeFrame(image As ImagingBitmap, background As Color) As String
+        Dim backgroundArgb As Integer = background.ToArgb()
+        Dim samples As Integer = 0
+        Dim painted As Integer = 0
+        Dim red As Long = 0
+        Dim green As Long = 0
+        Dim blue As Long = 0
+
+        For y As Integer = 0 To image.Height - 1 Step 5
+            For x As Integer = 0 To image.Width - 1 Step 5
+                Dim c As Color = image.GetPixel(x, y)
+
+                samples += 1
+                red += c.R
+                green += c.G
+                blue += c.B
+
+                If c.ToArgb() <> backgroundArgb Then
+                    painted += 1
+                End If
+            Next
+        Next
+
+        Return String.Format(
+            "{0}x{1} px, {2} samples, {3} painted ({4:P1}), mean rgb = ({5:F0}, {6:F0}, {7:F0})",
+            image.Width, image.Height, samples, painted,
+            If(samples > 0, painted / CDbl(samples), 0),
+            If(samples > 0, red / CDbl(samples), 0),
+            If(samples > 0, green / CDbl(samples), 0),
+            If(samples > 0, blue / CDbl(samples), 0)
+        )
+    End Function
 
     Private Sub printHeader(polygonCount As Integer)
         Console.WriteLine("=================================================================")
@@ -101,8 +165,8 @@ End Module
 ''' The layout is: a status bar on the top, a button bar on the bottom and the
 ''' directx canvas that takes the rest of the window. The status bar shows the
 ''' gpu device, the polygon count, the last frame time and the average frame
-''' time, which makes the performance difference of a large polygon scene
-''' directly visible when the window is resized.
+''' time, which makes the performance of a large polygon scene directly visible
+''' when the window is resized.
 ''' </remarks>
 Friend Class DxCanvasDemoForm : Inherits Form
 
@@ -123,7 +187,15 @@ Friend Class DxCanvasDemoForm : Inherits Form
 
     Private frames As Integer = 0
     Private totalMs As Long = 0
+    ''' <summary>the sum of every frame except the first one</summary>
+    Private steadyMs As Long = 0
+    Private firstMs As Long = 0
     Private lastMs As Long = 0
+    ''' <summary>
+    ''' the device description is cached here because the gpu canvas is already
+    ''' released when the window is closed
+    ''' </summary>
+    Private m_deviceDescription As String = Nothing
 
     Friend Sub New(polygonCount As Integer)
         m_polygonCount = polygonCount
@@ -146,24 +218,41 @@ Friend Class DxCanvasDemoForm : Inherits Form
         End Get
     End Property
 
+    ''' <summary>
+    ''' the time of the very first frame, it includes the gpu warm up and the
+    ''' scene generation
+    ''' </summary>
+    Friend ReadOnly Property FirstFrameMs As Long
+        Get
+            Return firstMs
+        End Get
+    End Property
+
     Friend ReadOnly Property LastFrameMs As Long
         Get
             Return lastMs
         End Get
     End Property
 
+    ''' <summary>
+    ''' the average time of the frames behind the first one
+    ''' </summary>
     Friend ReadOnly Property AverageFrameMs As Double
         Get
-            If frames <= 0 Then
+            If frames <= 1 Then
                 Return 0
             End If
 
-            Return totalMs / CDbl(frames)
+            Return steadyMs / CDbl(frames - 1)
         End Get
     End Property
 
     Friend ReadOnly Property DeviceDescription As String
         Get
+            If m_deviceDescription IsNot Nothing Then
+                Return m_deviceDescription
+            End If
+
             Return canvas.DeviceDescription
         End Get
     End Property
@@ -171,6 +260,36 @@ Friend Class DxCanvasDemoForm : Inherits Form
     Friend ReadOnly Property LastError As String
         Get
             Return canvas.LastError
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' request the next frame of the directx canvas
+    ''' </summary>
+    Friend Sub InvalidateCanvas()
+        Call canvas.Invalidate()
+    End Sub
+
+    ''' <summary>
+    ''' export the current canvas content into an image file
+    ''' </summary>
+    Friend Function SaveCanvas(file As String) As Boolean
+        Return canvas.SaveImage(file)
+    End Function
+
+    ''' <summary>
+    ''' export the current canvas content as a raster image
+    ''' </summary>
+    Friend Function CaptureFrame() As ImagingBitmap
+        Return canvas.CaptureFrame()
+    End Function
+
+    ''' <summary>
+    ''' the background color of the directx canvas
+    ''' </summary>
+    Friend ReadOnly Property BackgroundColor As Color
+        Get
+            Return canvas.BackgroundColor
         End Get
     End Property
 
@@ -195,8 +314,19 @@ Friend Class DxCanvasDemoForm : Inherits Form
         watch.Stop()
 
         lastMs = watch.ElapsedMilliseconds
-        frames += 1
         totalMs += lastMs
+
+        If frames = 0 Then
+            firstMs = lastMs
+        Else
+            steadyMs += lastMs
+        End If
+
+        frames += 1
+
+        If m_deviceDescription Is Nothing Then
+            m_deviceDescription = canvas.DeviceDescription
+        End If
 
         Call updateStatus()
     End Sub
@@ -204,7 +334,7 @@ Friend Class DxCanvasDemoForm : Inherits Form
     Private Sub updateStatus()
         status.Text = String.Format(
             "device: {0}   |   polygons: {1}   |   frame: {2} ms   |   average: {3:F2} ms   |   frames: {4}",
-            canvas.DeviceDescription,
+            DeviceDescription,
             m_polygonCount.ToString("N0"),
             lastMs,
             AverageFrameMs,

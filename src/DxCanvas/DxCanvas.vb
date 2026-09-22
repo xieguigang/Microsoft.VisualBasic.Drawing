@@ -1,5 +1,6 @@
 ﻿Imports System.ComponentModel
 Imports System.Drawing
+Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
 Imports ImageFormats = Microsoft.VisualBasic.Imaging.ImageFormats
 
 ''' <summary>
@@ -35,11 +36,15 @@ Partial Public Class DxCanvas
     Private m_backgroundColor As Color = Color.White
     Private m_vsync As Boolean = True
     Private m_lastError As String = Nothing
-    ''' <summary>the pending export request of <see cref="SaveImage"/></summary>
+    ''' <summary>
+    ''' the pending capture request of <see cref="SaveImage"/> and
+    ''' <see cref="CaptureFrame"/>
+    ''' </summary>
     Private m_capturePending As Boolean = False
     Private m_captureResult As Boolean = False
     Private m_captureFile As String = Nothing
     Private m_captureFormat As ImageFormats = ImageFormats.Png
+    Private m_capturedImage As Bitmap = Nothing
 
     Public Sub New()
         Call InitializeComponent()
@@ -207,6 +212,7 @@ Partial Public Class DxCanvas
         m_captureFormat = format
         m_capturePending = True
         m_captureResult = False
+        m_capturedImage = Nothing
 
         Try
             Call Invalidate()
@@ -216,6 +222,39 @@ Partial Public Class DxCanvas
         End Try
 
         Return m_captureResult
+    End Function
+
+    ''' <summary>
+    ''' export the current canvas content as a raster image
+    ''' </summary>
+    ''' <remarks>
+    ''' this works exactly like <see cref="SaveImage"/> but returns the image
+    ''' object instead of writing it into a file.
+    ''' </remarks>
+    Public Function CaptureFrame() As Bitmap
+        If m_rendering Then
+            Throw New InvalidOperationException(
+                "the canvas can not be captured from inside the Render event"
+            )
+        End If
+
+        If m_canvas Is Nothing Then
+            Return Nothing
+        End If
+
+        m_captureFile = Nothing
+        m_capturePending = True
+        m_captureResult = False
+        m_capturedImage = Nothing
+
+        Try
+            Call Invalidate()
+            Call Update()
+        Finally
+            m_capturePending = False
+        End Try
+
+        Return m_capturedImage
     End Function
 
     ' /********************************************************************************/
@@ -305,12 +344,20 @@ Partial Public Class DxCanvas
                 m_capturePending = False
 
                 Try
-                    ' the export reads the back buffer between the end of the
+                    ' the capture reads the back buffer between the end of the
                     ' direct2d frame and the presentation, and it submits (and
                     ' presents) the frame by itself
-                    m_captureResult = m_graphics.Save(m_captureFile, m_captureFormat)
+                    m_capturedImage = m_graphics.GetRasterImage()
+
+                    If m_captureFile Is Nothing Then
+                        m_captureResult = True
+                    Else
+                        m_captureResult = m_capturedImage.Save(m_captureFile, m_captureFormat)
+                    End If
+
                     m_lastError = Nothing
                 Catch ex As Exception
+                    m_capturedImage = Nothing
                     m_lastError = ex.Message
                     m_captureResult = False
                 End Try
