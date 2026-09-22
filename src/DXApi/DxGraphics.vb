@@ -136,16 +136,6 @@ Public Class DxGraphics : Inherits IGraphics
         Next
 
         Try
-            Dim clearRaw = Marshal.GetDelegateForFunctionPointer(Of DxVoidRefColor)(Marshal.ReadIntPtr(vt, 39 * IntPtr.Size))
-            Dim white As D2D1_COLOR_F = ToColorF(Color.White)
-
-            clearRaw(raw, white)
-            log("raw vtable slot 39 (Clear) OK")
-        Catch ex As Exception
-            log("raw vtable slot 39 FAIL: " & ex.Message)
-        End Try
-
-        Try
             Dim flushRaw = Marshal.GetDelegateForFunctionPointer(Of DxEndDraw)(Marshal.ReadIntPtr(vt, 34 * IntPtr.Size))
             Dim hr4 As Integer = flushRaw(raw, IntPtr.Zero, IntPtr.Zero)
 
@@ -174,6 +164,16 @@ Public Class DxGraphics : Inherits IGraphics
             log("raw vtable slot 17 (FillRectangle) OK")
         Catch ex As Exception
             log("raw vtable slot 17 FAIL: " & ex.Message)
+        End Try
+
+        Try
+            Dim clearRaw = Marshal.GetDelegateForFunctionPointer(Of DxVoidRefColor)(Marshal.ReadIntPtr(vt, 39 * IntPtr.Size))
+            Dim white As D2D1_COLOR_F = ToColorF(Color.White)
+
+            clearRaw(raw, white)
+            log("raw vtable slot 39 (Clear) OK")
+        Catch ex As Exception
+            log("raw vtable slot 39 FAIL: " & ex.Message)
         End Try
 
         Marshal.Release(raw)
