@@ -152,9 +152,18 @@ Friend Module D3D11
     <ComImport>
     <Guid("dc8e63f3-d12b-4952-b47b-5e45026a862d")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Friend Interface ID3D11Resource : Inherits ID3D11DeviceChild
+    Friend Interface ID3D11Resource
+
+        ' slot 3 .. slot 6, ID3D11DeviceChild
+        <PreserveSig> Function GetDevice(<Out> ByRef device As IntPtr) As Integer
+        <PreserveSig> Function GetPrivateData(ByRef guid As Guid, ByRef size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateData(ByRef guid As Guid, size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateDataInterface(ByRef guid As Guid, data As IntPtr) As Integer
+        ' slot 7
         <PreserveSig> Sub GetResourceDimension(dimension As IntPtr)
+        ' slot 8
         <PreserveSig> Sub SetEvictionPriority(priority As UInteger)
+        ' slot 9
         <PreserveSig> Function GetEvictionPriority() As UInteger
     End Interface
 
@@ -164,7 +173,19 @@ Friend Module D3D11
     <ComImport>
     <Guid("6f15aaf2-d208-4e89-9ab4-489535d34f9c")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Friend Interface ID3D11Texture2D : Inherits ID3D11Resource
+    Friend Interface ID3D11Texture2D
+
+        ' slot 3 .. slot 6, ID3D11DeviceChild
+        <PreserveSig> Function GetDevice(<Out> ByRef device As IntPtr) As Integer
+        <PreserveSig> Function GetPrivateData(ByRef guid As Guid, ByRef size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateData(ByRef guid As Guid, size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateDataInterface(ByRef guid As Guid, data As IntPtr) As Integer
+        ' slot 7 .. slot 9, ID3D11Resource
+        <PreserveSig> Sub GetResourceDimension(dimension As IntPtr)
+        <PreserveSig> Sub SetEvictionPriority(priority As UInteger)
+        <PreserveSig> Function GetEvictionPriority() As UInteger
+        ' slot 10
+        <PreserveSig> Sub GetDesc(<Out> ByRef desc As D3D11_TEXTURE2D_DESC)
     End Interface
 
     ''' <summary>
@@ -187,8 +208,13 @@ Friend Module D3D11
     <ComImport>
     <Guid("c0bfa96c-e089-44fb-8eaf-26f8796190da")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Friend Interface ID3D11DeviceContext : Inherits ID3D11DeviceChild
+    Friend Interface ID3D11DeviceContext
 
+        ' slot 3 .. slot 6, ID3D11DeviceChild
+        <PreserveSig> Function GetDevice(<Out> ByRef device As IntPtr) As Integer
+        <PreserveSig> Function GetPrivateData(ByRef guid As Guid, ByRef size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateData(ByRef guid As Guid, size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateDataInterface(ByRef guid As Guid, data As IntPtr) As Integer
         ' slot 7
         <PreserveSig> Sub VSSetConstantBuffers(startSlot As UInteger, numBuffers As UInteger, buffers As IntPtr)
         ' slot 8
