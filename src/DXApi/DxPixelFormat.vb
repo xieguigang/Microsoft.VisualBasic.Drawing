@@ -53,6 +53,32 @@ Friend Module DxPixelFormat
     End Function
 
     ''' <summary>
+    ''' convert a straight BGRA pixel buffer into the premultiplied BGRA
+    ''' buffer that is required by the direct2d bitmap object
+    ''' </summary>
+    Friend Function Premultiply(bgra As Byte()) As Byte()
+        For i As Integer = 0 To bgra.Length - 4 Step 4
+            Dim a As Integer = bgra(i + 3)
+
+            If a = 255 Then
+                Continue For
+            End If
+
+            If a = 0 Then
+                bgra(i) = 0
+                bgra(i + 1) = 0
+                bgra(i + 2) = 0
+            Else
+                bgra(i) = CByte(bgra(i) * a \ 255)
+                bgra(i + 1) = CByte(bgra(i + 1) * a \ 255)
+                bgra(i + 2) = CByte(bgra(i + 2) * a \ 255)
+            End If
+        Next
+
+        Return bgra
+    End Function
+
+    ''' <summary>
     ''' wrap the raw BGRA pixel buffer as a managed raster image object
     ''' </summary>
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
