@@ -12,7 +12,22 @@ Module Program
     End Sub
 
 
+    ''' <summary>
+    ''' the winforms hosting of the directx gpu canvas requires a sta thread
+    ''' </summary>
+    <STAThreadAttribute>
     Sub Main(args As String())
+        If args.Any(Function(a) a = "--dxcanvas-smoke") Then
+            ' open the DxCanvas demo window for a few seconds and then print
+            ' the frame statistics of that run
+            Call DxCanvasDemo.RunSmoke()
+            Return
+        End If
+        If args.Any(Function(a) a = "--dxcanvas" OrElse a = "-dxcanvas") Then
+            ' open the interactive DxCanvas demo window
+            Call DxCanvasDemo.Run()
+            Return
+        End If
         If args.Any(Function(a) a = "--dxsmoke") Then
             Call DxSmoke.Smoke()
             Return

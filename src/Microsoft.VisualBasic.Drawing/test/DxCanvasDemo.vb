@@ -19,10 +19,10 @@ Module DxCanvasDemo
     ''' <summary>
     ''' the amount of the polygon primitives of the demo scene
     ''' </summary>
-    Const DEFAULT_POLYGON_COUNT As Integer = 30000
+    Friend Const DEFAULT_POLYGON_COUNT As Integer = 30000
     ''' <summary>the radius range of the small polygon scene</summary>
-    Const MIN_RADIUS As Integer = 3
-    Const MAX_RADIUS As Integer = 17
+    Friend Const MIN_RADIUS As Integer = 3
+    Friend Const MAX_RADIUS As Integer = 17
 
     ''' <summary>
     ''' open the interactive demo window of the <see cref="DxCanvas"/> control
@@ -110,10 +110,10 @@ Friend Class DxCanvasDemoForm : Inherits Form
     Private Const BUTTON_HEIGHT As Integer = 42
 
     Private ReadOnly m_polygonCount As Integer
-    Private ReadOnly status As Label
-    Private ReadOnly canvas As DxCanvas
-    Private ReadOnly redrawButton As Button
-    Private ReadOnly saveButton As Button
+    Private status As Label
+    Private canvas As DxCanvas
+    Private redrawButton As Button
+    Private saveButton As Button
 
     ''' <summary>
     ''' the polygon scene, it is rebuilt when the canvas size is changed
