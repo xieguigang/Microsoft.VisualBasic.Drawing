@@ -109,6 +109,39 @@ Namespace Native
         End Function
 
         ''' <summary>
+        ''' a * b, the result is applied on the render target after the
+        ''' <paramref name="a"/> matrix
+        ''' </summary>
+        Friend Function Multiply(a As D2D1_MATRIX_3X2_F, b As D2D1_MATRIX_3X2_F) As D2D1_MATRIX_3X2_F
+            Return New D2D1_MATRIX_3X2_F With {
+                .m11 = a.m11 * b.m11 + a.m12 * b.m21,
+                .m12 = a.m11 * b.m12 + a.m12 * b.m22,
+                .m21 = a.m21 * b.m11 + a.m22 * b.m21,
+                .m22 = a.m21 * b.m12 + a.m22 * b.m22,
+                .dx = a.dx * b.m11 + a.dy * b.m21 + b.dx,
+                .dy = a.dx * b.m12 + a.dy * b.m22 + b.dy
+            }
+        End Function
+
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
+        Friend Function Translation(dx As Single, dy As Single) As D2D1_MATRIX_3X2_F
+            Return New D2D1_MATRIX_3X2_F With {
+                .m11 = 1.0F, .m12 = 0.0F,
+                .m21 = 0.0F, .m22 = 1.0F,
+                .dx = dx, .dy = dy
+            }
+        End Function
+
+        <MethodImpl(MethodImplOptions.AggressiveInlining)>
+        Friend Function Scaling(sx As Single, sy As Single) As D2D1_MATRIX_3X2_F
+            Return New D2D1_MATRIX_3X2_F With {
+                .m11 = sx, .m12 = 0.0F,
+                .m21 = 0.0F, .m22 = sy,
+                .dx = 0.0F, .dy = 0.0F
+            }
+        End Function
+
+        ''' <summary>
         ''' make a rotation transform matrix around the given center point
         ''' </summary>
         Friend Function RotationMatrix(angleDegrees As Single, centerX As Single, centerY As Single) As D2D1_MATRIX_3X2_F
