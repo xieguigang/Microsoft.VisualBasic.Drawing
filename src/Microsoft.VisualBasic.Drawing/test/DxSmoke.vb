@@ -40,6 +40,7 @@ Module DxSmoke
             Console.WriteLine($" [ok  ] {name}")
         Catch ex As Exception
             Console.WriteLine($" [fail] {name} -> {ex.GetType.Name}: {ex.Message}")
+            Console.WriteLine(ex.StackTrace)
         End Try
     End Sub
 End Module

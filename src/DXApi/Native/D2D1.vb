@@ -227,9 +227,9 @@ Friend Interface ID2D1SimplifiedGeometrySink
     ' slot 5
     <PreserveSig> Sub BeginFigure(startPoint As D2D1_POINT_2F, figureBegin As D2D1_FIGURE_BEGIN)
     ' slot 6
-    <PreserveSig> Sub AddLines(<[In]> points As D2D1_POINT_2F(), count As UInteger)
+    <PreserveSig> Sub AddLines(<MarshalAs(UnmanagedType.LPArray)> points As D2D1_POINT_2F(), count As UInteger)
     ' slot 7
-    <PreserveSig> Sub AddBeziers(<[In]> beziers As D2D1_BEZIER_SEGMENT(), count As UInteger)
+    <PreserveSig> Sub AddBeziers(<MarshalAs(UnmanagedType.LPArray)> beziers As D2D1_BEZIER_SEGMENT(), count As UInteger)
     ' slot 8
     <PreserveSig> Sub EndFigure(figureEnd As D2D1_FIGURE_END)
     ' slot 9
@@ -245,8 +245,8 @@ Friend Interface ID2D1GeometrySink
     <PreserveSig> Sub SetFillMode(fillMode As D2D1_FILL_MODE)
     <PreserveSig> Sub SetSegmentFlags(vertexFlags As Integer)
     <PreserveSig> Sub BeginFigure(startPoint As D2D1_POINT_2F, figureBegin As D2D1_FIGURE_BEGIN)
-    <PreserveSig> Sub AddLines(<[In]> points As D2D1_POINT_2F(), count As UInteger)
-    <PreserveSig> Sub AddBeziers(<[In]> beziers As D2D1_BEZIER_SEGMENT(), count As UInteger)
+    <PreserveSig> Sub AddLines(<MarshalAs(UnmanagedType.LPArray)> points As D2D1_POINT_2F(), count As UInteger)
+    <PreserveSig> Sub AddBeziers(<MarshalAs(UnmanagedType.LPArray)> beziers As D2D1_BEZIER_SEGMENT(), count As UInteger)
     <PreserveSig> Sub EndFigure(figureEnd As D2D1_FIGURE_END)
     <PreserveSig> Function Close() As Integer
     ' slot 10
@@ -256,7 +256,7 @@ Friend Interface ID2D1GeometrySink
     ' slot 12
     <PreserveSig> Sub AddQuadraticBezier(ByRef bezier As D2D1_QUADRATIC_BEZIER_SEGMENT)
     ' slot 13
-    <PreserveSig> Sub AddQuadraticBeziers(<[In]> beziers As D2D1_QUADRATIC_BEZIER_SEGMENT(), count As UInteger)
+    <PreserveSig> Sub AddQuadraticBeziers(<MarshalAs(UnmanagedType.LPArray)> beziers As D2D1_QUADRATIC_BEZIER_SEGMENT(), count As UInteger)
     ' slot 14
     <PreserveSig> Sub AddArc(ByRef arc As D2D1_ARC_SEGMENT)
 End Interface
@@ -286,7 +286,7 @@ Friend Interface ID2D1Factory
     ' slot 10
     <PreserveSig> Function CreatePathGeometry(<Out> ByRef geometry As IntPtr) As Integer
     ' slot 11
-    <PreserveSig> Function CreateStrokeStyle(ByRef properties As D2D1_STROKE_STYLE_PROPERTIES, <[In]> dashes As Single(), dashCount As UInteger, <Out> ByRef style As IntPtr) As Integer
+    <PreserveSig> Function CreateStrokeStyle(ByRef properties As D2D1_STROKE_STYLE_PROPERTIES, <MarshalAs(UnmanagedType.LPArray)> dashes As Single(), dashCount As UInteger, <Out> ByRef style As IntPtr) As Integer
     ' slot 12
     <PreserveSig> Function CreateDrawingStateBlock(description As IntPtr, textRenderingParams As IntPtr, <Out> ByRef block As IntPtr) As Integer
     ' slot 13
@@ -315,7 +315,7 @@ Friend Interface ID2D1RenderTarget
     ' slot 8
     <PreserveSig> Function CreateSolidColorBrush(ByRef color As D2D1_COLOR_F, props As IntPtr, <Out> ByRef brush As IntPtr) As Integer
     ' slot 9
-    <PreserveSig> Function CreateGradientStopCollection(<[In]> stops As D2D1_GRADIENT_STOP(), stopCount As UInteger, gamma As Integer, extendMode As Integer, <Out> ByRef collection As IntPtr) As Integer
+    <PreserveSig> Function CreateGradientStopCollection(<MarshalAs(UnmanagedType.LPArray)> stops As D2D1_GRADIENT_STOP(), stopCount As UInteger, gamma As Integer, extendMode As Integer, <Out> ByRef collection As IntPtr) As Integer
     ' slot 10
     <PreserveSig> Function CreateLinearGradientBrush(ByRef props As D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES, brushProps As IntPtr, collection As ID2D1GradientStopCollection, <Out> ByRef brush As IntPtr) As Integer
     ' slot 11

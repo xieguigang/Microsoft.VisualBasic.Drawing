@@ -80,10 +80,16 @@ Friend Class DxPolygonBatch : Implements IDisposable
         End If
 
         If geometry Is Nothing Then
-            Dim path As ID2D1PathGeometry = Nothing
+            Dim pathPtr As IntPtr = IntPtr.Zero
 
-            Call ThrowIfFailed(factory.CreatePathGeometry(path), "ID2D1Factory::CreatePathGeometry")
-            Call ThrowIfFailed(path.Open(sink), "ID2D1PathGeometry::Open")
+            Call ThrowIfFailed(factory.CreatePathGeometry(pathPtr), "ID2D1Factory::CreatePathGeometry")
+
+            Dim path As ID2D1PathGeometry = ComObject(Of ID2D1PathGeometry)(pathPtr)
+            Dim sinkPtr As IntPtr = IntPtr.Zero
+
+            Call ThrowIfFailed(path.Open(sinkPtr), "ID2D1PathGeometry::Open")
+
+            sink = ComObject(Of ID2D1GeometrySink)(sinkPtr)
             Call sink.SetFillMode(D2D1_FILL_MODE.WINDING)
 
             geometry = path

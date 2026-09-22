@@ -151,7 +151,9 @@ Friend Class DxBrushCache : Implements IDisposable
             Call SafeRelease(collection)
         End Try
 
-        gradients(key) = ComObject(Of ID2D1Brush)(gradientPtr)
+        Dim gradient As ID2D1Brush = ComObject(Of ID2D1Brush)(gradientPtr)
+
+        gradients(key) = gradient
 
         Return gradient
     End Function
