@@ -52,12 +52,14 @@ Friend Class DxBrushCache : Implements IDisposable
         End If
 
         Dim colorF As D2D1_COLOR_F = ToColorF(color)
+        Dim brushPtr As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            target.CreateSolidColorBrush(colorF, IntPtr.Zero, brush),
+            target.CreateSolidColorBrush(colorF, IntPtr.Zero, brushPtr),
             "ID2D1RenderTarget::CreateSolidColorBrush"
         )
 
+        brush = ComObject(Of ID2D1Brush)(brushPtr)
         solids(key) = brush
 
         Return brush

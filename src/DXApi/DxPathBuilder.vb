@@ -50,10 +50,16 @@ Friend Module DxPathBuilder
     ' /********************************************************************************/
 
     Private Function NewGeometry(factory As ID2D1Factory, ByRef sink As ID2D1GeometrySink) As ID2D1PathGeometry
-        Dim geometry As ID2D1PathGeometry = Nothing
+        Dim geometryPtr As IntPtr = IntPtr.Zero
 
-        Call ThrowIfFailed(factory.CreatePathGeometry(geometry), "ID2D1Factory::CreatePathGeometry")
-        Call ThrowIfFailed(geometry.Open(sink), "ID2D1PathGeometry::Open")
+        Call ThrowIfFailed(factory.CreatePathGeometry(geometryPtr), "ID2D1Factory::CreatePathGeometry")
+
+        Dim geometry As ID2D1PathGeometry = ComObject(Of ID2D1PathGeometry)(geometryPtr)
+        Dim sinkPtr As IntPtr = IntPtr.Zero
+
+        Call ThrowIfFailed(geometry.Open(sinkPtr), "ID2D1PathGeometry::Open")
+
+        sink = ComObject(Of ID2D1GeometrySink)(sinkPtr)
         Call sink.SetFillMode(D2D1_FILL_MODE.WINDING)
 
         Return geometry

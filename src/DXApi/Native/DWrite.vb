@@ -291,7 +291,7 @@ Friend Module DWrite
             stretch As Integer,
             fontSize As Single,
             <MarshalAs(UnmanagedType.LPWStr)> localeName As String,
-            <Out> ByRef textFormat As IDWriteTextFormat) As Integer
+            <Out> ByRef textFormat As IntPtr) As Integer
         ' slot 16
         <PreserveSig> Function CreateTypography(ByRef typography As IntPtr) As Integer
         ' slot 17
@@ -303,5 +303,5 @@ Friend Module DWrite
             textFormat As IDWriteTextFormat,
             maxWidth As Single,
             maxHeight As Single,
-            <Out> ByRef textLayout As IDWriteTextLayout) As Integer
+            <Out> ByRef textLayout As IntPtr) As Integer
     End Interface

@@ -139,7 +139,7 @@ Public Class DxGraphics : Inherits IGraphics
 
         Console.WriteLine("DEBUG fill.IsEmpty = " & fill.IsEmpty)
 
-        If Not fill.IsEmpty Then
+        If False Then
             Try
                 Call ClearCanvas(fill)
                 Console.WriteLine("DEBUG ClearCanvas ok")

@@ -213,7 +213,7 @@ Friend Interface ID2D1PathGeometry
     <PreserveSig> Function ComputePointAtLength(length As Single, worldTransform As IntPtr, flatteningTolerance As Single, <Out> ByRef point As D2D1_POINT_2F, <Out> ByRef unitTangentVector As D2D1_POINT_2F) As Integer
     <PreserveSig> Function Widen(strokeWidth As Single, strokeStyle As ID2D1StrokeStyle, worldTransform As IntPtr, flatteningTolerance As Single, sink As IntPtr) As Integer
     ' slot 17
-    <PreserveSig> Function Open(<Out> ByRef sink As ID2D1GeometrySink) As Integer
+    <PreserveSig> Function Open(<Out> ByRef sink As IntPtr) As Integer
 End Interface
 
 <ComImport>
@@ -274,19 +274,19 @@ Friend Interface ID2D1Factory
     ' slot 4
     <PreserveSig> Sub GetDesktopDpi(<Out> ByRef dpiX As Single, <Out> ByRef dpiY As Single)
     ' slot 5
-    <PreserveSig> Function CreateRectangleGeometry(ByRef rect As D2D1_RECT_F, <Out> ByRef geometry As ID2D1RectangleGeometry) As Integer
+    <PreserveSig> Function CreateRectangleGeometry(ByRef rect As D2D1_RECT_F, <Out> ByRef geometry As IntPtr) As Integer
     ' slot 6
     <PreserveSig> Function CreateRoundedRectangleGeometry(ByRef rect As D2D1_ROUNDED_RECT, <Out> ByRef geometry As IntPtr) As Integer
     ' slot 7
-    <PreserveSig> Function CreateEllipseGeometry(ByRef ellipse As D2D1_ELLIPSE, <Out> ByRef geometry As ID2D1EllipseGeometry) As Integer
+    <PreserveSig> Function CreateEllipseGeometry(ByRef ellipse As D2D1_ELLIPSE, <Out> ByRef geometry As IntPtr) As Integer
     ' slot 8
     <PreserveSig> Function CreateGeometryGroup(fillMode As Integer, geometries As IntPtr, count As UInteger, <Out> ByRef group As IntPtr) As Integer
     ' slot 9
     <PreserveSig> Function CreateTransformedGeometry(source As ID2D1Geometry, ByRef transform As D2D1_MATRIX_3X2_F, <Out> ByRef geometry As IntPtr) As Integer
     ' slot 10
-    <PreserveSig> Function CreatePathGeometry(<Out> ByRef geometry As ID2D1PathGeometry) As Integer
+    <PreserveSig> Function CreatePathGeometry(<Out> ByRef geometry As IntPtr) As Integer
     ' slot 11
-    <PreserveSig> Function CreateStrokeStyle(ByRef properties As D2D1_STROKE_STYLE_PROPERTIES, <[In]> dashes As Single(), dashCount As UInteger, <Out> ByRef style As ID2D1StrokeStyle) As Integer
+    <PreserveSig> Function CreateStrokeStyle(ByRef properties As D2D1_STROKE_STYLE_PROPERTIES, <[In]> dashes As Single(), dashCount As UInteger, <Out> ByRef style As IntPtr) As Integer
     ' slot 12
     <PreserveSig> Function CreateDrawingStateBlock(description As IntPtr, textRenderingParams As IntPtr, <Out> ByRef block As IntPtr) As Integer
     ' slot 13
@@ -305,21 +305,21 @@ Friend Interface ID2D1RenderTarget
     ' slot 3, ID2D1Resource
     <PreserveSig> Sub GetFactory(<Out> ByRef factory As IntPtr)
     ' slot 4
-    <PreserveSig> Function CreateBitmap(size As Long, srcData As IntPtr, pitch As UInteger, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
+    <PreserveSig> Function CreateBitmap(size As Long, srcData As IntPtr, pitch As UInteger, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As IntPtr) As Integer
     ' slot 5
-    <PreserveSig> Function CreateBitmapFromWicBitmap(wicSource As IntPtr, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
+    <PreserveSig> Function CreateBitmapFromWicBitmap(wicSource As IntPtr, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As IntPtr) As Integer
     ' slot 6
-    <PreserveSig> Function CreateSharedBitmap(ByRef riid As Guid, data As IntPtr, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As ID2D1Bitmap) As Integer
+    <PreserveSig> Function CreateSharedBitmap(ByRef riid As Guid, data As IntPtr, ByRef props As D2D1_BITMAP_PROPERTIES, <Out> ByRef bitmap As IntPtr) As Integer
     ' slot 7
-    <PreserveSig> Function CreateBitmapBrush(bitmap As ID2D1Bitmap, brushProps As IntPtr, props As IntPtr, <Out> ByRef brush As ID2D1Brush) As Integer
+    <PreserveSig> Function CreateBitmapBrush(bitmap As ID2D1Bitmap, brushProps As IntPtr, props As IntPtr, <Out> ByRef brush As IntPtr) As Integer
     ' slot 8
-    <PreserveSig> Function CreateSolidColorBrush(ByRef color As D2D1_COLOR_F, props As IntPtr, <Out> ByRef brush As ID2D1Brush) As Integer
+    <PreserveSig> Function CreateSolidColorBrush(ByRef color As D2D1_COLOR_F, props As IntPtr, <Out> ByRef brush As IntPtr) As Integer
     ' slot 9
-    <PreserveSig> Function CreateGradientStopCollection(<[In]> stops As D2D1_GRADIENT_STOP(), stopCount As UInteger, gamma As Integer, extendMode As Integer, <Out> ByRef collection As ID2D1GradientStopCollection) As Integer
+    <PreserveSig> Function CreateGradientStopCollection(<[In]> stops As D2D1_GRADIENT_STOP(), stopCount As UInteger, gamma As Integer, extendMode As Integer, <Out> ByRef collection As IntPtr) As Integer
     ' slot 10
-    <PreserveSig> Function CreateLinearGradientBrush(ByRef props As D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES, brushProps As IntPtr, collection As ID2D1GradientStopCollection, <Out> ByRef brush As ID2D1Brush) As Integer
+    <PreserveSig> Function CreateLinearGradientBrush(ByRef props As D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES, brushProps As IntPtr, collection As ID2D1GradientStopCollection, <Out> ByRef brush As IntPtr) As Integer
     ' slot 11
-    <PreserveSig> Function CreateRadialGradientBrush(props As IntPtr, brushProps As IntPtr, collection As ID2D1GradientStopCollection, <Out> ByRef brush As ID2D1Brush) As Integer
+    <PreserveSig> Function CreateRadialGradientBrush(props As IntPtr, brushProps As IntPtr, collection As ID2D1GradientStopCollection, <Out> ByRef brush As IntPtr) As Integer
     ' slot 12
     <PreserveSig> Function CreateCompatibleRenderTarget(size As IntPtr, pixelSize As IntPtr, format As IntPtr, options As Integer, <Out> ByRef target As IntPtr) As Integer
     ' slot 13
