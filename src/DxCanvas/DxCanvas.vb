@@ -222,9 +222,13 @@ Partial Public Class DxCanvas
     '  the winforms lifecycle
     ' /********************************************************************************/
 
+    ''' <summary>
+    ''' the canvas is not created here: dxgi rejects a swap chain that is
+    ''' created on a window which is still being created, so the canvas is
+    ''' created lazily by the first paint request instead.
+    ''' </summary>
     Protected Overrides Sub OnHandleCreated(e As EventArgs)
         Call MyBase.OnHandleCreated(e)
-        Call CreateCanvas()
     End Sub
 
     ''' <summary>

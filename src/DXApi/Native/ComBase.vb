@@ -226,7 +226,6 @@ Imports std = System.Math
 
         Friend ReadOnly IID_IDXGISurface As New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")
         Friend ReadOnly IID_IDXGIFactory2 As New Guid("50c83a1c-e072-4c48-87b0-3630fa36a6d0")
-        Friend ReadOnly IID_IDXGISwapChain As New Guid("310d36a0-d02c-4a0a-aa04-6a9d23b8886a")
     End Module
 
     ' /********************************************************************************/

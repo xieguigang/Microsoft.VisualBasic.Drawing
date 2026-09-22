@@ -243,86 +243,19 @@ Friend Interface IDXGIFactory2
 
 End Interface
 
-''' <summary>
-''' IDXGISwapChain: the flip model presentation queue.
-''' </summary>
-''' <remarks>
-''' the slots 3 ~ 7 are the methods of IDXGIObject and IDXGIDeviceSubObject,
-''' they are declared here on purpose so that the slots of
-''' <see cref="Present"/>, <see cref="GetBuffer"/> and
-''' <see cref="ResizeBuffers"/> land on 8, 9 and 13.
-''' </remarks>
-<ComImport>
-<Guid("310d36a0-d02c-4a0a-aa04-6a9d23b8886a")>
-<InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-Friend Interface IDXGISwapChain
-
-    ' /******************************************************************************/
-    '  slot 3 ~ 6, IDXGIObject
-    ' /******************************************************************************/
-
-    <PreserveSig>
-    Function SetPrivateData(name As Guid, dataSize As UInteger, data As IntPtr) As Integer
-    <PreserveSig>
-    Function SetPrivateDataInterface(name As Guid, data As IntPtr) As Integer
-    <PreserveSig>
-    Function GetPrivateData(name As Guid, ByRef dataSize As UInteger, data As IntPtr) As Integer
-    <PreserveSig>
-    Function GetParent(ByRef riid As Guid, <Out> ByRef parent As IntPtr) As Integer
-
-    ' /******************************************************************************/
-    '  slot 7, IDXGIDeviceSubObject
-    ' /******************************************************************************/
-
-    <PreserveSig>
-    Function GetDevice(ByRef riid As Guid, <Out> ByRef device As IntPtr) As Integer
-
-    ' /******************************************************************************/
-    '  slot 8 ~ 13, IDXGISwapChain
-    ' /******************************************************************************/
-
-    ''' <summary>
-    ''' present the current back buffer onto the window
-    ''' </summary>
-    ''' <param name="syncInterval">
-    ''' the number of the vertical sync intervals to wait, 0 presents
-    ''' immediately and 1 waits for the next vertical blank
-    ''' </param>
-    <PreserveSig>
-    Function Present(syncInterval As UInteger, flags As UInteger) As Integer
-
-    ''' <summary>
-    ''' get one of the swap chain back buffers
-    ''' </summary>
-    ''' <param name="buffer">the zero based back buffer index</param>
-    ''' <param name="riid">
-    ''' the interface id of the requested surface, for example
-    ''' <see cref="DxConstants.IID_IDXGISurface"/>
-    ''' </param>
-    <PreserveSig>
-    Function GetBuffer(buffer As UInteger, ByRef riid As Guid, <Out> ByRef surface As IntPtr) As Integer
-
-    <PreserveSig>
-    Function SetFullscreenState(fullscreen As Integer, target As IntPtr) As Integer
-    <PreserveSig>
-    Function GetFullscreenState(<Out> ByRef fullscreen As Integer, <Out> ByRef target As IntPtr) As Integer
-    <PreserveSig>
-    Function GetDesc(desc As IntPtr) As Integer
-
-    ''' <summary>
-    ''' resize the back buffers, all of the back buffer references must be
-    ''' released before this call and must be re-acquired afterwards.
-    ''' </summary>
-    ''' <param name="bufferCount">0 keeps the current back buffer count</param>
-    ''' <param name="newFormat">
-    ''' <see cref="DXGI_FORMAT.UNKNOWN"/> keeps the current pixel format
-    ''' </param>
-    <PreserveSig>
-    Function ResizeBuffers(
-            bufferCount As UInteger,
-            width As UInteger,
-            height As UInteger,
-            newFormat As Integer,
-            flags As UInteger) As Integer
-
-End Interface
+' The IDXGISwapChain object is never resolved as a typed com interface here:
+'
+' 1. the factory hands out an IDXGISwapChain1 (or a newer version of it), so
+'    every exact interface id of the swap chain family would be a guess
+' 2. the raw vtable slot of the swap chain is stable across all of the
+'    versions, because IDXGISwapChain1 only appends methods and never
+'    reorders the inherited ones
+'
+' The slot layout that is used by DxSwapChainTarget:
+'
+'   slot  3 ~  6 : IDXGIObject            (SetPrivateData, ... GetParent)
+'   slot  7      : IDXGIDeviceSubObject   (GetDevice)
+'   slot  8      : Present
+'   slot  9      : GetBuffer
+'   slot 10 ~ 12 : SetFullscreenState, GetFullscreenState, GetDesc
+'   slot 13      : ResizeBuffers

@@ -14,6 +14,14 @@ Imports System.Runtime.InteropServices
 ''' 5. draw the frame through the direct2d render target
 ''' 6. <c>ID2D1RenderTarget::EndDraw</c>, then <c>IDXGISwapChain::Present</c>
 '''
+''' The swap chain is dispatched <b>by raw vtable slot</b> instead of a typed
+''' com interface: the factory hands out an <c>IDXGISwapChain1</c> (or newer)
+''' object, and resolving it through <see cref="Marshal.GetTypedObjectForIUnknown(IntPtr, Type)"/>
+''' would tie this code to one exact swap chain interface id. Reading the three
+''' needed slots directly - the same technique that the geometry sink writer
+''' of this project uses - keeps this class independent of the swap chain
+''' version.
+'''
 ''' A flip model back buffer only holds valid pixels while the frame is being
 ''' submitted, so the optional frame capture is taken between the end of the
 ''' direct2d frame and the presentation.
@@ -21,13 +29,47 @@ Imports System.Runtime.InteropServices
 Friend Class DxSwapChainTarget : Inherits DxRenderSurface
 
     ''' <summary>
+    ''' IDXGIObject(3) + IDXGIDeviceSubObject(4) + IDXGISwapChain slot position
+    ''' of <c>Present</c>
+    ''' </summary>
+    Private Const SLOT_PRESENT As Integer = 8
+    ''' <summary>the slot of <c>IDXGISwapChain::GetBuffer</c></summary>
+    Private Const SLOT_GET_BUFFER As Integer = 9
+    ''' <summary>the slot of <c>IDXGISwapChain::ResizeBuffers</c></summary>
+    Private Const SLOT_RESIZE_BUFFERS As Integer = 13
+
+    ''' <summary>
     ''' the amount of the back buffers of the swap chain, a flip model swap
     ''' chain requires at least two of them.
     ''' </summary>
     Private Const BACK_BUFFER_COUNT As UInteger = 2UI
 
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Private Delegate Function PresentFn(instance As IntPtr, syncInterval As UInteger, flags As UInteger) As Integer
+
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Private Delegate Function GetBufferFn(instance As IntPtr, buffer As UInteger,
+                                           ByRef riid As Guid, ByRef surface As IntPtr) As Integer
+
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Private Delegate Function ResizeBuffersFn(instance As IntPtr, bufferCount As UInteger,
+                                              width As UInteger, height As UInteger,
+                                              newFormat As Integer, flags As UInteger) As Integer
+
     Private factory As IDXGIFactory2
-    Private swapChain As IDXGISwapChain
+
+    ''' <summary>
+    ''' the raw <c>IDXGISwapChain</c> pointer, one interface reference is owned
+    ''' by this class
+    ''' </summary>
+    Private swapChain As IntPtr
+
+    ''' <summary>
+    ''' the vtable entries of <see cref="swapChain"/>
+    ''' </summary>
+    Private presentApi As PresentFn
+    Private getBufferApi As GetBufferFn
+    Private resizeBuffersApi As ResizeBuffersFn
 
     ''' <summary>
     ''' the raw IDXGISurface pointer of the current back buffer
@@ -101,8 +143,24 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     End Sub
 
     ''' <summary>
+    ''' resolve one vtable slot of a raw com interface pointer as a delegate
+    ''' </summary>
+    ''' <remarks>the delegate must be kept alive as long as it is used</remarks>
+    Private Shared Function ResolveVtable(Of TDelegate As Class)(instance As IntPtr, slot As Integer) As TDelegate
+        Dim vtable As IntPtr = Marshal.ReadIntPtr(instance)
+        Dim entry As IntPtr = Marshal.ReadIntPtr(vtable, slot * IntPtr.Size)
+
+        Return Marshal.GetDelegateForFunctionPointer(Of TDelegate)(entry)
+    End Function
+
+    ''' <summary>
     ''' create the flip model swap chain on the target window
     ''' </summary>
+    ''' <remarks>
+    ''' the window must already be visible here: dxgi rejects the creation on a
+    ''' window that is still being created, so the hosting control creates the
+    ''' canvas on its first paint request instead of inside its handle creation.
+    ''' </remarks>
     Private Sub CreateSwapChain()
         Dim rawFactory As IntPtr = IntPtr.Zero
         Dim iid As Guid = DxConstants.IID_IDXGIFactory2
@@ -140,51 +198,24 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
                 "IDXGIFactory2::CreateSwapChainForHwnd"
             )
 
-            Call ProbeInterfaces(rawSwapChain)
-
-            swapChain = ComObject(Of IDXGISwapChain)(rawSwapChain)
+            swapChain = rawSwapChain
+            presentApi = ResolveVtable(Of PresentFn)(swapChain, SLOT_PRESENT)
+            getBufferApi = ResolveVtable(Of GetBufferFn)(swapChain, SLOT_GET_BUFFER)
+            resizeBuffersApi = ResolveVtable(Of ResizeBuffersFn)(swapChain, SLOT_RESIZE_BUFFERS)
         Finally
             Call Marshal.Release(rawDevice)
         End Try
-    End Sub
-
-    Private Shared Sub ProbeInterfaces(p As IntPtr)
-        Dim names As String() = {
-            "IDXGIObject",
-            "IDXGIDeviceSubObject",
-            "IDXGISwapChain",
-            "IDXGISwapChain1",
-            "IDXGISurface"
-        }
-        Dim iids As Guid() = {
-            New Guid("aec22fb8-76f3-4639-9be0-28eb43a67a2e"),
-            New Guid("3d3e0379-f9de-4d58-bb6c-18d62992f1a6"),
-            New Guid("310d36a0-d02c-4a0a-aa04-6a9d23b8886a"),
-            New Guid("790a45f7-0d42-4876-9833-0aa6e0e55a83"),
-            New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")
-        }
-
-        For i As Integer = 0 To iids.Length - 1
-            Dim q As IntPtr = IntPtr.Zero
-            Dim hr As Integer = Marshal.QueryInterface(p, iids(i), q)
-
-            If hr >= 0 Then
-                Call Marshal.Release(q)
-            End If
-
-            Console.WriteLine($"   probe QI {names(i)} -> 0x{hr:X8}")
-        Next
     End Sub
 
     ''' <summary>
     ''' create the direct2d render target on the current back buffer
     ''' </summary>
     Private Sub CreateTarget()
-        Dim rawSurface As IntPtr = IntPtr.Zero
         Dim iid As Guid = DxConstants.IID_IDXGISurface
+        Dim rawSurface As IntPtr = IntPtr.Zero
 
         Call ThrowIfFailed(
-            swapChain.GetBuffer(0UI, iid, rawSurface),
+            getBufferApi(swapChain, 0UI, iid, rawSurface),
             "IDXGISwapChain::GetBuffer"
         )
 
@@ -267,7 +298,7 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
             Call CaptureBackBuffer()
         End If
 
-        hr = swapChain.Present(If(VSync, 1UI, 0UI), 0UI)
+        hr = presentApi(swapChain, If(VSync, 1UI, 0UI), 0UI)
 
         If hr < 0 Then
             Call HandleFailure(hr, "IDXGISwapChain::Present")
@@ -327,7 +358,7 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
             m_needsRecreate = False
         Else
             Call ThrowIfFailed(
-                swapChain.ResizeBuffers(0UI, CUInt(newWidth), CUInt(newHeight), DXGI_FORMAT.UNKNOWN, 0UI),
+                resizeBuffersApi(swapChain, 0UI, CUInt(newWidth), CUInt(newHeight), DXGI_FORMAT.UNKNOWN, 0UI),
                 "IDXGISwapChain::ResizeBuffers"
             )
         End If
@@ -380,10 +411,10 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     ''' into the managed memory
     ''' </summary>
     Private Sub CaptureBackBuffer()
-        Dim rawTexture As IntPtr = IntPtr.Zero
         Dim iid As Guid = GetType(ID3D11Texture2D).GUID
+        Dim rawTexture As IntPtr = IntPtr.Zero
 
-        If swapChain.GetBuffer(0UI, iid, rawTexture) < 0 Then
+        If getBufferApi(swapChain, 0UI, iid, rawTexture) < 0 Then
             Return
         End If
 
@@ -474,7 +505,16 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     End Sub
 
     Private Sub ReleaseSwapChain()
-        Call SafeRelease(swapChain)
+        ' the delegates must not be used after the interface is released
+        presentApi = Nothing
+        getBufferApi = Nothing
+        resizeBuffersApi = Nothing
+
+        If swapChain <> IntPtr.Zero Then
+            Call Marshal.Release(swapChain)
+            swapChain = IntPtr.Zero
+        End If
+
         Call SafeRelease(factory)
     End Sub
 
