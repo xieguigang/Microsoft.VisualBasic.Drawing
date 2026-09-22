@@ -101,7 +101,7 @@ Namespace Native
         ' slot 8
         <PreserveSig> Function CompareWithGeometry(geometry As ID2D1Geometry, worldTransform As IntPtr, flatteningTolerance As Single, <Out> ByRef relation As Integer) As Integer
         ' slot 9
-        <PreserveSig> Function Simplify(option As Integer, worldTransform As IntPtr, flatteningTolerance As Single, sink As IntPtr) As Integer
+        <PreserveSig> Function Simplify(simplification As Integer, worldTransform As IntPtr, flatteningTolerance As Single, sink As IntPtr) As Integer
         ' slot 10
         <PreserveSig> Function Tessellate(worldTransform As IntPtr, flatteningTolerance As Single, sink As IntPtr) As Integer
         ' slot 11

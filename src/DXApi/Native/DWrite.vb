@@ -11,7 +11,7 @@ Namespace Native
         Friend ReadOnly IID_IDWriteFactory As New Guid("b859ee5a-d838-4b5b-a2e8-1adc7d93db48")
 
         Friend Enum DWRITE_FACTORY_TYPE As Integer
-            SHARED = 0
+            [SHARED] = 0
             ISOLATED = 1
         End Enum
 
