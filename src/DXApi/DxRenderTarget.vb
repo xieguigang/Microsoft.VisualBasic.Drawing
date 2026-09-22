@@ -201,11 +201,17 @@ Friend Class DxRenderTarget : Inherits DxRenderSurface
     ''' <summary>
     ''' read back the rendered pixels from the gpu texture
     ''' </summary>
+    ''' <remarks>
+    ''' this off screen surface reads its pixels back immediately, so the
+    ''' deferred flag of the base class is never set here.
+    ''' </remarks>
     ''' <returns>
     ''' a BGRA (blue, green, red, alpha) ordered pixel buffer with the
     ''' premultiplied alpha value
     ''' </returns>
-    Friend Overrides Function ReadPixels() As Byte()
+    Friend Overrides Function ReadPixels(ByRef deferred As Boolean) As Byte()
+        deferred = False
+
         If IsDisposed Then
             Throw New ObjectDisposedException(NameOf(DxRenderTarget))
         End If

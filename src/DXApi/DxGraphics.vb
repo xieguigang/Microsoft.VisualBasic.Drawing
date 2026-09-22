@@ -63,6 +63,15 @@ Public Class DxGraphics : Inherits IGraphics
     Private m_released As Boolean = False
 
     ''' <summary>
+    ''' is the render surface created and owned by this canvas?
+    ''' </summary>
+    ''' <remarks>
+    ''' a canvas that is created from an existing surface (the window swap
+    ''' chain canvas) never disposes the surface that is given by the caller.
+    ''' </remarks>
+    Private ReadOnly m_ownsSurface As Boolean
+
+    ''' <summary>
     ''' Merge the consecutive polygon primitives that share the same brush
     ''' into one single geometry object and rasterize them through one draw
     ''' call. This switch is the key of the performance improvement on a
@@ -133,6 +142,7 @@ Public Class DxGraphics : Inherits IGraphics
         transform = IdentityMatrix()
 
         renderTarget = New DxRenderTarget(DxDevice.Default, width, height, If(dpi <= 0, 96.0F, CSng(dpi)))
+        m_ownsSurface = True
 
         Call RefreshTarget()
 
@@ -155,6 +165,7 @@ Public Class DxGraphics : Inherits IGraphics
         _Size = New Size(surface.Width, surface.Height)
         transform = IdentityMatrix()
         renderTarget = surface
+        m_ownsSurface = False
 
         Call RefreshTarget()
 
@@ -507,9 +518,25 @@ Public Class DxGraphics : Inherits IGraphics
         Call EndBatch()
         Call PopAllClips()
 
-        Dim pixels As Byte() = renderTarget.ReadPixels()
+        Dim deferred As Boolean = False
+        Dim pixels As Byte() = renderTarget.ReadPixels(deferred)
 
-        Call PushAllClips()
+        If deferred Then
+            ' the back buffer of a flip model swap chain is only readable while
+            ' the frame is submitted, so the current frame is finished (and
+            ' presented) here and the captured pixels are taken afterwards
+            Call EndFrame()
+
+            pixels = renderTarget.CapturedPixels
+        Else
+            Call PushAllClips()
+        End If
+
+        If pixels Is Nothing Then
+            Throw New NotSupportedException(
+                "the current directx render surface does not provide any pixel read back"
+            )
+        End If
 
         Return CreateBitmap(Unpremultiply(pixels), Width, Height)
     End Function
@@ -567,9 +594,32 @@ Public Class DxGraphics : Inherits IGraphics
         Catch
         End Try
 
-        Call SafeRelease(batch)
-        Call SafeRelease(brushes)
-        Call SafeRelease(renderTarget)
+        ' the batch and the brush cache are pure managed wrappers, so they
+        ' have to be disposed explicitly: releasing them as a com object
+        ' would never run their dispose method and their native resources
+        ' would stay alive until the finalizer thread collects them
+        Call DisposeSafe(batch)
+        Call DisposeSafe(brushes)
+
+        ' the surface of a window canvas is owned by the caller
+        If m_ownsSurface Then
+            Call DisposeSafe(renderTarget)
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' dispose a managed disposable object in a safe manner
+    ''' </summary>
+    Private Shared Sub DisposeSafe(disposable As IDisposable)
+        If disposable Is Nothing Then
+            Return
+        End If
+
+        Try
+            Call disposable.Dispose()
+        Catch
+            ' the native resource may already been released by the finalizer thread
+        End Try
     End Sub
 
     ' /********************************************************************************/

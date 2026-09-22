@@ -131,15 +131,35 @@ Friend MustInherit Class DxRenderSurface : Implements IDisposable
     ''' <summary>
     ''' read back the rendered pixels from the gpu device
     ''' </summary>
+    ''' <param name="deferred">
+    ''' The back buffer of a flip model swap chain only holds valid pixels
+    ''' while the frame is submitted: right after the presentation its content
+    ''' is undefined again. Such a surface returns this flag as True and no
+    ''' pixels at all, the caller has to finish the current frame through
+    ''' <see cref="EndDraw"/> instead and then read the pixels from
+    ''' <see cref="CapturedPixels"/>.
+    ''' </param>
     ''' <returns>
     ''' a BGRA (blue, green, red, alpha) ordered pixel buffer with the
     ''' premultiplied alpha value
     ''' </returns>
-    Friend Overridable Function ReadPixels() As Byte()
+    Friend Overridable Function ReadPixels(ByRef deferred As Boolean) As Byte()
+        deferred = False
+
         Throw New NotSupportedException(
-            $"the {GetType(DxRenderSurface).Name} of type {GetType().Name} does not support the pixel read back"
+            $"the render surface {GetType().Name} does not support the pixel read back"
         )
     End Function
+
+    ''' <summary>
+    ''' the pixels that were captured while the last frame was submitted
+    ''' </summary>
+    ''' <remarks>see the <c>deferred</c> parameter of <see cref="ReadPixels"/></remarks>
+    Friend Overridable ReadOnly Property CapturedPixels As Byte()
+        Get
+            Return Nothing
+        End Get
+    End Property
 
     ''' <summary>
     ''' update the canvas size, this is only called by the implementation of
