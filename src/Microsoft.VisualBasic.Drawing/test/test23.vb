@@ -2,6 +2,11 @@
 Imports System.IO
 Imports Microsoft.VisualBasic.Drawing
 Imports Microsoft.VisualBasic.Imaging
+Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
+Imports Brushes = Microsoft.VisualBasic.Imaging.Brushes
+Imports Font = Microsoft.VisualBasic.Imaging.Font
+Imports Graphics = Microsoft.VisualBasic.Drawing.Graphics
+Imports SolidBrush = Microsoft.VisualBasic.Imaging.SolidBrush
 
 Module test23
 

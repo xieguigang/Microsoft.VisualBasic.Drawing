@@ -1,13 +1,14 @@
 Imports System.Drawing
 Imports Microsoft.VisualBasic.Drawing
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.Driver
 Imports Microsoft.VisualBasic.Imaging.Math2D
-Imports SkiaSharp
+Imports Graphics = Microsoft.VisualBasic.Drawing.Graphics
 
 Module Program
 
     Sub New()
-        Call Microsoft.VisualBasic.Imaging.Driver.Register(Function(s) SkiaImage.FromFile(s))
+        Call DriverLoad.Register(Function(s) SkiaImage.FromFile(s))
     End Sub
 
 

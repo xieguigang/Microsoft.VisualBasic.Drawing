@@ -3,6 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.VisualBasic.Drawing.DirectX</RootNamespace>
     <TargetFramework>net10.0-windows</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;nuget_release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

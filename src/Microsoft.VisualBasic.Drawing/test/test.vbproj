@@ -3,21 +3,24 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>test</RootNamespace>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Extended" Version="3.0.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.151.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.151.2" />
-    <PackageReference Include="System.Security.Permissions" Version="10.0.11" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.152.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.152.1" />
+    <PackageReference Include="System.Security.Permissions" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\GCModeller\src\runtime\sciBASIC#\Data\BinaryData\BinaryData\binarydata-netcore5.vbproj" />
     <ProjectReference Include="..\..\..\..\GCModeller\src\runtime\sciBASIC#\Data_science\Mathematica\Math\Math\Math.NET5.vbproj" />
+    <ProjectReference Include="..\..\..\..\GCModeller\src\runtime\sciBASIC#\gr\Microsoft.VisualBasic.Imaging\imaging.NET5.vbproj" />
     <ProjectReference Include="..\..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
+    <ProjectReference Include="..\..\..\..\GCModeller\src\runtime\sciBASIC#\mime\text%html\html_netcore5.vbproj" />
+    <ProjectReference Include="..\..\DXApi\DXApi.vbproj" />
     <ProjectReference Include="..\..\TrueType\TrueType.vbproj" />
     <ProjectReference Include="..\Microsoft.VisualBasic.Drawing.vbproj" />
   </ItemGroup>
