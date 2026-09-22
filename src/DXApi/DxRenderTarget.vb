@@ -125,6 +125,42 @@ Friend Class DxRenderTarget : Implements IDisposable
     End Sub
 
     ''' <summary>
+    ''' DEBUG ONLY: validate the texture read back chain without direct2d
+    ''' </summary>
+    Friend Function ReadbackSelfTest() As String
+        Dim context As ID3D11DeviceContext = _Device.Context
+        Dim pattern As Byte() = New Byte(64 * 64 * 4 - 1) {}
+
+        For i As Integer = 0 To pattern.Length - 1
+            pattern(i) = &H80
+        Next
+
+        Dim handle As GCHandle = GCHandle.Alloc(pattern, GCHandleType.Pinned)
+
+        Try
+            Call context.UpdateSubresource(texture, 0, IntPtr.Zero, handle.AddrOfPinnedObject(), CUInt(64 * 4), 0)
+        Finally
+            Call handle.Free()
+        End Try
+
+        Call context.CopyResource(staging, texture)
+
+        Dim mapped As D3D11_MAPPED_SUBRESOURCE
+
+        Call ThrowIfFailed(context.Map(staging, 0, D3D11_MAP.READ, 0, mapped), "Map")
+
+        Try
+            Dim probe As Byte() = New Byte(15) {}
+
+            Call Marshal.Copy(mapped.pData, probe, 0, probe.Length)
+
+            Return $"self test first bytes: {String.Join(",", probe)}"
+        Finally
+            Call context.Unmap(staging, 0)
+        End Try
+    End Function
+
+    ''' <summary>
     ''' DEBUG ONLY
     ''' </summary>
     Friend Sub DebugPing(where As String)
@@ -146,7 +182,9 @@ Friend Class DxRenderTarget : Implements IDisposable
             Return
         End If
 
-        Call _Target.Flush(IntPtr.Zero, IntPtr.Zero)
+        Dim tag1 As Long, tag2 As Long
+
+        Call _Target.Flush(tag1, tag2)
     End Sub
 
     ''' <summary>
@@ -155,7 +193,9 @@ Friend Class DxRenderTarget : Implements IDisposable
     ''' </summary>
     Private Sub EndDraw()
         If drawing Then
-            Call ThrowIfFailed(_Target.EndDraw(IntPtr.Zero, IntPtr.Zero), "ID2D1RenderTarget::EndDraw")
+            Dim tag1 As Long, tag2 As Long
+
+            Call ThrowIfFailed(_Target.EndDraw(tag1, tag2), "ID2D1RenderTarget::EndDraw")
             drawing = False
         End If
     End Sub
@@ -181,9 +221,13 @@ Friend Class DxRenderTarget : Implements IDisposable
 
         Call EndDraw()
 
+        Console.WriteLine("DEBUG read: enddraw ok")
+
         Dim context As ID3D11DeviceContext = _Device.Context
 
         Call context.CopyResource(staging, texture)
+
+        Console.WriteLine("DEBUG read: copy ok")
 
         Dim mapped As D3D11_MAPPED_SUBRESOURCE
 
@@ -191,6 +235,8 @@ Friend Class DxRenderTarget : Implements IDisposable
             context.Map(staging, 0, D3D11_MAP.READ, 0, mapped),
             "ID3D11DeviceContext::Map"
         )
+
+        Console.WriteLine("DEBUG read: map ok, pitch=" & mapped.RowPitch)
 
         Try
             Dim rowBytes As Integer = Width * 4

@@ -367,7 +367,7 @@ Friend Interface ID2D1RenderTarget
     ' slot 33
     <PreserveSig> Sub PopLayer()
     ' slot 34
-    <PreserveSig> Function Flush(tag1 As IntPtr, tag2 As IntPtr) As Integer
+    <PreserveSig> Function Flush(ByRef tag1 As Long, ByRef tag2 As Long) As Integer
     ' slot 35
     <PreserveSig> Sub SaveDrawingState(block As IntPtr)
     ' slot 36
@@ -381,5 +381,5 @@ Friend Interface ID2D1RenderTarget
     ' slot 40
     <PreserveSig> Sub BeginDraw()
     ' slot 41
-    <PreserveSig> Function EndDraw(tag1 As IntPtr, tag2 As IntPtr) As Integer
+    <PreserveSig> Function EndDraw(ByRef tag1 As Long, ByRef tag2 As Long) As Integer
 End Interface

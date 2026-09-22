@@ -300,4 +300,6 @@ Friend Module D3D11
         <PreserveSig> Sub CopySubresourceRegion(dst As ID3D11Texture2D, dstSubresource As UInteger, dstX As UInteger, dstY As UInteger, dstZ As UInteger, src As ID3D11Texture2D, srcSubresource As UInteger, ByRef box As D3D11_BOX)
         ' slot 47
         <PreserveSig> Sub CopyResource(dst As ID3D11Texture2D, src As ID3D11Texture2D)
+        ' slot 48
+        <PreserveSig> Sub UpdateSubresource(dst As ID3D11Texture2D, dstSubresource As UInteger, dstBox As IntPtr, srcData As IntPtr, srcRowPitch As UInteger, srcDepthPitch As UInteger)
     End Interface

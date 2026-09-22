@@ -97,6 +97,56 @@ Public Class DxGraphics : Inherits IGraphics
     End Sub
 
     ''' <summary>
+    ''' DEBUG ONLY: scan the vtable slot of Clear / FillRectangle
+    ''' </summary>
+    Public Shared Function DebugScan() As String
+        Dim dev As DxDevice = DxDevice.Default
+        Dim white As D2D1_COLOR_F = ToColorF(Color.White)
+        Dim red As D2D1_COLOR_F = ToColorF(Color.Red)
+        Dim rect As D2D1_RECT_F = ToRectF(New Rectangle(0, 0, 64, 64))
+
+        For slot As Integer = 17 To 17
+            Dim rt As New DxRenderTarget(dev, 64, 64)
+            Dim raw As IntPtr = Marshal.GetIUnknownForObject(rt.Target)
+            Dim vt As IntPtr = Marshal.ReadIntPtr(raw)
+            Dim ptr As IntPtr = Marshal.ReadIntPtr(vt, slot * IntPtr.Size)
+
+            Try
+                If slot <= 25 Then
+                    Dim brushPtr As IntPtr = IntPtr.Zero
+                    Dim mk = Marshal.GetDelegateForFunctionPointer(Of DxCreateSolidBrush)(Marshal.ReadIntPtr(vt, 8 * IntPtr.Size))
+
+                    mk(raw, red, IntPtr.Zero, brushPtr)
+
+                    Dim fill = Marshal.GetDelegateForFunctionPointer(Of DxFillRectangle)(ptr)
+
+                    fill(raw, rect, brushPtr)
+                Else
+                    Dim clear = Marshal.GetDelegateForFunctionPointer(Of DxVoidRefColor)(ptr)
+
+                    clear(raw, white)
+                End If
+
+                Dim px As Byte() = rt.ReadPixels()
+                Dim sum As Long = 0
+
+                For Each b As Byte In px
+                    sum += b
+                Next
+
+                Console.WriteLine($"slot {slot}: pixel = {px(0)},{px(1)},{px(2)},{px(3)}, sum = {sum}, len = {px.Length}")
+            Catch ex As Exception
+                Console.WriteLine($"slot {slot}: FAIL {ex.Message}")
+            End Try
+
+            Marshal.Release(raw)
+            rt.Dispose()
+        Next
+
+        Return "scan done"
+    End Function
+
+    ''' <summary>
     ''' a short description of the underlying gpu device
     ''' </summary>
     Public ReadOnly Property DeviceDescription As String
