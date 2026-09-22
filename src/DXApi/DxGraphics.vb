@@ -107,7 +107,7 @@ Public Class DxGraphics : Inherits IGraphics
         Dim red As D2D1_COLOR_F = ToColorF(Color.Red)
         Dim rect As D2D1_RECT_F = ToRectF(New Rectangle(0, 0, 64, 64))
 
-        For slot As Integer = 27 To 48
+        For slot As Integer = 37 To 40
             Dim rt As New DxRenderTarget(dev, 64, 64)
             Dim raw As IntPtr = Marshal.GetIUnknownForObject(rt.Target)
             Dim vt As IntPtr = Marshal.ReadIntPtr(raw)

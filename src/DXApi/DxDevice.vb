@@ -103,7 +103,7 @@ Friend Class DxDevice : Implements IDisposable
         Dim iid2d As Guid = GetType(ID2D1Factory).GUID
 
         Call ThrowIfFailed(
-            D2D1.D2D1CreateFactory(D2D1_FACTORY_TYPE.MULTI_THREADED, iid2d, opts, factory2d),
+            D2D1.D2D1CreateFactory(D2D1_FACTORY_TYPE.SINGLE_THREADED, iid2d, opts, factory2d),
             "D2D1CreateFactory"
         )
 
