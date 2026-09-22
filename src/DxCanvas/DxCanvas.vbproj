@@ -9,12 +9,20 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RootNamespace>Microsoft.VisualBasic.Drawing.DirectX</RootNamespace>
     <AssemblyName>Microsoft.VisualBasic.Drawing.DirectX.WinForm</AssemblyName>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;nuget_release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <Import Include="System.Data" />
     <Import Include="System.Drawing" />
     <Import Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Data_science\Mathematica\Math\Math\Math.NET5.vbproj" />
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
+    <ProjectReference Include="..\DXApi\DXApi.vbproj" />
   </ItemGroup>
 
   <ItemGroup>
