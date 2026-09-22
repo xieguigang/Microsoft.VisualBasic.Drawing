@@ -157,8 +157,34 @@ Friend Module DWrite
     <ComImport>
     <Guid("53737037-6d14-410b-9bfe-0b182fb709a6")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Friend Interface IDWriteTextLayout : Inherits IDWriteTextFormat
+    Friend Interface IDWriteTextLayout
 
+        ' slot 3 .. slot 27, the methods that are inherited from IDWriteTextFormat
+        <PreserveSig> Function SetTextAlignment(alignment As Integer) As Integer
+        <PreserveSig> Function SetParagraphAlignment(alignment As Integer) As Integer
+        <PreserveSig> Function SetWordWrapping(wrapping As Integer) As Integer
+        <PreserveSig> Function SetReadingDirection(direction As Integer) As Integer
+        <PreserveSig> Function SetFlowDirection(direction As Integer) As Integer
+        <PreserveSig> Function SetIncrementalTabStop(tabStop As Single) As Integer
+        <PreserveSig> Function SetTrimming(trimming As IntPtr, trimmingSign As IntPtr) As Integer
+        <PreserveSig> Function SetLineSpacing(method As Integer, lineSpacing As Single, baseline As Single) As Integer
+        <PreserveSig> Function GetTextAlignment() As Integer
+        <PreserveSig> Function GetParagraphAlignment() As Integer
+        <PreserveSig> Function GetWordWrapping() As Integer
+        <PreserveSig> Function GetReadingDirection() As Integer
+        <PreserveSig> Function GetFlowDirection() As Integer
+        <PreserveSig> Function GetIncrementalTabStop() As Single
+        <PreserveSig> Function GetTrimming(trimming As IntPtr, ByRef sign As IntPtr) As Integer
+        <PreserveSig> Function GetLineSpacing(ByRef method As Integer, ByRef lineSpacing As Single, ByRef baseline As Single) As Integer
+        <PreserveSig> Function GetFontCollection(ByRef collection As IntPtr) As Integer
+        <PreserveSig> Function GetFontFamilyNameLength() As UInteger
+        <PreserveSig> Function GetFontFamilyName(fontFamilyName As IntPtr, nameSize As UInteger) As Integer
+        <PreserveSig> Function GetFontWeight() As Integer
+        <PreserveSig> Function GetFontStyle() As Integer
+        <PreserveSig> Function GetFontStretch() As Integer
+        <PreserveSig> Function GetFontSize() As Single
+        <PreserveSig> Function GetLocaleNameLength() As UInteger
+        <PreserveSig> Function GetLocaleName(localeName As IntPtr, nameSize As UInteger) As Integer
         ' slot 28
         <PreserveSig> Function SetMaxWidth(maxWidth As Single) As Integer
         ' slot 29
@@ -192,19 +218,19 @@ Friend Module DWrite
         ' slot 43
         <PreserveSig> Function GetMaxHeight() As Single
         ' slot 44
-        <PreserveSig> Overloads Function GetFontCollection(position As UInteger, ByRef collection As IntPtr, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontCollection(position As UInteger, ByRef collection As IntPtr, ByRef range As IntPtr) As Integer
         ' slot 45
-        <PreserveSig> Overloads Function GetFontFamilyNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontFamilyNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
         ' slot 46
-        <PreserveSig> Overloads Function GetFontFamilyName(position As UInteger, name As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontFamilyName(position As UInteger, name As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
         ' slot 47
-        <PreserveSig> Overloads Function GetFontWeight(position As UInteger, ByRef weight As Integer, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontWeight(position As UInteger, ByRef weight As Integer, ByRef range As IntPtr) As Integer
         ' slot 48
-        <PreserveSig> Overloads Function GetFontStyle(position As UInteger, ByRef style As Integer, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontStyle(position As UInteger, ByRef style As Integer, ByRef range As IntPtr) As Integer
         ' slot 49
-        <PreserveSig> Overloads Function GetFontStretch(position As UInteger, ByRef stretch As Integer, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontStretch(position As UInteger, ByRef stretch As Integer, ByRef range As IntPtr) As Integer
         ' slot 50
-        <PreserveSig> Overloads Function GetFontSize(position As UInteger, ByRef size As Single, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetFontSize(position As UInteger, ByRef size As Single, ByRef range As IntPtr) As Integer
         ' slot 51
         <PreserveSig> Function GetUnderline(position As UInteger, ByRef hasUnderline As Integer, ByRef range As IntPtr) As Integer
         ' slot 52
@@ -216,9 +242,9 @@ Friend Module DWrite
         ' slot 55
         <PreserveSig> Function GetTypography(position As UInteger, ByRef typography As IntPtr, ByRef range As IntPtr) As Integer
         ' slot 56
-        <PreserveSig> Overloads Function GetLocaleNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetLocaleNameLength(position As UInteger, ByRef length As UInteger, ByRef range As IntPtr) As Integer
         ' slot 57
-        <PreserveSig> Overloads Function GetLocaleName(position As UInteger, localeName As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
+        <PreserveSig> Function GetLocaleName(position As UInteger, localeName As IntPtr, nameSize As UInteger, ByRef range As IntPtr) As Integer
         ' slot 58
         <PreserveSig> Function Draw(clientDrawingContext As IntPtr, renderer As IntPtr, originX As Single, originY As Single) As Integer
         ' slot 59

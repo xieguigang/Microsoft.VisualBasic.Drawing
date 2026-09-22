@@ -342,9 +342,9 @@ Friend Interface ID2D1RenderTarget
     ' slot 21
     <PreserveSig> Sub FillEllipse(ByRef ellipse As D2D1_ELLIPSE, brush As ID2D1Brush)
     ' slot 22
-    <PreserveSig> Sub DrawGeometry(geometry As ID2D1Geometry, brush As ID2D1Brush, strokeWidth As Single, strokeStyle As ID2D1StrokeStyle)
+    <PreserveSig> Sub DrawGeometry(geometry As ID2D1PathGeometry, brush As ID2D1Brush, strokeWidth As Single, strokeStyle As ID2D1StrokeStyle)
     ' slot 23
-    <PreserveSig> Sub FillGeometry(geometry As ID2D1Geometry, brush As ID2D1Brush, opacityBrush As ID2D1Brush)
+    <PreserveSig> Sub FillGeometry(geometry As ID2D1PathGeometry, brush As ID2D1Brush, opacityBrush As ID2D1Brush)
     ' slot 24
     <PreserveSig> Sub FillMesh(mesh As IntPtr, brush As ID2D1Brush)
     ' slot 25

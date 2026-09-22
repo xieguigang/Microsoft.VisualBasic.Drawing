@@ -151,7 +151,7 @@ Public Class DxGraphics : Inherits IGraphics
         Call batch.Flush()
     End Sub
 
-    Private Sub FillGeometry(geometry As ID2D1Geometry, brush As Brush)
+    Private Sub FillGeometry(geometry As ID2D1PathGeometry, brush As Brush)
         Try
             Call renderTarget.Target.FillGeometry(geometry, brushes.GetBrush(brush), Nothing)
         Finally
@@ -159,7 +159,7 @@ Public Class DxGraphics : Inherits IGraphics
         End Try
     End Sub
 
-    Private Sub DrawGeometry(geometry As ID2D1Geometry, pen As Pen)
+    Private Sub DrawGeometry(geometry As ID2D1PathGeometry, pen As Pen)
         Try
             Call renderTarget.Target.DrawGeometry(geometry, brushes.GetBrush(pen.Color), pen.Width, brushes.GetStrokeStyle(pen))
         Finally

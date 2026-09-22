@@ -231,9 +231,9 @@ Friend Module D3D11
         <PreserveSig> Sub Draw(vertexCount As UInteger, startVertexLocation As UInteger)
 
         ' slot 14
-        <PreserveSig> Function Map(resource As ID3D11Resource, subresource As UInteger, mapType As UInteger, mapFlags As UInteger, ByRef mapped As D3D11_MAPPED_SUBRESOURCE) As Integer
+        <PreserveSig> Function Map(resource As ID3D11Texture2D, subresource As UInteger, mapType As UInteger, mapFlags As UInteger, ByRef mapped As D3D11_MAPPED_SUBRESOURCE) As Integer
         ' slot 15
-        <PreserveSig> Sub Unmap(resource As ID3D11Resource, subresource As UInteger)
+        <PreserveSig> Sub Unmap(resource As ID3D11Texture2D, subresource As UInteger)
 
         ' slot 16
         <PreserveSig> Sub PSSetConstantBuffers(startSlot As UInteger, numBuffers As UInteger, buffers As IntPtr)
@@ -297,7 +297,7 @@ Friend Module D3D11
         <PreserveSig> Sub RSSetScissorRects(numRects As UInteger, rects As IntPtr)
 
         ' slot 46
-        <PreserveSig> Sub CopySubresourceRegion(dst As ID3D11Resource, dstSubresource As UInteger, dstX As UInteger, dstY As UInteger, dstZ As UInteger, src As ID3D11Resource, srcSubresource As UInteger, ByRef box As D3D11_BOX)
+        <PreserveSig> Sub CopySubresourceRegion(dst As ID3D11Texture2D, dstSubresource As UInteger, dstX As UInteger, dstY As UInteger, dstZ As UInteger, src As ID3D11Texture2D, srcSubresource As UInteger, ByRef box As D3D11_BOX)
         ' slot 47
-        <PreserveSig> Sub CopyResource(dst As ID3D11Resource, src As ID3D11Resource)
+        <PreserveSig> Sub CopyResource(dst As ID3D11Texture2D, src As ID3D11Texture2D)
     End Interface

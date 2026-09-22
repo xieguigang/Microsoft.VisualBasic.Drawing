@@ -14,6 +14,15 @@ Module DxSmoke
 
         Console.WriteLine("[2] canvas created, device = " & g.DeviceDescription)
 
+        Call g.Flush()
+        Console.WriteLine("[2.1] flush ok (no com out param)")
+
+        Call g.SetClip(New Rectangle(0, 0, 400, 300))
+        Console.WriteLine("[2.2] clip ok")
+
+        Call g.ResetClip()
+        Console.WriteLine("[2.3] reset clip ok")
+
         Call g.FillRectangle(New SolidBrush(Color.Red), New Rectangle(10, 10, 100, 50))
         Console.WriteLine("[3] fill rectangle ok")
 
