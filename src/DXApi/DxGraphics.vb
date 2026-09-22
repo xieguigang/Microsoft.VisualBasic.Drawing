@@ -100,18 +100,22 @@ Public Class DxGraphics : Inherits IGraphics
     ''' DEBUG ONLY: scan the vtable slot of Clear / FillRectangle
     ''' </summary>
     Public Shared Function DebugScan() As String
+        Console.WriteLine(DxRenderTarget.ReadbackSelfTestStatic())
+
         Dim dev As DxDevice = DxDevice.Default
         Dim white As D2D1_COLOR_F = ToColorF(Color.White)
         Dim red As D2D1_COLOR_F = ToColorF(Color.Red)
         Dim rect As D2D1_RECT_F = ToRectF(New Rectangle(0, 0, 64, 64))
 
-        For slot As Integer = 17 To 17
+        For slot As Integer = 27 To 48
             Dim rt As New DxRenderTarget(dev, 64, 64)
             Dim raw As IntPtr = Marshal.GetIUnknownForObject(rt.Target)
             Dim vt As IntPtr = Marshal.ReadIntPtr(raw)
             Dim ptr As IntPtr = Marshal.ReadIntPtr(vt, slot * IntPtr.Size)
 
             Try
+                Console.WriteLine($"trying slot {slot} ...")
+
                 If slot <= 25 Then
                     Dim brushPtr As IntPtr = IntPtr.Zero
                     Dim mk = Marshal.GetDelegateForFunctionPointer(Of DxCreateSolidBrush)(Marshal.ReadIntPtr(vt, 8 * IntPtr.Size))

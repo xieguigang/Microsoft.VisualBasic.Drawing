@@ -127,6 +127,19 @@ Friend Class DxRenderTarget : Implements IDisposable
     ''' <summary>
     ''' DEBUG ONLY: validate the texture read back chain without direct2d
     ''' </summary>
+    Friend Shared Function ReadbackSelfTestStatic() As String
+        Dim rt As New DxRenderTarget(DxDevice.Default, 64, 64)
+
+        Try
+            Return rt.ReadbackSelfTest()
+        Finally
+            rt.Dispose()
+        End Try
+    End Function
+
+    ''' <summary>
+    ''' DEBUG ONLY: validate the texture read back chain without direct2d
+    ''' </summary>
     Friend Function ReadbackSelfTest() As String
         Dim context As ID3D11DeviceContext = _Device.Context
         Dim pattern As Byte() = New Byte(64 * 64 * 4 - 1) {}
