@@ -13,6 +13,10 @@ Module Program
 
 
     Sub Main(args As String())
+        If args.Any(Function(a) a = "--dxsmoke") Then
+            Call DxSmoke.Smoke()
+            Return
+        End If
         If args.Any(Function(a) a = "--dx" OrElse a = "-dx") Then
             ' run the directx polygon benchmark only
             Call DxBenchmark.Run()
