@@ -30,7 +30,7 @@ Module DxBenchmark
     ''' <summary>
     ''' one polygon primitive of the benchmark scene
     ''' </summary>
-    Private Class PolygonDraw
+    Friend Class PolygonDraw
         Public Property Points As PointF()
         Public Property Brush As SolidBrush
         Public Property Pen As Pen
@@ -127,6 +127,18 @@ Module DxBenchmark
     ''' <summary>
     ''' draw the whole scene on the given canvas
     ''' </summary>
+    ''' <returns>the elapsed time in milliseconds</returns>
+    Friend Function DrawScene(g As IGraphics, scene As PolygonDraw()) As Long
+        Dim fill As Long = 0
+        Dim stroke As Long = 0
+        Dim flush As Long = 0
+
+        Return DrawScene(g, scene, fill, stroke, flush)
+    End Function
+
+    ''' <summary>
+    ''' draw the whole scene on the given canvas
+    ''' </summary>
     ''' <param name="fillMs">
     ''' the time that is spent on submitting the polygon fill commands
     ''' </param>
@@ -165,10 +177,20 @@ Module DxBenchmark
     End Function
 
     ''' <summary>
+    ''' generate a random polygon scene that covers the whole benchmark canvas
+    ''' </summary>
+    Friend Function GenerateScene(count As Integer, minRadius As Integer, maxRadius As Integer) As PolygonDraw()
+        Return GenerateScene(count, minRadius, maxRadius, CANVAS_WIDTH, CANVAS_HEIGHT)
+    End Function
+
+    ''' <summary>
     ''' generate a random polygon scene, the polygons are generated series by
     ''' series so that the drawing order is grouped by the color series.
     ''' </summary>
-    Private Function GenerateScene(count As Integer, minRadius As Integer, maxRadius As Integer) As PolygonDraw()
+    ''' <param name="width">the width of the area that is covered by the scene</param>
+    ''' <param name="height">the height of the area that is covered by the scene</param>
+    Friend Function GenerateScene(count As Integer, minRadius As Integer, maxRadius As Integer,
+                                  width As Integer, height As Integer) As PolygonDraw()
         Dim rnd As New Random(20240923)
         Dim palette As String() = {
             "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
@@ -190,7 +212,7 @@ Module DxBenchmark
                     Exit For
                 End If
 
-                scene(index) = CreatePolygon(rnd, brushes(s), minRadius, maxRadius)
+                scene(index) = CreatePolygon(rnd, brushes(s), minRadius, maxRadius, width, height)
                 index += 1
             Next
         Next
@@ -198,9 +220,11 @@ Module DxBenchmark
         Return scene
     End Function
 
-    Private Function CreatePolygon(rnd As Random, brush As SolidBrush, minRadius As Integer, maxRadius As Integer) As PolygonDraw
-        Dim cx As Double = rnd.NextDouble() * CANVAS_WIDTH
-        Dim cy As Double = rnd.NextDouble() * CANVAS_HEIGHT
+    Private Function CreatePolygon(rnd As Random, brush As SolidBrush,
+                                   minRadius As Integer, maxRadius As Integer,
+                                   width As Integer, height As Integer) As PolygonDraw
+        Dim cx As Double = rnd.NextDouble() * width
+        Dim cy As Double = rnd.NextDouble() * height
         Dim radius As Double = minRadius + rnd.NextDouble() * (maxRadius - minRadius)
         Dim points As PointF() = New PointF(VERTEX_COUNT - 1) {}
 
