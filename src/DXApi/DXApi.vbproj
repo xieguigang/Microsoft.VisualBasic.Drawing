@@ -5,11 +5,41 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <Configurations>Debug;Release;nuget_release</Configurations>
+
+    <AssemblyTitle>DXApi</AssemblyTitle>
+    <Title>DirectX GPU Accelerated 2D Drawing Backend</Title>
+    <Description>A GPU accelerated 2D drawing canvas that is implemented on top of the Direct2D / D3D11 / DXGI / DirectWrite api, written completely in managed VB.NET. This graphics object talks to the directx api completely through p/invoke: there is no unmanaged helper library, no c++/cli bridge and no unsafe code block in this project, the whole interop layer is pure managed vb.net code. Drawing commands are submitted to the gpu device through a direct2d render target that is created on top of a d3d11 texture, and the final raster image is read back from the gpu texture when an image output is required. DxGraphics implements the complete Microsoft.VisualBasic.Imaging.IGraphics contract (plus GdiRasterGraphics and SaveGdiBitmap), so it is a drop in replacement for the skia raster canvas, with brush / text format caching and same colored polygon batching for performance, and a WARP software fallback when no hardware device is available.</Description>
+    <PackageTags>directx;direct2d;d3d11;dxgi;directwrite;gpu;graphics;drawing;2d;interop;pinvoke;vbnet</PackageTags>
+    <PackageReleaseNotes>Pure managed VB.NET interop layer for the DirectX 2D graphics pipeline. It declares the DXGI / D3D11 / Direct2D / DirectWrite COM interfaces, structures and enumerations with HRESULT validation and safe releasing, and wraps them into a GPU render target (off screen D3D11 texture rendering with texture read back, plus a DXGI flip model swap chain target for on screen presentation) with a WARP software fallback. DxGraphics implements the full IGraphics api - polygons, rectangles, ellipses, arcs, bezier, curves, pies, paths, text, images, transforms, clipping and clearing - on top of DxBrushCache and DxPolygonBatch, which merge same colored polygons into a single path geometry and rasterize them with one FillGeometry call. Dx2DDriver.RegisterDx2D replaces the default GDI raster device with this GPU canvas, and a removed GPU device is recovered transparently at the beginning of the next frame.</PackageReleaseNotes>
+    <Authors>xieguigang &lt;I@xieguigang.me&gt;</Authors>
+    <Company>sciBASIC.NET Foundation</Company>
+    <Copyright>Copyright (c) sciBASIC.NET Foundation</Copyright>
+    <PackageProjectUrl>http://scibasic.net/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/xieguigang/Microsoft.VisualBasic.Drawing</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo-knot.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Data_science\Mathematica\Math\Math\Math.NET5.vbproj" />
     <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\logo-knot.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

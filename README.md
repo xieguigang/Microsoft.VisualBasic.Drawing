@@ -5,6 +5,33 @@ A replacement of the ``System.Drawing`` on linux environment for help migrant sc
 this project provides the driver code for access the graphics drawing on different os based on the skia sharp project
 from the .net 8.0, the gdi+ and pdf graphics drawing code was removed from scibasic.net framework, only works for the graphics math algorithm.
 
+## Installation
+
+```
+Install-Package Microsoft.VisualBasic.Drawing
+```
+
+## Drivers
+
+The library exposes one ``IGraphics`` drawing API that is implemented by three interchangeable drivers, so the same drawing code renders to bitmap, SVG or PDF output:
+
+| Driver | Canvas | Output |
+| --- | --- | --- |
+| GDI raster | ``Graphics`` | in memory BGRA32 bitmap, saved as PNG / BMP / WebP / JPEG / GIF / ICO |
+| SVG | ``SvgGraphics`` | vector SVG document (``GetSvgText``) |
+| PDF | ``PdfGraphics`` | PDF document |
+
+Call ``SkiaDriver.Register()`` once at application start up to register the GDI / SVG / PDF devices, the ``SkiaImage`` file decoder and the text measurement callback into the ``Microsoft.VisualBasic.Imaging`` driver model.
+
+## Features
+
+- GDI compatible raster, SVG and PDF graphics drivers on top of SkiaSharp.
+- Interop helpers that bridge GDI+ colors, points, rectangles, pens, fonts / typefaces and gradient / texture brushes into SkiaSharp.
+- Multi layer scientific TIFF output (``SaveTiff`` extensions).
+- GDI+ ``DashStyle`` to ``SKPathEffect`` dash mapping for dashed lines.
+- ANSI escape sequence image preview (true color and 256 color) for the terminal.
+- ``SKSvg`` to PNG / PDF conversion and GIF frame decoding helpers.
+
 #### Note about skiasharp save bitmap
 
 Currently, the bitmap file is not supported in skiasharp, the ``SKData`` is always nothing of you try to get bitmap encode data, example as:

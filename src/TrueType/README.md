@@ -4,6 +4,18 @@
 
 A TrueType parser for reading, glyphIds, names, descriptions, and kerning information from TrueType fonts. Supports `.NetStandard 2.0`, `.Net 4.6.1` and higher.
 
+> **Note**: this build is the VB.NET port of Roy-T.TrueType and is distributed as the
+> `Microsoft.VisualBasic.Drawing.Fonts.TrueType` package. The API, the supported tables, the
+> original authorship and the project links below are unchanged from the upstream Roy-T.TrueType
+> project. To install this build use:
+>
+> ```
+> Install-Package Microsoft.VisualBasic.Drawing.Fonts.TrueType
+> ```
+>
+> The assembly and root namespace of this build are `Microsoft.VisualBasic.Drawing.Fonts.TrueType`.
+> The upstream package id and namespace (`RoyT.TrueType`) are kept in the examples below for reference.
+
 
 You can directly add this library to your project using [NuGet](https://www.nuget.org/packages/RoyT.TrueType/):
 

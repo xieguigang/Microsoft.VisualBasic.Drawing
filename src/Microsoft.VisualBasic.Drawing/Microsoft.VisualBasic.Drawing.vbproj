@@ -13,12 +13,23 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Configurations>Debug;Release;MEMI-Desktop;nuget_release;CellaLAB-Desktop;Rsharp_app_release</Configurations>
     <PackageIcon>logo-knot.png</PackageIcon>
-    <PackageTags>skiasharp;</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>skiasharp;graphics;drawing;imaging;svg;pdf;tiff;ansi;gdi;raster;bitmap;cross-platform</PackageTags>
     <PackageOutputPath>../../.nuget</PackageOutputPath>
     <OutputPath>../../../GCModeller\src\runtime\sciBASIC#\.nuget</OutputPath>
     <OptionStrict>On</OptionStrict>
     <Version>1.0.9762.10518</Version>
     <AssemblyVersion>1.0.9762.10518</AssemblyVersion>
+    <AssemblyTitle>Microsoft.VisualBasic.Drawing</AssemblyTitle>
+    <Title>Cross Platform SkiaSharp Drawing Backend</Title>
+    <Description>A cross platform replacement of the System.Drawing graphics library, built on top of SkiaSharp, that helps migrate sciBASIC.NET based applications to .NET 8 and higher. One drawing API is served by three interchangeable drivers - the GDI compatible raster bitmap backend (Graphics), the SVG vector writer (SvgGraphics) and the PDF document writer (PdfGraphics) - so the same drawing code renders to bitmap, SVG or PDF output. The library also provides the raster image codec bridge (PNG / BMP / WebP / JPEG / GIF / ICO), multi layer scientific TIFF output, pen dash effects, brush gradient and texture shaders, a true color / 256 color ANSI terminal image viewer and the driver registration entry point for the Microsoft.VisualBasic.Imaging framework.</Description>
+    <Authors>xieguigang &lt;I@xieguigang.me&gt;</Authors>
+    <Company>sciBASIC.NET Foundation</Company>
+    <Copyright>Copyright (c) sciBASIC.NET Foundation</Copyright>
+    <PackageProjectUrl>http://scibasic.net/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/xieguigang/Microsoft.VisualBasic.Drawing</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>SkiaSharp based cross platform drawing backend for the Microsoft.VisualBasic.Imaging framework. Drivers: Graphics renders into an in memory BGRA32 raster bitmap (implements the GDI raster graphics and GDI bitmap save contracts) with Save to PNG / BMP / WebP / JPEG / GIF / ICO output, SvgGraphics writes a vector SVG document through SKSvgCanvas with GetSvgText, and PdfGraphics writes a PDF document through SKDocument. Driver registration: the SkiaDriver module registers the GDI, SVG and PDF devices plus the SkiaImage file decoder and the text measurement callback into DriverLoad, so all drawing code keeps using the shared IGraphics API. Interop helpers bridge GDI+ types into SkiaSharp (colors, points, rectangles, pens, fonts and typefaces, gradient and texture shaders) and convert a GDI+ Bitmap into an SKBitmap. Extras: multi layer scientific TIFF output via the SaveTiff extensions, GDI+ DashStyle to SKPathEffect dash mapping, an ANSI escape sequence image preview generator for true color / 256 color terminals and SKSvg to PNG / PDF conversion plus GIF frame decoding helpers. Note: SkiaSharp does not encode BMP data reliably, the BMP# project is used to resolve the bitmap file saving problem.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='nuget_release|x64'">
@@ -35,6 +46,10 @@
 
   <ItemGroup>
     <None Include="..\..\logo-knot.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

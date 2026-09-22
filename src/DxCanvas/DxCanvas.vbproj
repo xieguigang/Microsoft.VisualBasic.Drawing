@@ -11,6 +11,25 @@
     <AssemblyName>Microsoft.VisualBasic.Drawing.DirectX.WinForm</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
     <Configurations>Debug;Release;nuget_release</Configurations>
+
+    <AssemblyTitle>Microsoft.VisualBasic.Drawing.DirectX.WinForm</AssemblyTitle>
+    <Title>DirectX WinForms Drawing Canvas</Title>
+    <Description>A winforms control that draws its whole content through the gpu accelerated directx 2d pipeline. The control owns a DXGI flip model swap chain that is bound to its own window handle, so the winforms paint cycle drives the gpu presentation directly: it opens a drawing frame on the swap chain, raises the Render event for the handler to draw through the IGraphics of the event data, then finishes and presents the frame onto the window. The control never paints through gdi+ - the gpu canvas owns every pixel of the client area - so the background painting is suppressed and the opaque style is set, which removes the flickering frame of a gdi+ filled control. The canvas is recreated together with the window handle, so docking, re-parenting and a dpi change are handled transparently, and a removed gpu device is rebuilt at the beginning of the next frame. Public members: the Graphics property and Render event, auto clear with a background color, a vertical sync switch, frame export through SaveImage / CaptureFrame and a readable device description.</Description>
+    <PackageTags>winforms;directx;direct2d;d3d11;dxgi;swapchain;gpu;graphics;canvas;control;drawing;vbnet</PackageTags>
+    <PackageReleaseNotes>WinForms GPU drawing canvas built on top of the DXApi directx 2d backend. The control hosts a DXGI flip model swap chain on its own window handle and drives the GPU presentation from the winforms paint cycle: OnPaint opens a drawing frame, the Render event is raised so the handler draws through the IGraphics of the DxRenderEventArgs, and OnPaint finishes and presents the frame. GDI+ painting is suppressed (opaque control style, no background paint) so the GPU canvas owns every pixel of the client area and the control does not flicker, and the double buffering of winforms is not required because the swap chain already presents an off screen buffer. The canvas is recreated with the window handle, handling docking, re-parenting and dpi changes transparently, and a removed GPU device is recovered by the backend at the beginning of the next frame. The control exposes the Graphics property, the Render event with canvas size, AutoClear and BackgroundColor, a VSync switch, SaveImage and CaptureFrame for exporting the current frame, plus DeviceDescription, IsDeviceLost and LastError for diagnostics.</PackageReleaseNotes>
+    <Authors>xieguigang &lt;I@xieguigang.me&gt;</Authors>
+    <Company>sciBASIC.NET Foundation</Company>
+    <Copyright>Copyright (c) sciBASIC.NET Foundation</Copyright>
+    <PackageProjectUrl>http://scibasic.net/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/xieguigang/Microsoft.VisualBasic.Drawing</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo-knot.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +61,17 @@
 
   <ItemGroup>
     <Service Include="{94e38dff-614b-4cbd-b67c-f211bb35ce8b}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\logo-knot.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

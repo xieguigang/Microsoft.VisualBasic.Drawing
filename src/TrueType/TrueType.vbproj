@@ -7,7 +7,9 @@
     <Authors>Roy Triesscheijn, Wouter de Vries</Authors>
     <Company />
     <Product />
+    <Title>TrueType Font Parser</Title>
     <Description>A TrueType parser for reading, glyphIds, names, descriptions, and kerning information from TrueType fonts.</Description>
+    <PackageReleaseNotes>A TrueType font metadata parser, a VB.NET port of Roy-T.TrueType (https://github.com/roy-t/TrueType). It reads the CMAP (character to glyph index mapping), KERN (inter character kerning), NAME (multilingual font names and styles), MAXP (memory requirements), HMTX / VMTX (horizontal and vertical metrics), HHEA / VHEA (horizontal and vertical header), HEAD, OS/2 and TTC header tables, and supports the segmented mapping to delta values, trimmed table mapping, segmented coverage and byte encoding cmap subtable formats. The library exposes both an easy to use API - TrueTypeFont.FromFile / FromCollectionFile / FromStream together with the GlyphHelper, KerningHelper and NameHelper extensions - and the parsed tables themselves so you can add your own interpretation of the data. This library aims to read meta information from .ttf files, it does not give you enough information to render glyphs yourself.</PackageReleaseNotes>
     <Copyright></Copyright>
     
     <PackageProjectUrl>https://github.com/roy-t/TrueType</PackageProjectUrl>
@@ -22,6 +24,7 @@
     <RootNamespace>Microsoft.VisualBasic.Drawing.Fonts.TrueType</RootNamespace>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -70,6 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
