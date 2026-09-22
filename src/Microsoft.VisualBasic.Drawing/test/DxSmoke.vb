@@ -38,6 +38,48 @@ Module DxSmoke
         Call step_("dispose", Sub() g.Dispose())
     End Sub
 
+    ''' <summary>
+    ''' check the window swap chain canvas on both a top level window and a
+    ''' child window
+    ''' </summary>
+    Sub WindowSmoke()
+        Dim probe As New DxGraphics(64, 64, "#ffffff")
+
+        Console.WriteLine("device         = " & probe.DeviceDescription)
+        Call probe.Dispose()
+
+        Dim form As New Global.System.Windows.Forms.Form With {
+            .Text = "dx window smoke",
+            .Width = 720,
+            .Height = 520
+        }
+        Dim panel As New Global.System.Windows.Forms.Panel With {
+            .Dock = Global.System.Windows.Forms.DockStyle.Fill
+        }
+
+        Call form.Controls.Add(panel)
+        Call form.Show()
+
+        Call probeWindow("top level window", form.Handle, 640, 400)
+        Call probeWindow("child window", panel.Handle, 640, 400)
+
+        Call form.Close()
+    End Sub
+
+    Private Sub probeWindow(name As String, hwnd As IntPtr, width As Integer, height As Integer)
+        Try
+            Using canvas As New DxWindowCanvas(hwnd, width, height)
+                Console.WriteLine($" [ok  ] {name}: device = {canvas.DeviceDescription}")
+
+                Call canvas.BeginDraw()
+                Call canvas.Graphics.Clear(Color.White)
+                Call canvas.EndDraw()
+            End Using
+        Catch ex As Exception
+            Console.WriteLine($" [fail] {name} -> {ex.GetType.Name}: {ex.Message}")
+        End Try
+    End Sub
+
     Private Sub step_(name As String, action As Action)
         Try
             Call action()

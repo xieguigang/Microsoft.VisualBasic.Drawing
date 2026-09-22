@@ -140,10 +140,40 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
                 "IDXGIFactory2::CreateSwapChainForHwnd"
             )
 
+            Call ProbeInterfaces(rawSwapChain)
+
             swapChain = ComObject(Of IDXGISwapChain)(rawSwapChain)
         Finally
             Call Marshal.Release(rawDevice)
         End Try
+    End Sub
+
+    Private Shared Sub ProbeInterfaces(p As IntPtr)
+        Dim names As String() = {
+            "IDXGIObject",
+            "IDXGIDeviceSubObject",
+            "IDXGISwapChain",
+            "IDXGISwapChain1",
+            "IDXGISurface"
+        }
+        Dim iids As Guid() = {
+            New Guid("aec22fb8-76f3-4639-9be0-28eb43a67a2e"),
+            New Guid("3d3e0379-f9de-4d58-bb6c-18d62992f1a6"),
+            New Guid("310d36a0-d02c-4a0a-aa04-6a9d23b8886a"),
+            New Guid("790a45f7-0d42-4876-9833-0aa6e0e55a83"),
+            New Guid("cafcb56c-6ac3-4889-bf47-9e23bbd260ec")
+        }
+
+        For i As Integer = 0 To iids.Length - 1
+            Dim q As IntPtr = IntPtr.Zero
+            Dim hr As Integer = Marshal.QueryInterface(p, iids(i), q)
+
+            If hr >= 0 Then
+                Call Marshal.Release(q)
+            End If
+
+            Console.WriteLine($"   probe QI {names(i)} -> 0x{hr:X8}")
+        Next
     End Sub
 
     ''' <summary>

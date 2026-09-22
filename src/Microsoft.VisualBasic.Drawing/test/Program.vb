@@ -28,6 +28,10 @@ Module Program
             Call DxCanvasDemo.Run()
             Return
         End If
+        If args.Any(Function(a) a = "--dxwindow") Then
+            Call DxSmoke.WindowSmoke()
+            Return
+        End If
         If args.Any(Function(a) a = "--dxsmoke") Then
             Call DxSmoke.Smoke()
             Return
