@@ -109,6 +109,22 @@ Public Class DxGraphics : Inherits IGraphics
 
         sb.AppendLine($"target is com object: {Marshal.IsComObject(renderTarget.Target)}")
 
+        Try
+            Dim unk2 As IntPtr = Marshal.GetIUnknownForObject(renderTarget.Target)
+            Dim p2 As IntPtr = IntPtr.Zero
+            Dim hr2 As Integer = Marshal.QueryInterface(unk2, GetType(IRtProbe).GUID, p2)
+
+            Marshal.Release(unk2)
+
+            Dim probe = ComObject(Of IRtProbe)(p2)
+            Dim f As IntPtr
+
+            probe.GetFactory(f)
+            sb.AppendLine($"minimal probe dispatch OK, factory=0x{f.ToInt64():X}")
+        Catch ex As Exception
+            sb.AppendLine("minimal probe dispatch FAIL: " & ex.Message)
+        End Try
+
         Return sb.ToString()
     End Function
 

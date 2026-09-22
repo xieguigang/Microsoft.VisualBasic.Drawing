@@ -297,6 +297,14 @@ Friend Interface ID2D1Factory
     <PreserveSig> Function CreateDxgiSurfaceRenderTarget(surface As IntPtr, ByRef props As D2D1_RENDER_TARGET_PROPERTIES, <Out> ByRef target As IntPtr) As Integer
 End Interface
 
+' DEBUG ONLY: a minimal probe interface with the ID2D1RenderTarget iid
+<ComImport>
+<Guid("2cd90694-12e2-11dc-9fed-001143a055f9")>
+<InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
+Friend Interface IRtProbe
+    <PreserveSig> Sub GetFactory(<Out> ByRef factory As IntPtr)
+End Interface
+
 <ComImport>
 <Guid("2cd90694-12e2-11dc-9fed-001143a055f9")>
 <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
