@@ -52,6 +52,31 @@ Public Class FormMain
         Call UpdateStatus()
 
         Me.fpsWatch.Start()
+
+        ' a model that is given on the command line is opened right away, so the
+        ' viewer can be used as a file association handler
+        Call OpenCommandLineModel()
+    End Sub
+
+    ''' <summary>
+    ''' open the model file that was passed on the command line
+    ''' </summary>
+    ''' <remarks>
+    ''' the first argument that exists on disk is used: the other arguments of a
+    ''' winforms host process are runtime switches, not model files
+    ''' </remarks>
+    Private Sub OpenCommandLineModel()
+        Dim arguments As String() = Environment.GetCommandLineArgs()
+
+        For i As Integer = 1 To arguments.Length - 1
+            Dim candidate As String = arguments(i)
+
+            If File.Exists(candidate) Then
+                Call OpenFile(candidate)
+
+                Return
+            End If
+        Next
     End Sub
 
     Private Sub SetupToolbar()
