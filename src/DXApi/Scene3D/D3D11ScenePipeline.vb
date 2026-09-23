@@ -970,6 +970,11 @@ Namespace Scene3D
             Call ThrowIfFailed(
                 device.Device.CreateDepthStencilView(m_depthTexture, IntPtr.Zero, m_depthView),
                 "ID3D11Device::CreateDepthStencilView(3d)")
+
+            System.Diagnostics.Trace.WriteLine(
+                $"dx3d target: samples={m_sampleCount} color={m_colorTexture.ToInt64().ToString("X")} rtv={m_renderTargetView.ToInt64().ToString("X")} " &
+                $"srv={m_colorView.ToInt64().ToString("X")} depth={m_depthTexture.ToInt64().ToString("X")} dsv={m_depthView.ToInt64().ToString("X")} " &
+                $"resolve={m_resolveTexture.ToInt64().ToString("X")}")
         End Sub
 
         ''' <summary>
