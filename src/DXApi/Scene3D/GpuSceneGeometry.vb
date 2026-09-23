@@ -390,17 +390,6 @@ Namespace Scene3D
 
             Dim data As SurfaceVertex() = vertices.ToArray()
 
-            System.Diagnostics.Trace.WriteLine(
-                $"dx3d geo: faces={n} vertices={data.Length} sizeof={Marshal.SizeOf(GetType(SurfaceVertex))} " &
-                $"v0=({data(0).X},{data(0).Y},{data(0).Z}) v1=({data(1).X},{data(1).Y},{data(1).Z}) v2=({data(2).X},{data(2).Y},{data(2).Z})")
-
-            If data.Length <= 12 Then
-                For i As Integer = 0 To data.Length - 1
-                    System.Diagnostics.Trace.WriteLine(
-                        $"dx3d vert[{i}]=({data(i).X},{data(i).Y},{data(i).Z}) n=({data(i).NX},{data(i).NY},{data(i).NZ}) c=({data(i).R},{data(i).G},{data(i).B},{data(i).A})")
-                Next
-            End If
-
             m_surfaceBuffer = CreateImmutableBuffer(data, D3D11_BIND_FLAG.VERTEX_BUFFER)
         End Sub
 
@@ -679,10 +668,6 @@ Namespace Scene3D
                     pinnedDesc.Free()
                     pinnedInitial.Free()
                 End Try
-
-                System.Diagnostics.Trace.WriteLine(
-                    $"dx3d buf: type={GetType(T).Name} count={items.Length} size={Marshal.SizeOf(GetType(T))} " &
-                    $"bytes={items.Length * Marshal.SizeOf(GetType(T))} ptr={buffer.ToInt64().ToString("X")} bind={bind}")
 
                 Return buffer
             Finally

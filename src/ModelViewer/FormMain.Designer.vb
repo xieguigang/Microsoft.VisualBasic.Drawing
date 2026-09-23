@@ -55,6 +55,10 @@ Partial Class FormMain
         chkShowDebug = New ToolStripButton()
         toolSep2 = New ToolStripSeparator()
         btnSnapshot = New ToolStripButton()
+        toolSep3 = New ToolStripSeparator()
+        cboPipeline = New ToolStripComboBox()
+        chkAntiAlias = New ToolStripButton()
+        chkCull = New ToolStripButton()
         menuStrip = New MenuStrip()
         fileMenu = New ToolStripMenuItem()
         openItem = New ToolStripMenuItem()
@@ -298,7 +302,7 @@ Partial Class FormMain
         ' 
         ' toolStrip
         ' 
-        toolStrip.Items.AddRange(New ToolStripItem() {cboMode, cboScheme, chkEmbedded, numPointSize, toolSep1, btnReset, chkShowGround, btnBgColor, chkShowDebug, toolSep2, btnSnapshot})
+        toolStrip.Items.AddRange(New ToolStripItem() {cboMode, cboScheme, chkEmbedded, numPointSize, toolSep1, btnReset, chkShowGround, btnBgColor, chkShowDebug, toolSep2, btnSnapshot, toolSep3, cboPipeline, chkAntiAlias, chkCull})
         toolStrip.Location = New Point(0, 24)
         toolStrip.Name = "toolStrip"
         toolStrip.Padding = New Padding(4, 0, 1, 0)
@@ -379,6 +383,33 @@ Partial Class FormMain
         btnSnapshot.Name = "btnSnapshot"
         btnSnapshot.Size = New Size(37, 19)
         btnSnapshot.Text = "截图"
+        ' 
+        ' toolSep3
+        ' 
+        toolSep3.Name = "toolSep3"
+        toolSep3.Size = New Size(6, 25)
+        ' 
+        ' cboPipeline
+        ' 
+        cboPipeline.DropDownStyle = ComboBoxStyle.DropDownList
+        cboPipeline.Name = "cboPipeline"
+        cboPipeline.Size = New Size(170, 25)
+        ' 
+        ' chkAntiAlias
+        ' 
+        chkAntiAlias.CheckOnClick = True
+        chkAntiAlias.DisplayStyle = ToolStripItemDisplayStyle.Text
+        chkAntiAlias.Name = "chkAntiAlias"
+        chkAntiAlias.Size = New Size(75, 22)
+        chkAntiAlias.Text = "抗锯齿 4x"
+        ' 
+        ' chkCull
+        ' 
+        chkCull.CheckOnClick = True
+        chkCull.DisplayStyle = ToolStripItemDisplayStyle.Text
+        chkCull.Name = "chkCull"
+        chkCull.Size = New Size(75, 22)
+        chkCull.Text = "背面剔除"
         ' 
         ' menuStrip
         ' 
@@ -550,6 +581,10 @@ Partial Class FormMain
     Friend WithEvents chkShowDebug As System.Windows.Forms.ToolStripButton
     Friend WithEvents toolSep2 As System.Windows.Forms.ToolStripSeparator
     Friend WithEvents btnSnapshot As System.Windows.Forms.ToolStripButton
+    Friend WithEvents toolSep3 As System.Windows.Forms.ToolStripSeparator
+    Friend WithEvents cboPipeline As System.Windows.Forms.ToolStripComboBox
+    Friend WithEvents chkAntiAlias As System.Windows.Forms.ToolStripButton
+    Friend WithEvents chkCull As System.Windows.Forms.ToolStripButton
     Friend WithEvents menuStrip As System.Windows.Forms.MenuStrip
     Friend WithEvents fileMenu As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents openItem As System.Windows.Forms.ToolStripMenuItem

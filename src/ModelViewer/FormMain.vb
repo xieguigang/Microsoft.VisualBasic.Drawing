@@ -29,6 +29,11 @@ Public Class FormMain
     Private currentFile As String = Nothing
     Private showDebug As Boolean = False
 
+    ''' <summary>the off screen multi sampled direct3d 11 back end</summary>
+    Private ReadOnly gpuRenderer As New Direct3D11SceneRenderer()
+    ''' <summary>the direct back end that renders into the canvas back buffer</summary>
+    Private ReadOnly gpuDirectRenderer As New Direct3D11DirectSceneRenderer()
+
     Private ReadOnly fpsWatch As New Stopwatch()
     Private lastFrameMs As Single = 0
     Private fps As Single = 0
@@ -53,10 +58,18 @@ Public Class FormMain
         Me.cboMode.Items.AddRange(New Object() {"表面渲染", "三角形网格", "点云 (PLY)"})
         Me.cboScheme.Items.AddRange(schemes)
         Me.numPointSize.Items.AddRange(pointSizes)
+        Me.cboPipeline.Items.AddRange(New Object() {
+            "管线: Direct3D 11 + 抗锯齿",
+            "管线: Direct3D 11 直连",
+            "管线: Direct2D 逐面绘制"
+        })
 
         Me.cboMode.SelectedIndex = 0
         Me.cboScheme.SelectedIndex = 0
         Me.numPointSize.SelectedIndex = 1
+        Me.cboPipeline.SelectedIndex = 0
+        Me.chkAntiAlias.Checked = False
+        Me.chkCull.Checked = False
     End Sub
 
     Private Sub SetupCanvas()
@@ -71,11 +84,60 @@ Public Class FormMain
             .ShowGround = True
             .ShowDebugOverlay = False
             .EnableKeyboardShortcuts = True
+
+            ' the true 3d pipeline is the default back end, the direct2d
+            ' polygon painter stays available for the comparison
+            .Renderer = gpuRenderer
+            .MultisampleCount = 1
+            .CullBackFaces = False
         End With
 
         Me.btnBgColor.BackColor = Me.canvas.BackgroundColor
         Me.chkShowGround.Checked = Me.canvas.ShowGround
         Me.chkShowDebug.Checked = Me.canvas.ShowDebugOverlay
+    End Sub
+
+    ' /********************************************************************************/
+    '  the rendering pipeline of the canvas
+    ' /********************************************************************************/
+
+    ''' <summary>
+    ''' switch between the direct3d 11 pipeline and the direct2d polygon painter
+    ''' </summary>
+    Private Sub PipelineChanged(sender As Object, e As EventArgs) Handles cboPipeline.SelectedIndexChanged
+        Select Case Me.cboPipeline.SelectedIndex
+            Case 1
+                Me.canvas.Renderer = gpuDirectRenderer
+            Case 2
+                Me.canvas.Renderer = Direct2DSceneRenderer.Default
+            Case Else
+                Me.canvas.Renderer = gpuRenderer
+        End Select
+
+        ' the anti aliasing and the back face culling are features of the
+        ' direct3d 11 pipeline only, they are meaningless for the painter
+        Dim gpu As Boolean = Me.cboPipeline.SelectedIndex <> 2
+
+        Me.chkAntiAlias.Enabled = gpu AndAlso Me.cboPipeline.SelectedIndex = 0
+        Me.chkCull.Enabled = gpu
+
+        Call UpdateStatus()
+    End Sub
+
+    ''' <summary>
+    ''' the number of the samples of the multi sample anti aliasing
+    ''' </summary>
+    Private Sub AntiAliasChanged(sender As Object, e As EventArgs) Handles chkAntiAlias.CheckedChanged
+        Me.canvas.MultisampleCount = If(Me.chkAntiAlias.Checked, 4, 1)
+        Call UpdateStatus()
+    End Sub
+
+    ''' <summary>
+    ''' discard the faces that point away from the viewer
+    ''' </summary>
+    Private Sub CullChanged(sender As Object, e As EventArgs) Handles chkCull.CheckedChanged
+        Me.canvas.CullBackFaces = Me.chkCull.Checked
+        Call UpdateStatus()
     End Sub
 
     ' /********************************************************************************/
@@ -473,6 +535,10 @@ Public Class FormMain
                                   $"点数: {Me.canvas.PointCount}",
                                   $"面数: {Me.canvas.SurfaceCount}")
 
+        Dim pipeline As String = If(Me.canvas.IsGpuPipelineActive,
+                                    $"Direct3D 11 {Me.canvas.ActiveMultisampleCount}x",
+                                    "Direct2D painter")
+
         Me.lblStatus.Text =
             $"文件: {file}  |  模式: {mode}  |  {counts}  |  角度 X={camera.AngleX:F1}° Y={camera.AngleY:F1}°  |  视距: {camera.ViewDistance:F1}  |  环境光: {Me.canvas.Lighting.Ambient}%  亮度: {Me.canvas.Lighting.Intensity}%"
 
@@ -485,12 +551,19 @@ Public Class FormMain
             errorText = Me.canvas.LastError
         End If
 
-        If String.IsNullOrEmpty(errorText) Then
-            Me.lblDevice.Text = $"设备: {Me.canvas.DeviceDescription}"
-            Me.lblDevice.ForeColor = SystemColors.ControlText
-        Else
+        Dim fallback As String = Me.canvas.RendererFallbackReason
+
+        If Not String.IsNullOrEmpty(errorText) Then
             Me.lblDevice.Text = $"渲染错误: {errorText}"
             Me.lblDevice.ForeColor = Color.Firebrick
+        ElseIf Not String.IsNullOrEmpty(fallback) Then
+            ' the gpu pipeline handed the frame over to the polygon painter, the
+            ' reason must be visible or the missing performance looks random
+            Me.lblDevice.Text = $"已回退到逐面绘制: {fallback}"
+            Me.lblDevice.ForeColor = Color.DarkOrange
+        Else
+            Me.lblDevice.Text = $"管线: {pipeline}  |  设备: {Me.canvas.DeviceDescription}"
+            Me.lblDevice.ForeColor = SystemColors.ControlText
         End If
     End Sub
 
