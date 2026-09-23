@@ -181,6 +181,7 @@ Namespace Scene3D
                 Call ReleaseGpu()
 
                 m_lastError = ex.Message
+                m_lastErrorDetail = ex.ToString()
 
                 If TypeOf ex Is InvalidOperationException AndAlso ex.Message.Contains("does not compile") Then
                     ' a shader that does not compile can not be fixed by retrying,

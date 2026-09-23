@@ -113,6 +113,7 @@ Namespace Scene3D
         Private m_canvasViewSource As IntPtr = IntPtr.Zero
         Private m_unavailable As Boolean = False
         Private m_lastError As String = ""
+        Private m_lastErrorDetail As String = ""
         Private m_disposed As Boolean = False
 
         Public ReadOnly Property Name As String Implements ISceneRenderBackend.Name
@@ -146,6 +147,16 @@ Namespace Scene3D
         Public ReadOnly Property LastError As String
             Get
                 Return m_lastError
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the full detail (including the stack trace) of the last failure of
+        ''' the gpu pipeline, for diagnostics
+        ''' </summary>
+        Public ReadOnly Property LastErrorDetail As String
+            Get
+                Return m_lastErrorDetail
             End Get
         End Property
 
@@ -206,6 +217,7 @@ Namespace Scene3D
                 Call ReleaseGpu()
 
                 m_lastError = ex.Message
+                m_lastErrorDetail = ex.ToString()
 
                 If TypeOf ex Is InvalidOperationException AndAlso ex.Message.Contains("does not compile") Then
                     m_unavailable = True
