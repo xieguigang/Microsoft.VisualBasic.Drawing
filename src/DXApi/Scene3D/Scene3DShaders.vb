@@ -31,6 +31,8 @@ Namespace Scene3D
         Public ViewportScale As Vector4
         ''' <summary>the color of the wire frame lines and of the ground grid</summary>
         Public UnlitColor As Vector4
+        ''' <summary>x = the lowest heat value, y = 1 / (the highest heat value - the lowest one)</summary>
+        Public HeatParams As Vector4
     End Structure
 
     ''' <summary>
@@ -86,6 +88,7 @@ Namespace Scene3D
                 "    float4   shadingParams;" & vbCrLf &
                 "    float4   viewportScale;" & vbCrLf &
                 "    float4   unlitColor;" & vbCrLf &
+                "    float4   heatParams;" & vbCrLf &
                 "};" & vbCrLf &
                 "" & vbCrLf &
                 "Texture2D    paletteTexture : register(t0);" & vbCrLf &
@@ -213,8 +216,9 @@ Namespace Scene3D
                 "        return input.color;" & vbCrLf &
                 "    }" & vbCrLf &
                 "" & vbCrLf &
+                "    float heat = (input.heat - heatParams.x) * heatParams.y;" & vbCrLf &
                 "    float levels = shadingParams.z;" & vbCrLf &
-                "    float index = floor(saturate(input.heat) * (levels - 1) + 0.5f);" & vbCrLf &
+                "    float index = floor(saturate(heat) * (levels - 1) + 0.5f);" & vbCrLf &
                 "    float u = (index + 0.5f) / levels;" & vbCrLf &
                 "" & vbCrLf &
                 "    return paletteTexture.Sample(paletteSampler, float2(u, 0.5f));" & vbCrLf &
