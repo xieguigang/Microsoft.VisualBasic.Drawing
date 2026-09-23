@@ -261,7 +261,7 @@ Namespace Scene3D
                 Return
             End If
 
-            Dim minDim As Integer = Math.Min(screenSize.Width, screenSize.Height)
+            Dim minDim As Integer = std.Min(screenSize.Width, screenSize.Height)
             If minDim <= 0 Then
                 minDim = 600
             End If
@@ -313,7 +313,7 @@ Namespace Scene3D
                     Dim dx As Double = p.X - center.X
                     Dim dy As Double = p.Y - center.Y
                     Dim dz As Double = p.Z - center.Z
-                    Dim d As Double = Math.Sqrt(dx * dx + dy * dy + dz * dz)
+                    Dim d As Double = std.Sqrt(dx * dx + dy * dy + dz * dz)
 
                     If d > max Then
                         max = d

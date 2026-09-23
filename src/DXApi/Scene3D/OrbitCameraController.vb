@@ -188,7 +188,7 @@ Namespace Scene3D
         ''' </summary>
         Public Sub ZoomBy(factor As Single)
             Dim distance As Single = Me.Camera.ViewDistance * factor
-            Me.Camera.ViewDistance = Math.Max(MinViewDistance, distance)
+            Me.Camera.ViewDistance = std.Max(MinViewDistance, distance)
 
             RaiseEvent ViewChanged(Me, EventArgs.Empty)
         End Sub
