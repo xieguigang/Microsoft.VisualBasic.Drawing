@@ -30,11 +30,35 @@ Friend Module DXGI
     ''' <summary>
     ''' DXGI_FORMAT enumeration (subset)
     ''' </summary>
+    ''' <remarks>
+    ''' the formats of the 3d pipeline are included here: the vertex attribute
+    ''' formats (the float vectors and the normalized byte color) and the depth
+    ''' buffer format.
+    ''' </remarks>
     Friend Enum DXGI_FORMAT As Integer
         UNKNOWN = 0
+        R32G32B32A32_FLOAT = 2
+        R32G32B32A32_UINT = 3
+        R32G32B32_FLOAT = 6
+        R32G32B32_UINT = 7
+        R16G16B16A16_FLOAT = 10
+        R32G32_FLOAT = 16
+        R32G32_UINT = 17
+        D32_FLOAT_S8X24_UINT = 20
         R8G8B8A8_UNORM = 28
+        R8G8B8A8_UNORM_SRGB = 29
+        R16G16_FLOAT = 34
+        ''' <summary>the depth buffer format of the 3d pipeline</summary>
+        D32_FLOAT = 40
+        R32_FLOAT = 41
+        R32_UINT = 42
+        D24_UNORM_S8_UINT = 45
+        R16_FLOAT = 54
+        R16_UNORM = 56
+        R16_UINT = 57
         B8G8R8A8_UNORM = 87
         B8G8R8X8_UNORM = 88
+        B8G8R8A8_UNORM_SRGB = 91
     End Enum
 
     ''' <summary>

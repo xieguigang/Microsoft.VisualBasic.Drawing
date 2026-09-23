@@ -81,6 +81,136 @@ Friend Module D3D11
             WRITE_NO_OVERWRITE = 5
         End Enum
 
+        Friend Enum D3D11_PRIMITIVE_TOPOLOGY As Integer
+            UNDEFINED = 0
+            POINTLIST = 1
+            LINELIST = 2
+            LINESTRIP = 3
+            TRIANGLELIST = 4
+            TRIANGLESTRIP = 5
+        End Enum
+
+        Friend Enum D3D11_FILL_MODE As Integer
+            WIREFRAME = 2
+            SOLID = 3
+        End Enum
+
+        Friend Enum D3D11_CULL_MODE As Integer
+            NONE = 1
+            [FRONT] = 2
+            BACK = 3
+        End Enum
+
+        Friend Enum D3D11_COMPARISON_FUNC As Integer
+            NEVER = 1
+            LESS = 2
+            EQUAL = 3
+            LESS_EQUAL = 4
+            GREATER = 5
+            NOT_EQUAL = 6
+            GREATER_EQUAL = 7
+            ALWAYS = 8
+        End Enum
+
+        Friend Enum D3D11_DEPTH_WRITE_MASK As Integer
+            ZERO = 0
+            ALL = 1
+        End Enum
+
+        Friend Enum D3D11_STENCIL_OP As Integer
+            KEEP = 1
+            ZERO = 2
+            REPLACE = 3
+            INCR_SAT = 4
+            DECR_SAT = 5
+            INVERT = 6
+            INCR = 7
+            DECR = 8
+        End Enum
+
+        Friend Enum D3D11_BLEND As Integer
+            ZERO = 1
+            ONE = 2
+            SRC_COLOR = 3
+            INV_SRC_COLOR = 4
+            SRC_ALPHA = 5
+            INV_SRC_ALPHA = 6
+            DEST_ALPHA = 7
+            INV_DEST_ALPHA = 8
+            DEST_COLOR = 9
+            INV_DEST_COLOR = 10
+            SRC_ALPHA_SAT = 11
+            BLEND_FACTOR = 14
+            INV_BLEND_FACTOR = 15
+        End Enum
+
+        Friend Enum D3D11_BLEND_OP As Integer
+            ADD = 1
+            SUBTRACT = 2
+            REV_SUBTRACT = 3
+            MIN = 4
+            MAX = 5
+        End Enum
+
+        <Flags>
+        Friend Enum D3D11_COLOR_WRITE_ENABLE As Integer
+            RED = &H1
+            GREEN = &H2
+            BLUE = &H4
+            ALPHA = &H8
+            ALL = &HF
+        End Enum
+
+        <Flags>
+        Friend Enum D3D11_RESOURCE_MISC_FLAG As UInteger
+            GENERATE_MIPS = &H1
+            ''' <summary>the visual basic ``Shared`` keyword forces the brackets</summary>
+            [SHARED] = &H2
+            TEXTURECUBE = &H4
+            DRAWINDIRECT_ARGS = &H10
+            BUFFER_ALLOW_RAW_VIEWS = &H20
+            BUFFER_STRUCTURED = &H40
+            RESOURCE_CLAMP = &H80
+        End Enum
+
+        <Flags>
+        Friend Enum D3D11_CLEAR_FLAG As UInteger
+            DEPTH = &H1
+            STENCIL = &H2
+        End Enum
+
+        Friend Enum D3D11_INPUT_CLASSIFICATION As Integer
+            PER_VERTEX_DATA = 0
+            PER_INSTANCE_DATA = 1
+        End Enum
+
+        Friend Enum D3D11_FILTER As Integer
+            MIN_MAG_MIP_POINT = &H0
+            MIN_MAG_POINT_MIP_LINEAR = &H1
+            MIN_POINT_MAG_LINEAR_MIP_POINT = &H4
+            MIN_POINT_MAG_MIP_LINEAR = &H5
+            MIN_LINEAR_MAG_MIP_POINT = &H10
+            MIN_LINEAR_MAG_POINT_MIP_LINEAR = &H11
+            MIN_MAG_LINEAR_MIP_POINT = &H14
+            MIN_MAG_MIP_LINEAR = &H15
+            ANISOTROPIC = &H55
+        End Enum
+
+        Friend Enum D3D11_TEXTURE_ADDRESS_MODE As Integer
+            WRAP = 1
+            MIRROR = 2
+            CLAMP = 3
+            BORDER = 4
+            MIRROR_ONCE = 5
+        End Enum
+
+        ''' <summary>
+        ''' the quality level that asks the driver to use the standard multi
+        ''' sample pattern, accepted by the ``Quality`` field of
+        ''' <c>CreateTexture2D</c> when the sample count is greater than one.
+        ''' </summary>
+        Friend Const D3D11_STANDARD_MULTISAMPLE_PATTERN As UInteger = &HFFFFFFFFUI
+
         ''' <summary>
         ''' create the d3d11 device and its immediate device context
         ''' </summary>
@@ -130,6 +260,120 @@ Friend Module D3D11
         Public right As UInteger
         Public bottom As UInteger
         Public back As UInteger
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_BUFFER_DESC
+        Public ByteWidth As UInteger
+        Public Usage As Integer
+        Public BindFlags As UInteger
+        Public CPUAccessFlags As UInteger
+        Public MiscFlags As UInteger
+        Public StructureByteStride As UInteger
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_SUBRESOURCE_DATA
+        Public pSysMem As IntPtr
+        Public SysMemPitch As UInteger
+        Public SysMemSlicePitch As UInteger
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_VIEWPORT
+        Public TopLeftX As Single
+        Public TopLeftY As Single
+        Public Width As Single
+        Public Height As Single
+        Public MinDepth As Single
+        Public MaxDepth As Single
+    End Structure
+
+    ''' <summary>
+    ''' one element of the input layout of a vertex shader
+    ''' </summary>
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_INPUT_ELEMENT_DESC
+        <MarshalAs(UnmanagedType.LPStr)> Public SemanticName As String
+        Public SemanticIndex As UInteger
+        ''' <summary>a DXGI_FORMAT value</summary>
+        Public Format As Integer
+        Public InputSlot As UInteger
+        Public AlignedByteOffset As UInteger
+        ''' <summary>a D3D11_INPUT_CLASSIFICATION value</summary>
+        Public InputSlotClass As Integer
+        Public InstanceDataStepRate As UInteger
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_DEPTH_STENCILOP_DESC
+        Public StencilFailOp As Integer
+        Public StencilDepthFailOp As Integer
+        Public StencilPassOp As Integer
+        Public StencilFunc As Integer
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_DEPTH_STENCIL_DESC
+        Public DepthEnable As Integer
+        Public DepthWriteMask As Integer
+        Public DepthFunc As Integer
+        Public StencilEnable As Integer
+        Public StencilReadMask As Byte
+        Public StencilWriteMask As Byte
+        Public FrontFace As D3D11_DEPTH_STENCILOP_DESC
+        Public BackFace As D3D11_DEPTH_STENCILOP_DESC
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_RASTERIZER_DESC
+        Public FillMode As Integer
+        Public CullMode As Integer
+        Public FrontCounterClockwise As Integer
+        Public DepthBias As Integer
+        Public DepthBiasClamp As Single
+        Public SlopeScaledDepthBias As Single
+        Public DepthClipEnable As Integer
+        Public ScissorEnable As Integer
+        Public MultisampleEnable As Integer
+        Public AntialiasedLineEnable As Integer
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_RENDER_TARGET_BLEND_DESC
+        Public BlendEnable As Integer
+        Public SrcBlend As Integer
+        Public DestBlend As Integer
+        Public BlendOp As Integer
+        Public SrcBlendAlpha As Integer
+        Public DestBlendAlpha As Integer
+        Public BlendOpAlpha As Integer
+        Public RenderTargetWriteMask As Byte
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_BLEND_DESC
+        Public AlphaToCoverageEnable As Integer
+        Public IndependentBlendEnable As Integer
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=8)>
+        Public RenderTarget As D3D11_RENDER_TARGET_BLEND_DESC()
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure D3D11_SAMPLER_DESC
+        Public Filter As Integer
+        Public AddressU As Integer
+        Public AddressV As Integer
+        Public AddressW As Integer
+        Public MipLODBias As Single
+        Public MaxAnisotropy As UInteger
+        Public ComparisonFunc As Integer
+        Public BorderColor0 As Single
+        Public BorderColor1 As Single
+        Public BorderColor2 As Single
+        Public BorderColor3 As Single
+        Public MinLOD As Single
+        Public MaxLOD As Single
     End Structure
 
     ' /********************************************************************************/
@@ -189,16 +433,94 @@ Friend Module D3D11
     End Interface
 
     ''' <summary>
-    ''' ID3D11Device, only <see cref="CreateTexture2D"/> (vtable slot 5) is used,
-    ''' the immediate device context is returned from <see cref="D3D11.D3D11CreateDevice"/>
+    ''' ID3D11Device, the resource factory of the gpu device.
     ''' </summary>
+    ''' <remarks>
+    ''' The slots are declared in the exact order of the native d3d11.h header
+    ''' file: the methods that are not used by this project keep a compact
+    ''' signature, but no slot may be skipped or the whole vtable of this
+    ''' interface silently shifts (vb.net com interfaces are dispatched by the
+    ''' declaration order, not by a name).
+    '''
+    ''' The native resources that are created by this factory are kept as raw
+    ''' interface pointers: such a pointer is only handed back to the device
+    ''' context or to another factory call, so the raw form avoids both the
+    ''' extra query interface of the com marshaler and a wrong interface cast
+    ''' at the call site.
+    ''' </remarks>
     <ComImport>
     <Guid("db6f6ddb-ac77-4e88-8253-819df9bbf140")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
     Friend Interface ID3D11Device
+        ' slot 3
         <PreserveSig> Function CreateBuffer(desc As IntPtr, initialData As IntPtr, <Out> ByRef buffer As IntPtr) As Integer
+        ' slot 4
         <PreserveSig> Function CreateTexture1D(desc As IntPtr, initialData As IntPtr, <Out> ByRef texture As IntPtr) As Integer
+        ' slot 5
         <PreserveSig> Function CreateTexture2D(ByRef desc As D3D11_TEXTURE2D_DESC, initialData As IntPtr, <Out> ByRef texture As IntPtr) As Integer
+        ' slot 6
+        <PreserveSig> Function CreateTexture3D(desc As IntPtr, initialData As IntPtr, <Out> ByRef texture As IntPtr) As Integer
+        ' slot 7
+        <PreserveSig> Function CreateShaderResourceView(resource As IntPtr, desc As IntPtr, <Out> ByRef view As IntPtr) As Integer
+        ' slot 8
+        <PreserveSig> Function CreateUnorderedAccessView(resource As IntPtr, desc As IntPtr, <Out> ByRef view As IntPtr) As Integer
+        ' slot 9
+        <PreserveSig> Function CreateRenderTargetView(resource As IntPtr, desc As IntPtr, <Out> ByRef view As IntPtr) As Integer
+        ' slot 10
+        <PreserveSig> Function CreateDepthStencilView(resource As IntPtr, desc As IntPtr, <Out> ByRef view As IntPtr) As Integer
+        ' slot 11
+        <PreserveSig> Function CreateInputLayout(<[In]> elements As D3D11_INPUT_ELEMENT_DESC(), numElements As UInteger,
+                                                shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                <Out> ByRef layout As IntPtr) As Integer
+        ' slot 12
+        <PreserveSig> Function CreateVertexShader(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                  classLinkage As IntPtr, <Out> ByRef shader As IntPtr) As Integer
+        ' slot 13
+        <PreserveSig> Function CreateGeometryShader(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                    classLinkage As IntPtr, <Out> ByRef shader As IntPtr) As Integer
+        ' slot 14
+        <PreserveSig> Function CreateGeometryShaderWithStreamOutput(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                                    outputSignature As IntPtr, numEntries As UInteger,
+                                                                    bufferStrides As IntPtr, numStrides As UInteger,
+                                                                    rasterizedStream As UInteger, classLinkage As IntPtr,
+                                                                    <Out> ByRef shader As IntPtr) As Integer
+        ' slot 15
+        <PreserveSig> Function CreatePixelShader(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                 classLinkage As IntPtr, <Out> ByRef shader As IntPtr) As Integer
+        ' slot 16
+        <PreserveSig> Function CreateHullShader(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                classLinkage As IntPtr, <Out> ByRef shader As IntPtr) As Integer
+        ' slot 17
+        <PreserveSig> Function CreateDomainShader(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                  classLinkage As IntPtr, <Out> ByRef shader As IntPtr) As Integer
+        ' slot 18
+        <PreserveSig> Function CreateComputeShader(shaderBytecode As IntPtr, bytecodeLength As UInteger,
+                                                   classLinkage As IntPtr, <Out> ByRef shader As IntPtr) As Integer
+        ' slot 19
+        <PreserveSig> Function CreateClassLinkage(<Out> ByRef linkage As IntPtr) As Integer
+        ' slot 20
+        <PreserveSig> Function CreateBlendState(ByRef desc As D3D11_BLEND_DESC, <Out> ByRef state As IntPtr) As Integer
+        ' slot 21
+        <PreserveSig> Function CreateDepthStencilState(ByRef desc As D3D11_DEPTH_STENCIL_DESC, <Out> ByRef state As IntPtr) As Integer
+        ' slot 22
+        <PreserveSig> Function CreateRasterizerState(ByRef desc As D3D11_RASTERIZER_DESC, <Out> ByRef state As IntPtr) As Integer
+        ' slot 23
+        <PreserveSig> Function CreateSamplerState(ByRef desc As D3D11_SAMPLER_DESC, <Out> ByRef state As IntPtr) As Integer
+        ' slot 24
+        <PreserveSig> Function CreateQuery(desc As IntPtr, <Out> ByRef query As IntPtr) As Integer
+        ' slot 25
+        <PreserveSig> Function CreatePredicate(desc As IntPtr, <Out> ByRef predicate As IntPtr) As Integer
+        ' slot 26
+        <PreserveSig> Function CreateCounter(desc As IntPtr, <Out> ByRef counter As IntPtr) As Integer
+        ' slot 27
+        <PreserveSig> Function CreateDeferredContext(flags As UInteger, <Out> ByRef context As IntPtr) As Integer
+        ' slot 28
+        <PreserveSig> Function OpenSharedResource(hResource As IntPtr, ByRef riid As Guid, <Out> ByRef resource As IntPtr) As Integer
+        ' slot 29
+        <PreserveSig> Function CheckFormatSupport(format As Integer, <Out> ByRef support As UInteger) As Integer
+        ' slot 30
+        <PreserveSig> Function CheckMultisampleQualityLevels(format As Integer, sampleCount As UInteger,
+                                                             <Out> ByRef qualityLevels As UInteger) As Integer
     End Interface
 
     ''' <summary>
@@ -301,5 +623,28 @@ Friend Module D3D11
         ' slot 47
         <PreserveSig> Sub CopyResource(dst As ID3D11Texture2D, src As ID3D11Texture2D)
         ' slot 48
-        <PreserveSig> Sub UpdateSubresource(dst As ID3D11Texture2D, dstSubresource As UInteger, dstBox As IntPtr, srcData As IntPtr, srcRowPitch As UInteger, srcDepthPitch As UInteger)
+        ''' <remarks>
+        ''' the destination resource is a raw pointer so that this method also
+        ''' accepts a buffer (for example the per frame constant buffer), not
+        ''' only a texture2d.
+        ''' </remarks>
+        <PreserveSig> Sub UpdateSubresource(dst As IntPtr, dstSubresource As UInteger, dstBox As IntPtr, srcData As IntPtr, srcRowPitch As UInteger, srcDepthPitch As UInteger)
+        ' slot 49
+        <PreserveSig> Sub CopyStructureCount(dstBuffer As IntPtr, dstAlignedByteOffset As UInteger, srcView As IntPtr)
+        ' slot 50
+        <PreserveSig> Sub ClearRenderTargetView(renderTargetView As IntPtr, colorRGBA As IntPtr)
+        ' slot 51
+        <PreserveSig> Sub ClearUnorderedAccessViewUint(unorderedAccessView As IntPtr, values As IntPtr)
+        ' slot 52
+        <PreserveSig> Sub ClearUnorderedAccessViewFloat(unorderedAccessView As IntPtr, values As IntPtr)
+        ' slot 53
+        <PreserveSig> Sub ClearDepthStencilView(depthStencilView As IntPtr, clearFlags As UInteger, depth As Single, stencil As Byte)
+        ' slot 54
+        <PreserveSig> Sub GenerateMips(shaderResourceView As IntPtr)
+        ' slot 55
+        <PreserveSig> Sub SetResourceMinLOD(resource As IntPtr, minLOD As Single)
+        ' slot 56
+        <PreserveSig> Function GetResourceMinLOD(resource As IntPtr) As Single
+        ' slot 57
+        <PreserveSig> Sub ResolveSubresource(dstResource As IntPtr, dstSubresource As UInteger, srcResource As IntPtr, srcSubresource As UInteger, format As Integer)
     End Interface

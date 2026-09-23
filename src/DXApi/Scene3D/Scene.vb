@@ -32,6 +32,7 @@ Namespace Scene3D
         Private m_groundZ As Double = 0
         Private m_intensityMin As Double = 0
         Private m_intensityMax As Double = 1
+        Private m_version As Integer = 0
 
         ''' <summary>
         ''' the faces of the model, an empty array means that the scene holds a
@@ -128,6 +129,20 @@ Namespace Scene3D
         End Property
 
         ''' <summary>
+        ''' the revision number of the geometry of this scene.
+        ''' </summary>
+        ''' <remarks>
+        ''' The counter is raised every time the geometry is replaced, so a
+        ''' rendering back end that keeps a copy of the geometry on the gpu can
+        ''' detect that its copy became stale without comparing the whole model.
+        ''' </remarks>
+        Public ReadOnly Property Version As Integer
+            Get
+                Return m_version
+            End Get
+        End Property
+
+        ''' <summary>
         ''' drop all of the geometry of the scene
         ''' </summary>
         Public Sub Clear()
@@ -138,6 +153,7 @@ Namespace Scene3D
             m_groundZ = 0
             m_intensityMin = 0
             m_intensityMax = 1
+            m_version += 1
         End Sub
 
         ''' <summary>
@@ -182,6 +198,7 @@ Namespace Scene3D
 
             m_surfaces = centered
             m_groundZ = LowestZ(m_surfaces, m_points)
+            m_version += 1
         End Sub
 
         ''' <summary>
@@ -228,6 +245,7 @@ Namespace Scene3D
             m_intensityMin = minIntensity
             m_intensityMax = maxIntensity
             m_groundZ = LowestZ(m_surfaces, m_points)
+            m_version += 1
         End Sub
 
         ''' <summary>

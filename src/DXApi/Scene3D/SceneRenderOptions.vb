@@ -54,6 +54,28 @@ Namespace Scene3D
         Public Property BackgroundColor As Color = Color.White
 
         ''' <summary>
+        ''' the number of the samples of the multi sample anti aliasing of the
+        ''' gpu rendering back end, one disables the anti aliasing.
+        ''' </summary>
+        ''' <remarks>
+        ''' The default is one: the strict mode renders exactly the same picture
+        ''' as the polygon painter back end does. A value of four or eight
+        ''' smooths the model edges, and the back end silently falls back to one
+        ''' when the gpu device does not support the requested sample count.
+        ''' </remarks>
+        Public Property MultisampleCount As Integer = 1
+
+        ''' <summary>
+        ''' discard the faces that point away from the viewer
+        ''' </summary>
+        ''' <remarks>
+        ''' The default is false because the winding of the faces of a scanned
+        ''' model is not always consistent: with the culling enabled such a model
+        ''' shows holes.
+        ''' </remarks>
+        Public Property CullBackFaces As Boolean = False
+
+        ''' <summary>
         ''' create a copy of the current options
         ''' </summary>
         Public Function Clone() As SceneRenderOptions
@@ -65,8 +87,22 @@ Namespace Scene3D
                 .UseEmbeddedColor = UseEmbeddedColor,
                 .ShowGround = ShowGround,
                 .GroundColor = GroundColor,
-                .BackgroundColor = BackgroundColor
+                .BackgroundColor = BackgroundColor,
+                .MultisampleCount = MultisampleCount,
+                .CullBackFaces = CullBackFaces
             }
+        End Function
+
+        ''' <summary>
+        ''' the part of the options that the gpu geometry cache has to observe:
+        ''' when this text changes the cached geometry has to be rebuilt.
+        ''' </summary>
+        ''' <remarks>
+        ''' the camera and the lighting are not part of this signature because
+        ''' they do not change the vertex data, they are uniform values only.
+        ''' </remarks>
+        Friend Function GeometrySignature() As String
+            Return $"{Mode}|{ColorScheme}|{PointSize}|{PointAlpha}|{UseEmbeddedColor}|{ShowGround}|{GroundColor.ToArgb()}"
         End Function
     End Class
 End Namespace
