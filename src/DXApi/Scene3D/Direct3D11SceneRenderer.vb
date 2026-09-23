@@ -216,7 +216,7 @@ Namespace Scene3D
 
             Dim size As Size = canvas.Size
 
-            Trace.WriteLine($"dx3d: frame {size.Width}x{size.Height} msaa={options.MultisampleCount}")
+            Trace.WriteLine($"dx3d: frame canvas={size.Width}x{size.Height} surface={surface.Width}x{surface.Height} msaa={options.MultisampleCount}")
 
             Call EnsurePipeline(surface.Device)
 
@@ -224,7 +224,7 @@ Namespace Scene3D
 
             Call EnsureTarget(size, options)
 
-            Trace.WriteLine($"dx3d: target ready samples={m_target.SampleCount}")
+            Trace.WriteLine($"dx3d: target ready samples={m_target.SampleCount} size={m_target.Width}x{m_target.Height}")
 
             Dim transform As SceneTransform = SceneTransform.Create(camera, scene, size)
             Dim geometry As GpuSceneGeometry = m_pipeline.GeometryOf(scene, options)
