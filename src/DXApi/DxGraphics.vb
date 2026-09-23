@@ -8,10 +8,12 @@ Imports Microsoft.VisualBasic.Imaging.Driver
 Imports std = System.Math
 
 Imports Brush = Microsoft.VisualBasic.Imaging.Brush
+Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
 Imports Font = Microsoft.VisualBasic.Imaging.Font
 Imports GraphicsPath = Microsoft.VisualBasic.Imaging.GraphicsPath
 Imports Image = Microsoft.VisualBasic.Imaging.Image
 Imports Pen = Microsoft.VisualBasic.Imaging.Pen
+Imports SolidBrush = Microsoft.VisualBasic.Imaging.SolidBrush
 
 ''' <summary>
 ''' A gpu accelerated 2d drawing canvas that is implemented on top of the

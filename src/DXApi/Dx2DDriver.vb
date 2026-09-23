@@ -16,11 +16,11 @@ Public Module Dx2DDriver
 
     Private Class DxDriver : Inherits DeviceInterop
 
-        Public Overrides Function CreateGraphic(size As Size, fill As Color, dpi As Integer) As Imaging.IGraphics
+        Public Overrides Function CreateGraphic(size As Size, fill As Color, dpi As Integer) As Microsoft.VisualBasic.Imaging.IGraphics
             Return New DxGraphics(size.Width, size.Height, fill, dpi)
         End Function
 
-        Public Overrides Function CreateCanvas2D(background As Imaging.Bitmap, direct_access As Boolean) As Imaging.IGraphics
+        Public Overrides Function CreateCanvas2D(background As Microsoft.VisualBasic.Imaging.Bitmap, direct_access As Boolean) As Microsoft.VisualBasic.Imaging.IGraphics
             Dim canvas As New DxGraphics(background.Width, background.Height, Color.Transparent)
 
             Call canvas.DrawImage(background, New Point)
@@ -28,7 +28,7 @@ Public Module Dx2DDriver
             Return canvas
         End Function
 
-        Public Overrides Function CreateCanvas2D(background As Imaging.Image, direct_access As Boolean) As Imaging.IGraphics
+        Public Overrides Function CreateCanvas2D(background As Microsoft.VisualBasic.Imaging.Image, direct_access As Boolean) As Microsoft.VisualBasic.Imaging.IGraphics
             Dim canvas As New DxGraphics(background.Width, background.Height, Color.Transparent)
 
             Call canvas.DrawImage(background, New Point)
@@ -45,7 +45,7 @@ Public Module Dx2DDriver
         ''' the raster image of the canvas can be read through
         ''' <see cref="DxGraphics.GetRasterImage"/> instead.
         ''' </remarks>
-        Public Overrides Function GetData(g As Imaging.IGraphics, padding() As Integer) As IGraphicsData
+        Public Overrides Function GetData(g As Microsoft.VisualBasic.Imaging.IGraphics, padding() As Integer) As IGraphicsData
             Throw New NotSupportedException(
                 "the directx canvas does not provide the gdi image data model, " &
                 "use DxGraphics.GetRasterImage instead."
