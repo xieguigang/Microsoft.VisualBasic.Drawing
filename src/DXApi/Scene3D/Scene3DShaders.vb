@@ -270,29 +270,17 @@ Namespace Scene3D
                         $"the shader {entryPoint} ({profile}) does not compile: {ReadBlob(errors)}")
                 End If
 
-                Dim blob As ID3DBlob = Nothing
-
-                Try
-                    blob = ComObject(Of ID3DBlob)(code)
-
-                    Dim size As Integer = CInt(blob.GetBufferSize())
-                    Dim buffer As Byte() = New Byte(size - 1) {}
-
-                    Call Marshal.Copy(blob.GetBufferPointer(), buffer, 0, size)
-
-                    Return buffer
-                Finally
-                    Call SafeRelease(blob)
-                End Try
+                Return ReadBytes(code)
             Finally
                 pinned.Free()
 
+                ' both blobs own one reference that was handed out by the
+                ' compiler, the blob is only read through its vtable here so
+                ' that this simple one to one ownership stays true
                 If errors <> IntPtr.Zero Then
                     Call Marshal.Release(errors)
                 End If
 
-                ' the byte code blob is also released when the copy failed, the
-                ' wrapper above has taken its own reference
                 If code <> IntPtr.Zero Then
                     Call Marshal.Release(code)
                 End If
@@ -300,22 +288,57 @@ Namespace Scene3D
         End Function
 
         ''' <summary>
+        ''' the slot of <c>ID3DBlob::GetBufferPointer</c>
+        ''' </summary>
+        Private Const BlobGetBufferPointer As Integer = 3
+        ''' <summary>
+        ''' the slot of <c>ID3DBlob::GetBufferSize</c>
+        ''' </summary>
+        Private Const BlobGetBufferSize As Integer = 4
+
+        <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+        Private Delegate Function GetBufferPointerFn(instance As IntPtr) As IntPtr
+
+        <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+        Private Delegate Function GetBufferSizeFn(instance As IntPtr) As UInteger
+
+        ''' <summary>
+        ''' copy the data block of a blob into the managed memory
+        ''' </summary>
+        Private Function ReadBytes(blob As IntPtr) As Byte()
+            If blob = IntPtr.Zero Then
+                Return New Byte() {}
+            End If
+
+            Dim sizeApi As GetBufferSizeFn = ResolveVtable(Of GetBufferSizeFn)(blob, BlobGetBufferSize)
+            Dim bufferApi As GetBufferPointerFn = ResolveVtable(Of GetBufferPointerFn)(blob, BlobGetBufferPointer)
+            Dim size As Integer = CInt(sizeApi(blob))
+
+            If size <= 0 Then
+                Return New Byte() {}
+            End If
+
+            Dim buffer As Byte() = New Byte(size - 1) {}
+
+            Call Marshal.Copy(bufferApi(blob), buffer, 0, size)
+
+            Return buffer
+        End Function
+
+        ''' <summary>
         ''' read the text of a compiler message blob
         ''' </summary>
         Private Function ReadBlob(blob As IntPtr) As String
-            If blob = IntPtr.Zero Then
-                Return "(no compiler output)"
-            End If
-
-            Dim message As ID3DBlob = Nothing
-
             Try
-                message = ComObject(Of ID3DBlob)(blob)
-                Return Marshal.PtrToStringAnsi(message.GetBufferPointer(), CInt(message.GetBufferSize()))
-            Catch
-                Return "(unreadable compiler output)"
-            Finally
-                Call SafeRelease(message)
+                Dim message As Byte() = ReadBytes(blob)
+
+                If message.Length = 0 Then
+                    Return "(no compiler output)"
+                End If
+
+                Return Encoding.ASCII.GetString(message).Trim()
+            Catch ex As Exception
+                Return $"(unreadable compiler output: {ex.Message})"
             End Try
         End Function
     End Module
