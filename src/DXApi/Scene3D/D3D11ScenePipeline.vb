@@ -389,7 +389,7 @@ Namespace Scene3D
                                    instances, Scene3DInputLayout.PointInstanceStride)
             Call context.DrawInstanced(6UI, CUInt(geometry.InstanceCount), 0UI, 0UI)
 
-            Call context.PSSetShaderResources(0UI, 1UI, IntPtr.Zero)
+            Call UnbindShaderResource()
         End Sub
 
         ''' <summary>
@@ -423,7 +423,21 @@ Namespace Scene3D
 
             Call context.Draw(3UI, 0UI)
 
-            Call context.PSSetShaderResources(0UI, 1UI, IntPtr.Zero)
+            Call UnbindShaderResource()
+        End Sub
+
+        ''' <summary>
+        ''' release the texture of the pixel stage
+        ''' </summary>
+        ''' <remarks>
+        ''' the pointer of a null view is passed instead of a null array pointer,
+        ''' so that no driver has to guess what an empty array means. The color
+        ''' buffer of the 3d pipeline is also a render target of the next frame,
+        ''' so it must not stay bound to the pixel stage.
+        ''' </remarks>
+        Private Sub UnbindShaderResource()
+            Call Marshal.WriteIntPtr(m_scratchSingle, 0, IntPtr.Zero)
+            Call m_device.Context.PSSetShaderResources(0UI, 1UI, m_scratchSingle)
         End Sub
 
         ''' <summary>
@@ -852,12 +866,17 @@ Namespace Scene3D
         Private ReadOnly m_width As Integer
         Private ReadOnly m_height As Integer
         Private ReadOnly m_sampleCount As Integer
-        Private ReadOnly m_colorTexture As IntPtr
-        Private ReadOnly m_resolveTexture As IntPtr
-        Private ReadOnly m_depthTexture As IntPtr
-        Private ReadOnly m_renderTargetView As IntPtr
-        Private ReadOnly m_colorView As IntPtr
-        Private ReadOnly m_depthView As IntPtr
+
+        ' the resources below are filled through the out parameter of the
+        ' factory calls, and visual basic silently takes a copy of a read only
+        ' field that is passed by reference (the assignments would be lost), so
+        ' these fields are plain private fields instead
+        Private m_colorTexture As IntPtr
+        Private m_resolveTexture As IntPtr
+        Private m_depthTexture As IntPtr
+        Private m_renderTargetView As IntPtr
+        Private m_colorView As IntPtr
+        Private m_depthView As IntPtr
 
         Private m_disposed As Boolean = False
 
