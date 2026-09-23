@@ -292,9 +292,19 @@ Friend Module D3D11
     ''' <summary>
     ''' one element of the input layout of a vertex shader
     ''' </summary>
+    ''' <remarks>
+    ''' the semantic name is a raw ansi string pointer instead of a managed
+    ''' string so that this structure stays blittable: an array of a blittable
+    ''' structure can be pinned and passed straight to the api, while an array of
+    ''' a structure with a managed string field would make the com marshaler look
+    ''' for a registered type library (which the inline com declarations of this
+    ''' project do not have).
+    ''' The memory of the name is owned by whoever fills this structure.
+    ''' </remarks>
     <StructLayout(LayoutKind.Sequential)>
     Friend Structure D3D11_INPUT_ELEMENT_DESC
-        <MarshalAs(UnmanagedType.LPStr)> Public SemanticName As String
+        ''' <summary>a pointer to a null terminated ansi string</summary>
+        Public SemanticName As IntPtr
         Public SemanticIndex As UInteger
         ''' <summary>a DXGI_FORMAT value</summary>
         Public Format As Integer
@@ -469,7 +479,15 @@ Friend Module D3D11
         ' slot 10
         <PreserveSig> Function CreateDepthStencilView(resource As IntPtr, desc As IntPtr, <Out> ByRef view As IntPtr) As Integer
         ' slot 11
-        <PreserveSig> Function CreateInputLayout(<[In]> elements As D3D11_INPUT_ELEMENT_DESC(), numElements As UInteger,
+        ''' <remarks>
+        ''' the element array is declared as a plain c array (``LPArray``) on
+        ''' purpose: the default marshalling of an array parameter of a com
+        ''' interface is a safearray, which drags the whole type library of the
+        ''' marshaller in for no reason here. the elements are blittable, so the
+        ''' runtime only pins the managed array for the duration of the call.
+        ''' </remarks>
+        <PreserveSig> Function CreateInputLayout(<[In]> <MarshalAs(UnmanagedType.LPArray, SizeParamIndex:=1)> elements As D3D11_INPUT_ELEMENT_DESC(),
+                                                numElements As UInteger,
                                                 shaderBytecode As IntPtr, bytecodeLength As UInteger,
                                                 <Out> ByRef layout As IntPtr) As Integer
         ' slot 12

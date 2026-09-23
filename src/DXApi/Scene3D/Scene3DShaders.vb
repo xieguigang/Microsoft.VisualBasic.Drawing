@@ -421,11 +421,21 @@ Namespace Scene3D
             Element("TEXCOORD", 2, DXGI_FORMAT.R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0)
         }
 
+        ''' <summary>
+        ''' build one element of an input layout
+        ''' </summary>
+        ''' <remarks>
+        ''' the semantic name is copied into an unmanaged ansi block because the
+        ''' element structure stays blittable (see
+        ''' <see cref="D3D11_INPUT_ELEMENT_DESC"/>). The names of the layout
+        ''' tables above are allocated once for the whole process, which is the
+        ''' very purpose of a static input layout table.
+        ''' </remarks>
         Private Function Element(semantic As String, index As UInteger, format As DXGI_FORMAT, slot As UInteger,
                                  offset As UInteger, classification As D3D11_INPUT_CLASSIFICATION,
                                  stepRate As UInteger) As D3D11_INPUT_ELEMENT_DESC
             Return New D3D11_INPUT_ELEMENT_DESC With {
-                .SemanticName = semantic,
+                .SemanticName = Marshal.StringToHGlobalAnsi(semantic),
                 .SemanticIndex = index,
                 .Format = CInt(format),
                 .InputSlot = slot,
