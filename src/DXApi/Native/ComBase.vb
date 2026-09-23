@@ -63,9 +63,12 @@ Imports std = System.Math
             End If
 
             Try
-                If Marshal.IsComObject(com) Then
-                    Call Marshal.FinalReleaseComObject(com)
-                End If
+                ' the release is attempted unconditionally: a runtime callable
+                ' wrapper that was created with a known interface type is not
+                ' reported by Marshal.IsComObject, and skipping its release here
+                ' would leak the native resource (a leaked direct2d render target
+                ' keeps the swap chain back buffer alive for example)
+                Call Marshal.FinalReleaseComObject(com)
             Catch
                 ' the com object may already been released by the finalizer thread
             End Try
