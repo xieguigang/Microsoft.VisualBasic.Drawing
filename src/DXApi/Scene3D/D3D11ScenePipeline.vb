@@ -916,19 +916,20 @@ Namespace Scene3D
             m_height = height
             m_sampleCount = std.Max(1, sampleCount)
 
-            ' the color buffer of the 3d pipeline: it is only a render target, it
-            ' is never sampled directly when the multi sampling is active
-            m_colorTexture = CreateTexture(width, height, m_sampleCount,
-                                           CUInt(D3D11_BIND_FLAG.RENDER_TARGET),
+            ' the color buffer of the 3d pipeline: it is sampled by the blit pass
+            ' when the multi sampling is off, and it is only a render target when
+            ' a resolve step feeds the blit pass instead
+            Dim colorBind As UInteger = CUInt(D3D11_BIND_FLAG.RENDER_TARGET) Or
+                                        CUInt(D3D11_BIND_FLAG.SHADER_RESOURCE)
+
+            m_colorTexture = CreateTexture(width, height, m_sampleCount, colorBind,
                                            DXGI_FORMAT.B8G8R8A8_UNORM)
             Call ThrowIfFailed(
                 device.Device.CreateRenderTargetView(m_colorTexture, IntPtr.Zero, m_renderTargetView),
                 "ID3D11Device::CreateRenderTargetView(3d)")
 
             If m_sampleCount > 1 Then
-                m_resolveTexture = CreateTexture(width, height, 1,
-                                                 CUInt(D3D11_BIND_FLAG.RENDER_TARGET) Or
-                                                 CUInt(D3D11_BIND_FLAG.SHADER_RESOURCE),
+                m_resolveTexture = CreateTexture(width, height, 1, colorBind,
                                                  DXGI_FORMAT.B8G8R8A8_UNORM)
                 Call ThrowIfFailed(
                     device.Device.CreateShaderResourceView(m_resolveTexture, IntPtr.Zero, m_colorView),

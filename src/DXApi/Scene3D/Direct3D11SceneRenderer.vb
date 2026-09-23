@@ -1,3 +1,4 @@
+Imports System.Diagnostics
 Imports System.Drawing
 Imports System.Numerics
 Imports System.Runtime.InteropServices
@@ -215,8 +216,15 @@ Namespace Scene3D
 
             Dim size As Size = canvas.Size
 
+            Trace.WriteLine($"dx3d: frame {size.Width}x{size.Height} msaa={options.MultisampleCount}")
+
             Call EnsurePipeline(surface.Device)
+
+            Trace.WriteLine("dx3d: pipeline ready")
+
             Call EnsureTarget(size, options)
+
+            Trace.WriteLine($"dx3d: target ready samples={m_target.SampleCount}")
 
             Dim transform As SceneTransform = SceneTransform.Create(camera, scene, size)
             Dim geometry As GpuSceneGeometry = m_pipeline.GeometryOf(scene, options)
@@ -231,15 +239,26 @@ Namespace Scene3D
             ' batched 2d commands of the host
             Call surface.Flush()
 
+            Trace.WriteLine($"dx3d: begin frame, geometry surface={geometry.SurfaceVertexCount} ground={geometry.GroundVertexCount}")
+
             Call m_pipeline.BeginFrame(size)
             Call m_pipeline.SetRenderTarget(m_target.RenderTargetView, m_target.DepthStencilView)
             Call m_pipeline.Clear(m_target.RenderTargetView, m_target.DepthStencilView, options.BackgroundColor)
+
+            Trace.WriteLine("dx3d: cleared")
+
             Call m_pipeline.SetScene(geometry, transform, camera, options, heatRange)
+
+            Trace.WriteLine("dx3d: scene constants uploaded")
 
             Call DrawScene(scene, geometry, options)
 
+            Trace.WriteLine("dx3d: scene drawn")
+
             If m_target.SampleCount > 1 Then
                 Call m_target.Resolve(m_pipeline)
+
+                Trace.WriteLine("dx3d: resolved")
             End If
 
             Dim canvasView As IntPtr = EnsureCanvasTarget(surface)
@@ -248,8 +267,15 @@ Namespace Scene3D
                 Throw New InvalidOperationException("unable to create a render target view on the canvas texture")
             End If
 
+            Trace.WriteLine($"dx3d: canvas view {canvasView.ToInt64().ToString("X")}")
+
             Call m_pipeline.BlitColor(m_target.ColorShaderResource, canvasView, size)
+
+            Trace.WriteLine("dx3d: blit done")
+
             Call m_pipeline.EndFrame(size)
+
+            Trace.WriteLine("dx3d: frame done")
         End Sub
 
         ''' <summary>
