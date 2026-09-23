@@ -326,8 +326,9 @@ Partial Class FormMain
         chkEmbedded.CheckOnClick = True
         chkEmbedded.DisplayStyle = ToolStripItemDisplayStyle.Text
         chkEmbedded.Name = "chkEmbedded"
-        chkEmbedded.Size = New Size(115, 22)
-        chkEmbedded.Text = "使用点云自带颜色"
+        chkEmbedded.Size = New Size(90, 22)
+        chkEmbedded.Text = "自带颜色"
+        chkEmbedded.ToolTipText = "点云使用文件之中自带的点颜色"
         ' 
         ' numPointSize
         ' 
@@ -344,8 +345,9 @@ Partial Class FormMain
         ' 
         btnReset.DisplayStyle = ToolStripItemDisplayStyle.Text
         btnReset.Name = "btnReset"
-        btnReset.Size = New Size(63, 22)
-        btnReset.Text = "重置视角"
+        btnReset.Size = New Size(38, 22)
+        btnReset.Text = "重置"
+        btnReset.ToolTipText = "重置视角"
         ' 
         ' chkShowGround
         ' 
@@ -369,8 +371,9 @@ Partial Class FormMain
         chkShowDebug.CheckOnClick = True
         chkShowDebug.DisplayStyle = ToolStripItemDisplayStyle.Text
         chkShowDebug.Name = "chkShowDebug"
-        chkShowDebug.Size = New Size(63, 19)
-        chkShowDebug.Text = "调试信息"
+        chkShowDebug.Size = New Size(38, 19)
+        chkShowDebug.Text = "调试"
+        chkShowDebug.ToolTipText = "显示调试信息"
         ' 
         ' toolSep2
         ' 
@@ -393,23 +396,26 @@ Partial Class FormMain
         ' 
         cboPipeline.DropDownStyle = ComboBoxStyle.DropDownList
         cboPipeline.Name = "cboPipeline"
-        cboPipeline.Size = New Size(170, 25)
+        cboPipeline.Size = New Size(112, 25)
+        cboPipeline.ToolTipText = "绘制管线的切换：Direct3D 11 真三维管线或 Direct2D 逐面绘制"
         ' 
         ' chkAntiAlias
         ' 
         chkAntiAlias.CheckOnClick = True
         chkAntiAlias.DisplayStyle = ToolStripItemDisplayStyle.Text
         chkAntiAlias.Name = "chkAntiAlias"
-        chkAntiAlias.Size = New Size(75, 22)
-        chkAntiAlias.Text = "抗锯齿 4x"
+        chkAntiAlias.Size = New Size(46, 22)
+        chkAntiAlias.Text = "抗锯齿"
+        chkAntiAlias.ToolTipText = "4 倍多重采样抗锯齿（仅 Direct3D 11 管线）"
         ' 
         ' chkCull
         ' 
         chkCull.CheckOnClick = True
         chkCull.DisplayStyle = ToolStripItemDisplayStyle.Text
         chkCull.Name = "chkCull"
-        chkCull.Size = New Size(75, 22)
+        chkCull.Size = New Size(60, 22)
         chkCull.Text = "背面剔除"
+        chkCull.ToolTipText = "丢弃背向观察者的三角面（仅 Direct3D 11 管线）"
         ' 
         ' menuStrip
         ' 

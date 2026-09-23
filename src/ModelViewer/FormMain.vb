@@ -92,9 +92,9 @@ Public Class FormMain
         Me.cboScheme.Items.AddRange(schemes)
         Me.numPointSize.Items.AddRange(pointSizes)
         Me.cboPipeline.Items.AddRange(New Object() {
-            "管线: Direct3D 11 + 抗锯齿",
-            "管线: Direct3D 11 直连",
-            "管线: Direct2D 逐面绘制"
+            "D3D11 抗锯齿",
+            "D3D11 直连",
+            "Direct2D 逐面"
         })
 
         Me.cboMode.SelectedIndex = 0
