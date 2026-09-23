@@ -15,7 +15,14 @@ Imports std = System.Math
     Friend Module ComBase
 
         Friend Const S_OK As Integer = 0
-        Friend Const D2DERR_RECREATE_TARGET As Integer = &H88990012
+        ''' <summary>the direct2d render target has to be recreated (0x8899000C)</summary>
+        ''' <remarks>
+        ''' ``D2DERR_RECREATE_TARGET`` is ``0x8899000C``: the render target has
+        ''' lost its device. ``0x88990012`` is ``D2DERR_WRONG_FACTORY`` instead,
+        ''' which is a caller bug and not a device loss.
+        ''' </remarks>
+        Friend Const D2DERR_RECREATE_TARGET As Integer = &H8899000C
+        Friend Const D2DERR_WRONG_FACTORY As Integer = &H88990012
         Friend Const D2DERR_UNSUPPORTED_PIXEL_FORMAT As Integer = &H8899000B
         ''' <summary>the gpu device has been removed, the whole device has to be recreated</summary>
         Friend Const DXGI_ERROR_DEVICE_REMOVED As Integer = &H887A0005

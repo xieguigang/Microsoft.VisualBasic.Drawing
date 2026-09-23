@@ -52,6 +52,19 @@ Partial Public Class DxCanvas
     Private m_retryTimer As System.Windows.Forms.Timer = Nothing
     ''' <summary>the number of the canvas creation attempts of the current retry run</summary>
     Private m_canvasRetry As Integer = 0
+    ''' <summary>is a fresh window handle required for the next creation attempt?</summary>
+    Private m_needsFreshHandle As Boolean = False
+
+    ''' <summary>
+    ''' The number of failed creation attempts after which the control asks
+    ''' winforms for a fresh window handle.
+    ''' </summary>
+    ''' <remarks>
+    ''' dxgi binds a window handle to its swap chain, and such a handle keeps
+    ''' refusing a new swap chain with E_ACCESSDENIED until the window itself is
+    ''' replaced.
+    ''' </remarks>
+    Private Const FreshHandleRetryCount As Integer = 5
 
     Public Sub New()
         Call InitializeComponent()
@@ -453,8 +466,19 @@ Partial Public Class DxCanvas
 
             RaiseEvent DeviceCreated(Me, EventArgs.Empty)
         Catch ex As Exception
-            m_lastError = ex.Message
+            ' the first failure of an episode is the interesting one: it is the
+            ' reason why the canvas was released, while every later failure is
+            ' only a consequence of the first one
+            If String.IsNullOrEmpty(m_lastError) Then
+                m_lastError = ex.Message
+            End If
+
             Call ReleaseCanvas()
+
+            ' a window handle that was bound to a previous swap chain may keep
+            ' refusing a new one, so a fresh handle is requested when the first
+            ' attempts of the retry keep failing
+            m_needsFreshHandle = True
         End Try
     End Sub
 
@@ -563,6 +587,16 @@ Partial Public Class DxCanvas
             Call StopCanvasRetry()
 
             Return
+        End If
+
+        If m_needsFreshHandle AndAlso m_canvasRetry >= FreshHandleRetryCount Then
+            ' the current window handle keeps refusing a new swap chain, so the
+            ' control replaces its window: the swap chain of a window that is
+            ' still bound to a released canvas fails with E_ACCESSDENIED
+            m_needsFreshHandle = False
+
+            Call RecreateHandle()
+            Call ScheduleCanvasRetry()
         End If
 
         Call Invalidate()

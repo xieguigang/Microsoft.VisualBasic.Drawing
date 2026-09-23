@@ -205,8 +205,11 @@ Public Class DxGraphics : Inherits IGraphics
             Call clips.Clear()
             transform = IdentityMatrix()
 
+            ' the device dependent drawing resources keep the old render target
+            ' alive, so they are dropped before the surface is rebuilt
+            Call ReleaseDrawingResources()
             Call renderTarget.Recreate()
-            Call RefreshTarget()
+            Call CreateDrawingResources()
         Else
             Call PopAllClips()
             transform = IdentityMatrix()
@@ -246,8 +249,16 @@ Public Class DxGraphics : Inherits IGraphics
         Call EndBatch()
         Call PopAllClips()
 
+        ' the brush cache and the polygon batch hold direct2d resources that
+        ' keep the old render target - and with it the back buffer of the swap
+        ' chain - alive, so they have to be dropped before the buffers are
+        ' resized: dxgi rejects ResizeBuffers while the back buffer is still
+        ' referenced, and afterwards it refuses to create a new swap chain for
+        ' the same window (E_ACCESSDENIED)
+        Call ReleaseDrawingResources()
+
         Call renderTarget.Resize(newWidth, newHeight)
-        Call RefreshTarget()
+        Call CreateDrawingResources()
 
         _Size = New Size(newWidth, newHeight)
     End Sub
@@ -262,14 +273,38 @@ Public Class DxGraphics : Inherits IGraphics
     ''' rebuilt when the render target is recreated.
     ''' </remarks>
     Private Sub RefreshTarget()
+        Call ReleaseDrawingResources()
+        Call CreateDrawingResources()
+    End Sub
+
+    ''' <summary>
+    ''' release the device dependent drawing resources of the current render
+    ''' target: the brush cache and the polygon batch submitter
+    ''' </summary>
+    ''' <remarks>
+    ''' A direct2d brush, stroke style, text format or path geometry is owned by
+    ''' the render target that has created it and holds that render target alive.
+    ''' The back buffer of a swap chain is therefore still referenced until these
+    ''' resources are released, and dxgi rejects both the resize of the back
+    ''' buffers and the creation of a new swap chain for the same window while
+    ''' that is the case.
+    ''' </remarks>
+    Private Sub ReleaseDrawingResources()
         If batch IsNot Nothing Then
             Call batch.Dispose()
+            batch = Nothing
         End If
 
         If brushes IsNot Nothing Then
             Call brushes.Dispose()
+            brushes = Nothing
         End If
+    End Sub
 
+    ''' <summary>
+    ''' create the device dependent drawing resources of the current render target
+    ''' </summary>
+    Private Sub CreateDrawingResources()
         brushes = New DxBrushCache(renderTarget.Target, renderTarget.Device.Factory2D, renderTarget.Device.FactoryWrite)
         batch = New DxPolygonBatch(renderTarget.Device.Factory2D, renderTarget.Target)
     End Sub
