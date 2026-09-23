@@ -96,7 +96,47 @@ End Using
 | `GetRasterImage()` | Reads the GPU texture back into a `Microsoft.VisualBasic.Imaging.Bitmap`. |
 | `Save(file, format)` | Saves the current canvas content into an image file. |
 
+## Reusable 3D scene pipeline (`Scene3D`)
+
+The `Microsoft.VisualBasic.Drawing.DirectX.Scene3D` namespace hosts the reusable and ui framework independent pipeline that turns a 3d model into an interactive, gpu accelerated scene. It is built on top of the 3d math and the object model of the `Microsoft.VisualBasic.Imaging.Drawing3D` namespace, which this package therefore depends on.
+
+| Type | Description |
+| --- | --- |
+| `Scene` | The geometry of the scene: a set of faces and a set of point cloud points. Loading a model translates it so that its centroid becomes the origin, and computes the bounding sphere radius, the lowest Z (the height of the ground grid) and the intensity range of a point cloud. `FitView` computes the view distance for a canvas size. |
+| `PointCloudPoint` | A format independent point of a point cloud: position, scalar intensity and an optional html color. |
+| `SceneRenderMode` | `Surface`, `Mesh` or `PointCloud`. |
+| `SceneRenderOptions` | The presentation options: mode, heat map scheme, point size and alpha, embedded point colors, ground grid and the colors. |
+| `ISceneRenderBackend` | The pluggable rendering back end contract: one frame receives the canvas, the scene, the camera and the options. |
+| `Direct2DSceneRenderer` | The default back end; it projects the faces, shades them and fills them through the shared `IGraphics` api, so it runs on the `DxGraphics` gpu canvas. |
+| `OrbitCameraController` | The ui independent view interaction: orbit on a left drag, screen space pan on a right drag, zoom on the wheel and a reset. It exposes `ViewChanged` and never references winforms. |
+| `SceneLighting` | The lighting parameters (azimuth, elevation, ambient strength, intensity and light color) that are applied onto the camera. |
+| `SceneColorPalette` | The cached heat map color / brush tables and the cached per point colors. |
+
+```vbnet
+Imports Microsoft.VisualBasic.Drawing.DirectX
+Imports Microsoft.VisualBasic.Drawing.DirectX.Scene3D
+
+Dim scene As New Scene()
+Dim cube As New Microsoft.VisualBasic.Imaging.Drawing3D.Models.Cube(1)
+Call scene.LoadSurfaces(cube.faces)
+
+Dim controller As New OrbitCameraController()
+Dim lighting As New SceneLighting()
+Dim options As New SceneRenderOptions With {.Mode = SceneRenderMode.Surface}
+
+Call scene.FitView(controller.Camera, New Size(800, 600))
+Call lighting.ApplyTo(controller.Camera)
+
+Using canvas As New DxGraphics(800, 600, Color.White)
+    Dim renderer As New Direct2DSceneRenderer()
+    Call renderer.Render(canvas, scene, controller.Camera, options)
+End Using
+```
+
+The winforms adapter of this pipeline is the `DxScene3DCanvas` control of the `Microsoft.VisualBasic.Drawing.DirectX.WinForm` package.
+
 ## Notes
 
 - The GDI image data model (`IGraphicsData`) is not provided by this backend; use `DxGraphics.GetRasterImage` to read the raster image of the canvas instead.
 - Because it talks to DirectX directly, this library is Windows only.
+- The default `Scene3D` back end follows the projection and the painter's algorithm of the imaging framework exactly (`factor = fov / (viewDistance + z)`), so its output matches the cpu based renderer of that framework.

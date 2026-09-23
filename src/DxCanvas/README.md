@@ -95,8 +95,61 @@ Both methods force a synchronous repaint of the control and capture the pixels o
 | `SaveImage(file, format)` | Saves the current canvas content into an image file. |
 | `CaptureFrame()` | Exports the current canvas content as a raster image. |
 
+## DxScene3DCanvas
+
+`DxScene3DCanvas` derives from `DxCanvas` and renders an interactive 3d scene, so it is the ready to use control for any window that has to display a 3d model. It is a thin winforms adapter of the reusable scene pipeline: the geometry lives in `Scene3D.Scene`, the view interaction in `Scene3D.OrbitCameraController`, the lighting in `Scene3D.SceneLighting` and the rendering in a `Scene3D.ISceneRenderBackend` (the default back end renders through the gpu canvas of the base class).
+
+### Input
+
+| Input | Action |
+| --- | --- |
+| Left drag | Orbit the camera (yaw and pitch, 0.4 degrees per pixel) |
+| Right drag | Translate the view in screen space |
+| Mouse wheel | Change the view distance (zoom) |
+| `R` | Reset the view |
+| `F` | Fit the view onto the model |
+| `M` | Cycle the presentation mode |
+| `G` | Toggle the ground grid |
+| `D` | Toggle the debug overlay |
+| `S` | Request a snapshot, the host saves it |
+| `+` / `-` / `Up` / `Down` | Zoom in / out |
+
+### Members
+
+| Member | Description |
+| --- | --- |
+| `Scene` | The geometry of the scene, it is never `Nothing`. |
+| `LoadSurfaces(faces)` / `LoadPointCloud(points)` | Replace the geometry, reset the view and fit it onto the new model. |
+| `ClearScene()` | Drop the geometry. |
+| `Renderer` | The rendering back end, assign another `ISceneRenderBackend` to render the same scene differently. |
+| `Controller` / `Lighting` / `Options` | The view interaction, the lighting and the presentation options. |
+| `RenderMode`, `ColorScheme`, `PointSize`, `PointAlpha`, `UseEmbeddedColor` | The presentation options as designer friendly properties. |
+| `ShowGround`, `GroundColor`, `BackgroundColor` | The ground grid and the background. |
+| `ShowDebugOverlay`, `DebugText`, `ExtraDebugText` | The camera parameters and the frame rate of the host. |
+| `FitView`, `ResetView`, `ZoomIn`, `ZoomOut`, `CycleRenderMode` | The commands behind the shortcuts. |
+| `Snapshot()` / `SaveSnapshot(file, format)` | Export the current frame; both force a synchronous repaint and must not be called from inside a render handler. |
+| `DeviceDescription`, `IsDeviceLost`, `LastError` | The gpu device state, inherited from `DxCanvas`. |
+| `LastSceneError` | The message of the last failed frame; a broken frame does not take the host application down. |
+
+### Example
+
+```vbnet
+Imports Microsoft.VisualBasic.Drawing.DirectX
+
+Private Sub FormMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    DxScene3DCanvas1.ShowGround = True
+    DxScene3DCanvas1.ColorScheme = "viridis"
+    DxScene3DCanvas1.LoadSurfaces(myModelFaces)
+    DxScene3DCanvas1.ShowDebugOverlay = True
+End Sub
+
+Private Sub DxScene3DCanvas1_SnapshotRequested(sender As Object, e As EventArgs) Handles DxScene3DCanvas1.SnapshotRequested
+    Call DxScene3DCanvas1.SaveSnapshot("./snapshot.png")
+End Sub
+```
+
 ## Notes
 
-- Disable `AutoClear` only when the render handler covers the whole canvas itself: the back buffer of a flip model swap chain holds undefined pixels after the frame has been presented.
+- Disable `AutoClear` only when the render handler covers the whole canvas itself: the back buffer of a flip model swap chain holds undefined pixels after the frame has been presented. `DxScene3DCanvas` disables it because the scene back end clears the canvas itself.
 - Waiting for the vertical blank keeps the presentation smooth, but it blocks the UI thread for up to one screen refresh interval per frame. Turn `VSync` off for a more responsive UI when smoothness is not required.
 - The control uses the pixel coordinate system of the window, so one drawing unit is exactly one pixel of the client area.
