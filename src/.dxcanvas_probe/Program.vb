@@ -94,7 +94,15 @@ Module Program
                                    form.Close()
                                End Sub
 
-        AddHandler form.Shown, Sub(s, e) check.Start()
+        Dim trace As New Timer() With {.Interval = 400}
+        AddHandler trace.Tick, Sub(s, e)
+                                   Console.WriteLine($"   [trace] {watch.ElapsedMilliseconds} ms  frames={frames}  canvas={canvas.IsCanvasCreated}  err={If(canvas.LastError, "-")}")
+                               End Sub
+
+        AddHandler form.Shown, Sub(s, e)
+                                   check.Start()
+                                   trace.Start()
+                               End Sub
 
         Call Application.Run(form)
 
@@ -159,4 +167,15 @@ Module Program
 
         Call Check(saved, "the frame export reported success")
         Call Check(File.Exists(exportPath), "the frame export wrote a file")
-        Call Check(File.Exists(exportPath) AndAlso New FileInfo(exportPath).Length > 1024
+        Call Check(File.Exists(exportPath) AndAlso New FileInfo(exportPath).Length > 1024, "the exported frame is not empty")
+
+        If File.Exists(exportPath) Then
+            Console.WriteLine($"   exported frame: {exportPath} ({New FileInfo(exportPath).Length} bytes)")
+        End If
+
+        ' the zoom interaction must work on the live canvas
+        Dim beforeZoom As Single = canvas.Controller.Camera.ViewDistance
+        Call canvas.ZoomIn()
+        Call Check(canvas.Controller.Camera.ViewDistance < beforeZoom, "zooming works on the live canvas")
+    End Sub
+End Module
