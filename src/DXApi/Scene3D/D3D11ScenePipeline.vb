@@ -58,7 +58,18 @@ Namespace Scene3D
         Private m_constants As SceneConstants
         Private m_geometry As GpuSceneGeometry = Nothing
         Private m_geometryScene As Scene = Nothing
+        Private m_sampleProbe As String = ""
         Private m_disposed As Boolean = False
+
+        ''' <summary>
+        ''' the outcome of the multi sample probe of the gpu device, for
+        ''' diagnostics
+        ''' </summary>
+        Friend ReadOnly Property SampleProbe As String
+            Get
+                Return m_sampleProbe
+            End Get
+        End Property
 
         ''' <summary>
         ''' the gpu device that this pipeline belongs to
@@ -149,6 +160,8 @@ Namespace Scene3D
         ''' <param name="requested">the requested sample count</param>
         ''' <returns>the granted sample count, one when the request can not be met</returns>
         Friend Function ResolveSampleCount(requested As Integer) As Integer
+            m_sampleProbe = $"requested={requested}"
+
             If requested <= 1 Then
                 Return 1
             End If
@@ -156,13 +169,21 @@ Namespace Scene3D
             Dim levels As UInteger = 0
 
             Try
-                Call m_device.Device.CheckMultisampleQualityLevels(
-                    CInt(DXGI_FORMAT.B8G8R8A8_UNORM), CUInt(requested), levels)
-            Catch
+                Call ThrowIfFailed(
+                    m_device.Device.CheckMultisampleQualityLevels(
+                        CInt(DXGI_FORMAT.B8G8R8A8_UNORM), CUInt(requested), levels),
+                    "ID3D11Device::CheckMultisampleQualityLevels")
+            Catch ex As Exception
+                m_sampleProbe &= $", the device rejected the probe: {ex.Message}"
+
                 Return 1
             End Try
 
+            m_sampleProbe &= $", quality levels={levels}"
+
             If levels = 0 Then
+                m_sampleProbe &= ", not supported by the device"
+
                 Return 1
             End If
 
@@ -898,7 +919,8 @@ Namespace Scene3D
             ' the color buffer of the 3d pipeline: it is only a render target, it
             ' is never sampled directly when the multi sampling is active
             m_colorTexture = CreateTexture(width, height, m_sampleCount,
-                                           CUInt(D3D11_BIND_FLAG.RENDER_TARGET))
+                                           CUInt(D3D11_BIND_FLAG.RENDER_TARGET),
+                                           DXGI_FORMAT.B8G8R8A8_UNORM)
             Call ThrowIfFailed(
                 device.Device.CreateRenderTargetView(m_colorTexture, IntPtr.Zero, m_renderTargetView),
                 "ID3D11Device::CreateRenderTargetView(3d)")
@@ -906,7 +928,8 @@ Namespace Scene3D
             If m_sampleCount > 1 Then
                 m_resolveTexture = CreateTexture(width, height, 1,
                                                  CUInt(D3D11_BIND_FLAG.RENDER_TARGET) Or
-                                                 CUInt(D3D11_BIND_FLAG.SHADER_RESOURCE))
+                                                 CUInt(D3D11_BIND_FLAG.SHADER_RESOURCE),
+                                                 DXGI_FORMAT.B8G8R8A8_UNORM)
                 Call ThrowIfFailed(
                     device.Device.CreateShaderResourceView(m_resolveTexture, IntPtr.Zero, m_colorView),
                     "ID3D11Device::CreateShaderResourceView(resolve)")
@@ -917,8 +940,11 @@ Namespace Scene3D
                     "ID3D11Device::CreateShaderResourceView(3d)")
             End If
 
+            ' the depth buffer must use a depth format and the very same sample
+            ' count as the color buffer that it is bound with
             m_depthTexture = CreateTexture(width, height, m_sampleCount,
-                                           CUInt(D3D11_BIND_FLAG.DEPTH_STENCIL))
+                                           CUInt(D3D11_BIND_FLAG.DEPTH_STENCIL),
+                                           DXGI_FORMAT.D24_UNORM_S8_UINT)
             Call ThrowIfFailed(
                 device.Device.CreateDepthStencilView(m_depthTexture, IntPtr.Zero, m_depthView),
                 "ID3D11Device::CreateDepthStencilView(3d)")
@@ -935,14 +961,15 @@ Namespace Scene3D
             Call pipeline.ResolveColor(m_resolveTexture, m_colorTexture)
         End Sub
 
-        Private Function CreateTexture(width As Integer, height As Integer, sampleCount As Integer, bind As UInteger) As IntPtr
+        Private Function CreateTexture(width As Integer, height As Integer, sampleCount As Integer,
+                                       bind As UInteger, format As DXGI_FORMAT) As IntPtr
             Dim texture As IntPtr = IntPtr.Zero
             Dim desc As New D3D11_TEXTURE2D_DESC With {
                 .Width = CUInt(width),
                 .Height = CUInt(height),
                 .MipLevels = 1,
                 .ArraySize = 1,
-                .Format = CInt(DXGI_FORMAT.B8G8R8A8_UNORM),
+                .Format = CInt(format),
                 .SampleDesc = New DXGI_SAMPLE_DESC With {.Count = CUInt(sampleCount), .Quality = 0},
                 .Usage = CInt(D3D11_USAGE.DEFAULT),
                 .BindFlags = bind,

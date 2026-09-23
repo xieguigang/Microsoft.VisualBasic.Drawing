@@ -121,6 +121,20 @@ Namespace Scene3D
         End Property
 
         ''' <summary>
+        ''' the gpu device of the canvas and the anti aliasing state that the
+        ''' device granted, for the status bar
+        ''' </summary>
+        Public ReadOnly Property DeviceDiagnostics As String
+            Get
+                If m_pipeline Is Nothing Then
+                    Return "(the gpu pipeline was not started yet)"
+                End If
+
+                Return $"{m_pipeline.Device.Description}, msaa={m_sampleCount}, {m_pipeline.SampleProbe}"
+            End Get
+        End Property
+
+        ''' <summary>
         ''' the back end that renders the frame when the gpu pipeline can not be
         ''' used
         ''' </summary>
