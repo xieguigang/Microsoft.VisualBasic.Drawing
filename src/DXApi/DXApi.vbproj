@@ -42,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- the hlsl source of the Scene3D gpu pipeline, it is read back through
+         Assembly.GetManifestResourceStream at run time and compiled by
+         d3dcompiler_47.dll, so it has to travel inside this assembly -->
+    <EmbeddedResource Include="Scene3D\Scene3DShaders.hlsl" />
+    <None Remove="Scene3D\Scene3DShaders.hlsl" />
+
     <None Include="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

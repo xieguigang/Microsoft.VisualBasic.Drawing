@@ -1,3 +1,4 @@
+Imports System.IO
 Imports System.Numerics
 Imports System.Runtime.InteropServices
 Imports System.Text
@@ -43,6 +44,8 @@ Namespace Scene3D
     ''' The hlsl source of the 3d pipeline and its run time compiler.
     ''' </summary>
     ''' <remarks>
+    ''' The hlsl source itself is the ``Scene3DShaders.hlsl`` embedded resource of
+    ''' this assembly, it is read back through <see cref="Source"/>.
     ''' The shaders are compiled on the fly by ``d3dcompiler_47.dll``, so this
     ''' library has no build time dependency on the windows sdk and a missing
     ''' compiler only makes the gpu back end unavailable: the caller catches the
@@ -79,181 +82,54 @@ Namespace Scene3D
         Friend Const EntryBlitPixel As String = "PS_Blit"
 
         ''' <summary>
+        ''' the file name of the hlsl source that is embedded into this assembly
+        ''' </summary>
+        Friend Const SourceFile As String = "Scene3DShaders.hlsl"
+
+        ''' <summary>
         ''' the shader source of the whole 3d pipeline
         ''' </summary>
         Friend ReadOnly Source As String = BuildSource()
 
+        ''' <summary>
+        ''' read the hlsl source of the 3d pipeline out of the resources of this
+        ''' assembly
+        ''' </summary>
+        ''' <remarks>
+        ''' The source lives in ``Scene3DShaders.hlsl`` and is packed as an
+        ''' embedded resource by the project file, so that a hlsl editor can be
+        ''' used while writing it and no build time tool chain is involved.
+        ''' </remarks>
+        ''' <exception cref="InvalidOperationException">
+        ''' the ``Scene3DShaders.hlsl`` resource is missing, which means that the
+        ''' build did not pack <see cref="SourceFile"/>
+        ''' </exception>
         Private Function BuildSource() As String
-            Dim hlsl As String =
-                "cbuffer SceneConstants : register(b0)" & vbCrLf &
-                "{" & vbCrLf &
-                "    float4x4 worldViewProj;" & vbCrLf &
-                "    float4x4 worldRotation;" & vbCrLf &
-                "    float4   lightDirection;" & vbCrLf &
-                "    float4   lightColor;" & vbCrLf &
-                "    float4   shadingParams;" & vbCrLf &
-                "    float4   viewportScale;" & vbCrLf &
-                "    float4   unlitColor;" & vbCrLf &
-                "    float4   heatParams;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "Texture2D    sceneTexture : register(t0);" & vbCrLf &
-                "SamplerState sceneSampler : register(s0);" & vbCrLf &
-                "" & vbCrLf &
-                "struct SurfaceInput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float3 position : POSITION;" & vbCrLf &
-                "    float3 normal   : NORMAL;" & vbCrLf &
-                "    float4 color    : COLOR;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "struct SurfaceOutput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float4 position : SV_POSITION;" & vbCrLf &
-                "    float3 normal   : TEXCOORD0;" & vbCrLf &
-                "    float4 color    : COLOR;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "struct PositionInput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float3 position : POSITION;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "struct PointInstanceInput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float3 position : POSITION;" & vbCrLf &
-                "    float3 normal   : TEXCOORD0;" & vbCrLf &
-                "    float  heat     : TEXCOORD1;" & vbCrLf &
-                "    float4 color    : COLOR;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "struct PointQuadInput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float2 corner : TEXCOORD2;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "struct PointOutput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float4 position : SV_POSITION;" & vbCrLf &
-                "    float  heat     : TEXCOORD0;" & vbCrLf &
-                "    float4 color    : COLOR;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "SurfaceOutput VS_Surface(SurfaceInput input)" & vbCrLf &
-                "{" & vbCrLf &
-                "    SurfaceOutput output;" & vbCrLf &
-                "    output.position = mul(worldViewProj, float4(input.position, 1));" & vbCrLf &
-                "    output.normal = input.normal;" & vbCrLf &
-                "    output.color = input.color;" & vbCrLf &
-                "    return output;" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "float4 PS_Surface(SurfaceOutput input) : SV_TARGET" & vbCrLf &
-                "{" & vbCrLf &
-                "    float3 n = input.normal;" & vbCrLf &
-                "" & vbCrLf &
-                "    if (dot(n, n) < 1e-8f)" & vbCrLf &
-                "    {" & vbCrLf &
-                "        return input.color;" & vbCrLf &
-                "    }" & vbCrLf &
-                "" & vbCrLf &
-                "    float3 lit = mul(worldRotation, float4(n, 0)).xyz;" & vbCrLf &
-                "" & vbCrLf &
-                "    if (lit.z < 0)" & vbCrLf &
-                "    {" & vbCrLf &
-                "        lit = -lit;" & vbCrLf &
-                "    }" & vbCrLf &
-                "" & vbCrLf &
-                "    float diffuse = max(0, dot(normalize(lit), normalize(lightDirection.xyz)));" & vbCrLf &
-                "    float ambient = lightColor.a;" & vbCrLf &
-                "    float factor = ambient + (1 - ambient) * diffuse;" & vbCrLf &
-                "" & vbCrLf &
-                "    return float4(lerp(input.color.rgb, lightColor.rgb, factor), input.color.a);" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "float4 VS_Position(PositionInput input) : SV_POSITION" & vbCrLf &
-                "{" & vbCrLf &
-                "    return mul(worldViewProj, float4(input.position, 1));" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "float4 PS_Unlit(float4 position : SV_POSITION) : SV_TARGET" & vbCrLf &
-                "{" & vbCrLf &
-                "    return unlitColor;" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "PointOutput VS_Point(PointInstanceInput instance, PointQuadInput quad)" & vbCrLf &
-                "{" & vbCrLf &
-                "    PointOutput output;" & vbCrLf &
-                "    float4 clip = mul(worldViewProj, float4(instance.position, 1));" & vbCrLf &
-                "" & vbCrLf &
-                "    if (clip.w <= 0.0001f)" & vbCrLf &
-                "    {" & vbCrLf &
-                "        output.position = float4(0, 0, -1, 1);" & vbCrLf &
-                "        output.heat = 0;" & vbCrLf &
-                "        output.color = instance.color;" & vbCrLf &
-                "        return output;" & vbCrLf &
-                "    }" & vbCrLf &
-                "" & vbCrLf &
-                "    float heat = instance.heat;" & vbCrLf &
-                "" & vbCrLf &
-                "    if (shadingParams.y > 0.5f)" & vbCrLf &
-                "    {" & vbCrLf &
-                "        float3 n = mul(worldRotation, float4(instance.normal, 0)).xyz;" & vbCrLf &
-                "" & vbCrLf &
-                "        if (n.z < 0)" & vbCrLf &
-                "        {" & vbCrLf &
-                "            n = -n;" & vbCrLf &
-                "        }" & vbCrLf &
-                "" & vbCrLf &
-                "        heat = lightColor.a + (1 - lightColor.a) * max(0, dot(normalize(n), normalize(lightDirection.xyz)));" & vbCrLf &
-                "    }" & vbCrLf &
-                "" & vbCrLf &
-                "    clip.xy += quad.corner * shadingParams.x * viewportScale.xy * clip.w;" & vbCrLf &
-                "    output.position = clip;" & vbCrLf &
-                "    output.heat = heat;" & vbCrLf &
-                "    output.color = instance.color;" & vbCrLf &
-                "    return output;" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "float4 PS_Point(PointOutput input) : SV_TARGET" & vbCrLf &
-                "{" & vbCrLf &
-                "    if (shadingParams.y <= 0.5f && shadingParams.w > 0.5f && input.color.a > 0.0f)" & vbCrLf &
-                "    {" & vbCrLf &
-                "        return input.color;" & vbCrLf &
-                "    }" & vbCrLf &
-                "" & vbCrLf &
-                "    float heat = (input.heat - heatParams.x) * heatParams.y;" & vbCrLf &
-                "    float levels = shadingParams.z;" & vbCrLf &
-                "    float index = floor(saturate(heat) * (levels - 1) + 0.5f);" & vbCrLf &
-                "    float u = (index + 0.5f) / levels;" & vbCrLf &
-                "" & vbCrLf &
-                "    return sceneTexture.Sample(sceneSampler, float2(u, 0.5f));" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "struct BlitOutput" & vbCrLf &
-                "{" & vbCrLf &
-                "    float4 position : SV_POSITION;" & vbCrLf &
-                "    float2 uv       : TEXCOORD0;" & vbCrLf &
-                "};" & vbCrLf &
-                "" & vbCrLf &
-                "BlitOutput VS_Blit(uint vertexId : SV_VertexID)" & vbCrLf &
-                "{" & vbCrLf &
-                "    BlitOutput output;" & vbCrLf &
-                "    float2 corner = float2((vertexId << 1) & 2, vertexId & 2);" & vbCrLf &
-                "" & vbCrLf &
-                "    output.uv = corner;" & vbCrLf &
-                "    output.position = float4(corner * float2(2, -2) + float2(-1, 1), 0, 1);" & vbCrLf &
-                "    return output;" & vbCrLf &
-                "}" & vbCrLf &
-                "" & vbCrLf &
-                "float4 PS_Blit(BlitOutput input) : SV_TARGET" & vbCrLf &
-                "{" & vbCrLf &
-                "    float4 color = sceneTexture.Sample(sceneSampler, input.uv);" & vbCrLf &
-                "" & vbCrLf &
-                "    return float4(color.rgb, 1.0f);" & vbCrLf &
-                "}" & vbCrLf
+            Dim assembly As Reflection.Assembly = GetType(Scene3DShaders).Assembly
+            Dim resource As String = Nothing
 
-            Return hlsl
+            ' the logical name of an embedded resource is derived from the root
+            ' namespace and the folder of the file, so it is looked up by its
+            ' suffix instead of hard coding that name here
+            For Each name As String In assembly.GetManifestResourceNames()
+                If name.EndsWith(SourceFile, StringComparison.OrdinalIgnoreCase) Then
+                    resource = name
+                    Exit For
+                End If
+            Next
+
+            If resource Is Nothing Then
+                Throw New InvalidOperationException(
+                    $"the embedded hlsl source '{SourceFile}' is missing from the assembly '{assembly.GetName().Name}'")
+            End If
+
+            Using stream As Stream = assembly.GetManifestResourceStream(resource)
+                Using reader As New StreamReader(stream, Encoding.UTF8, True)
+                    ' a byte order mark would reach the compiler as a stray token,
+                    ' so a mark that survives the stream reader is dropped here
+                    Return reader.ReadToEnd().TrimStart(ChrW(&HFEFF))
+                End Using
+            End Using
         End Function
 
         ''' <summary>
