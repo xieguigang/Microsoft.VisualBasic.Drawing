@@ -7,7 +7,7 @@ Imports System.Runtime.InteropServices
 ''' This project uses DXGI for two tasks:
 '''
 ''' 1. <see cref="IDXGISurface"/> - sharing a d3d11 texture with direct2d
-''' 2. the swap chain (<see cref="IDXGIFactory2"/> + <see cref="IDXGISwapChain"/>)
+''' 2. the swap chain (<see cref="IDXGIFactory2"/> + "IDXGISwapChain")
 '''    - presenting the gpu canvas onto a winforms control window
 '''
 ''' Every com interface in this project is declared as a <b>flat vtable</b>: the
@@ -152,7 +152,7 @@ End Structure
 ''' </summary>
 ''' <remarks>
 ''' this project never calls any method of this interface, it only
-''' needs the interface pointer for <see cref="D2D1.CreateDxgiSurfaceRenderTarget"/>
+''' needs the interface pointer for <see cref="ID2D1Factory.CreateDxgiSurfaceRenderTarget"/>
 ''' so the vtable declaration is kept empty on purpose.
 ''' </remarks>
 <ComImport>
