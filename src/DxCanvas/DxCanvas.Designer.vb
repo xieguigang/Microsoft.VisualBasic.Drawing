@@ -28,6 +28,7 @@ Partial Class DxCanvas
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
+        BackColor = Color.LightSkyBlue
         Name = "DxCanvas"
         Size = New Size(639, 462)
         ResumeLayout(False)
