@@ -115,6 +115,16 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     End Property
 
     ''' <summary>
+    ''' the number of the connection lines in the scene
+    ''' </summary>
+    <Browsable(False)>
+    Public ReadOnly Property LineCount As Integer
+        Get
+            Return m_scene.LineCount
+        End Get
+    End Property
+
+    ''' <summary>
     ''' replace the geometry of the scene with the given faces and fit the view
     ''' onto the new model
     ''' </summary>
@@ -133,6 +143,57 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     End Sub
 
     ''' <summary>
+    ''' load the connection lines of the scene, they are drawn on top of the faces
+    ''' and of the point cloud
+    ''' </summary>
+    ''' <remarks>
+    ''' the lines are an overlay, so the point cloud and the faces of the scene are
+    ''' kept: a network graph can be drawn on top of the point cloud of the very
+    ''' same neurons
+    ''' </remarks>
+    Public Sub LoadConnections(lines As IEnumerable(Of LineSegment))
+        Call m_scene.LoadLineSegments(lines)
+        Call ApplyNewScene()
+    End Sub
+
+    ''' <summary>
+    ''' drop the connection lines of the scene and keep the primary geometry
+    ''' </summary>
+    Public Sub ClearConnections()
+        Call m_scene.ClearLines()
+        Call Invalidate()
+        RaiseEvent SceneChanged(Me, EventArgs.Empty)
+    End Sub
+
+    ''' <summary>
+    ''' replace the point cloud of the scene without moving the camera
+    ''' </summary>
+    ''' <remarks>
+    ''' Recoloring the points or hiding a subset of them reloads the cloud, and the
+    ''' view of the user has to survive that: the camera is only reset by
+    ''' <see cref="LoadPointCloud"/>, which is the entry point that loads a new
+    ''' model.
+    ''' </remarks>
+    Public Sub UpdatePointCloud(points As IEnumerable(Of PointCloudPoint))
+        Call m_scene.LoadPointCloud(points)
+        Call Invalidate()
+        RaiseEvent SceneChanged(Me, EventArgs.Empty)
+    End Sub
+
+    ''' <summary>
+    ''' replace the connection lines of the scene without moving the camera
+    ''' </summary>
+    ''' <remarks>
+    ''' see <see cref="UpdatePointCloud"/>: filtering the graph must not reset the
+    ''' view that the user has set up
+    ''' </remarks>
+    Public Sub UpdateConnections(lines As IEnumerable(Of LineSegment))
+        Call m_scene.LoadLineSegments(lines)
+        Call Invalidate()
+        RaiseEvent SceneChanged(Me, EventArgs.Empty)
+    End Sub
+
+    ''' <summary>
     ''' drop all of the geometry of the scene
     ''' </summary>
     Public Sub ClearScene()
@@ -140,6 +201,51 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
         Call Invalidate()
         RaiseEvent SceneChanged(Me, EventArgs.Empty)
     End Sub
+
+    ' /********************************************************************************/
+    '  the picking
+    ' /********************************************************************************/
+
+    ''' <summary>
+    ''' pick the scene element that is closest to the given position of the canvas
+    ''' </summary>
+    ''' <param name="x">the horizontal position on the canvas, in pixels</param>
+    ''' <param name="y">the vertical position on the canvas, in pixels</param>
+    ''' <param name="radius">the pick radius, in pixels</param>
+    ''' <remarks>
+    ''' the elements are projected with the same camera formulas that the render
+    ''' back ends use, so the pick matches what the user sees; a point of the point
+    ''' cloud wins over a connection line when both are within the radius
+    ''' </remarks>
+    Public Function HitTest(x As Integer, y As Integer, Optional radius As Integer = SceneHitTester.DefaultRadius) As SceneHitTest
+        Return SceneHitTester.HitTest(m_scene, m_controller.Camera, x, y, radius)
+    End Function
+
+    ''' <summary>
+    ''' pick a point of the point cloud, -1 means that none is within the radius
+    ''' </summary>
+    Public Function HitTestPoint(x As Integer, y As Integer, Optional radius As Integer = SceneHitTester.DefaultRadius) As Integer
+        Return SceneHitTester.HitTestPoint(m_scene, m_controller.Camera, x, y, radius)
+    End Function
+
+    ''' <summary>
+    ''' pick a connection line, -1 means that none is within the radius
+    ''' </summary>
+    Public Function HitTestLine(x As Integer, y As Integer, Optional radius As Integer = SceneHitTester.DefaultRadius) As Integer
+        Return SceneHitTester.HitTestLine(m_scene, m_controller.Camera, x, y, radius)
+    End Function
+
+    ''' <summary>
+    ''' project a world point of the scene onto the canvas
+    ''' </summary>
+    ''' <returns>false when the point is behind the camera</returns>
+    ''' <remarks>
+    ''' the host uses this to draw its own overlay (labels, markers, a rubber band
+    ''' selection) on top of the rendered frame
+    ''' </remarks>
+    Public Function TryProjectPoint(p As Point3D, ByRef screen As PointF) As Boolean
+        Return SceneHitTester.ScreenOf(m_controller.Camera, p, screen)
+    End Function
 
     ' /********************************************************************************/
     '  the render pipeline
@@ -444,6 +550,31 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     End Property
 
     ''' <summary>
+    ''' draw the connection lines of the scene
+    ''' </summary>
+    ''' <remarks>
+    ''' the connections are an overlay of the scene, so the point cloud and the
+    ''' graph can be shown at the same time; toggling this option does not rebuild
+    ''' the gpu geometry of the lines
+    ''' </remarks>
+    <Category("DirectX")>
+    <DefaultValue(True)>
+    <Description("draw the connection lines of the scene")>
+    Public Property ShowConnections As Boolean
+        Get
+            Return m_options.ShowConnections
+        End Get
+        Set(value As Boolean)
+            If m_options.ShowConnections = value Then
+                Return
+            End If
+
+            m_options.ShowConnections = value
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
     ''' the color of the ground grid lines
     ''' </summary>
     <Category("DirectX")>
@@ -703,6 +834,8 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
                 Call CycleRenderMode()
             Case Keys.G
                 Me.ShowGround = Not Me.ShowGround
+            Case Keys.C
+                Me.ShowConnections = Not Me.ShowConnections
             Case Keys.D
                 Me.ShowDebugOverlay = Not Me.ShowDebugOverlay
             Case Keys.S
