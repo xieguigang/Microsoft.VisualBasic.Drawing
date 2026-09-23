@@ -568,6 +568,8 @@ Namespace Scene3D
         End Sub
 
         Private Sub BindSingleBuffer(slot As UInteger, buffer As IntPtr, stride As UInteger)
+            System.Diagnostics.Trace.WriteLine($"dx3d bind: slot={slot} buffer={buffer.ToInt64().ToString("X")} stride={stride}")
+
             Call Marshal.WriteIntPtr(m_scratchBuffers, 0, buffer)
             Call Marshal.WriteInt32(m_scratchStrides, 0, CInt(stride))
             Call Marshal.WriteInt32(m_scratchOffsets, 0, 0)
