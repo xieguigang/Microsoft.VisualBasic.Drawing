@@ -476,14 +476,30 @@ Public Class FormMain
         Me.lblStatus.Text =
             $"文件: {file}  |  模式: {mode}  |  {counts}  |  角度 X={camera.AngleX:F1}° Y={camera.AngleY:F1}°  |  视距: {camera.ViewDistance:F1}  |  环境光: {Me.canvas.Lighting.Ambient}%  亮度: {Me.canvas.Lighting.Intensity}%"
 
-        Dim device As String = Me.canvas.DeviceDescription
+        ' a device that is still being created and a frame that failed both have
+        ' to be visible here, otherwise a missing canvas looks like a silent
+        ' "nothing is drawn" problem
+        Dim errorText As String = Me.canvas.LastSceneError
 
-        If String.IsNullOrEmpty(Me.canvas.LastSceneError) Then
-            Me.lblDevice.Text = $"设备: {device}"
+        If String.IsNullOrEmpty(errorText) Then
+            errorText = Me.canvas.LastError
+        End If
+
+        If String.IsNullOrEmpty(errorText) Then
+            Me.lblDevice.Text = $"设备: {Me.canvas.DeviceDescription}"
             Me.lblDevice.ForeColor = SystemColors.ControlText
         Else
-            Me.lblDevice.Text = $"渲染错误: {Me.canvas.LastSceneError}"
+            Me.lblDevice.Text = $"渲染错误: {errorText}"
             Me.lblDevice.ForeColor = Color.Firebrick
         End If
+    End Sub
+
+    ''' <summary>
+    ''' the directx canvas has been created, so the device information of the
+    ''' status bar is refreshed and the scene is drawn onto the new canvas
+    ''' </summary>
+    Private Sub Canvas_DeviceCreated(sender As Object, e As EventArgs) Handles canvas.DeviceCreated
+        Call UpdateStatus()
+        Call Me.canvas.RequestRender()
     End Sub
 End Class

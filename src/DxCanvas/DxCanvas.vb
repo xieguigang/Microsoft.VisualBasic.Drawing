@@ -46,6 +46,13 @@ Partial Public Class DxCanvas
     Private m_captureFormat As ImageFormats = ImageFormats.Png
     Private m_capturedImage As Bitmap = Nothing
 
+    ''' <summary>
+    ''' the timer that retries the creation of the directx canvas
+    ''' </summary>
+    Private m_retryTimer As System.Windows.Forms.Timer = Nothing
+    ''' <summary>the number of the canvas creation attempts of the current retry run</summary>
+    Private m_canvasRetry As Integer = 0
+
     Public Sub New()
         Call InitializeComponent()
 
@@ -275,8 +282,26 @@ Partial Public Class DxCanvas
     ''' to be released here, this also covers the disposal of the control.
     ''' </summary>
     Protected Overrides Sub OnHandleDestroyed(e As EventArgs)
+        Call StopCanvasRetry()
         Call ReleaseCanvas()
         Call MyBase.OnHandleDestroyed(e)
+    End Sub
+
+    ''' <summary>
+    ''' a dxgi swap chain can only be created on a window that is already
+    ''' visible, so the creation is retried when the control becomes visible
+    ''' </summary>
+    Protected Overrides Sub OnVisibleChanged(e As EventArgs)
+        Call MyBase.OnVisibleChanged(e)
+
+        If Visible Then
+            m_canvasRetry = 0
+
+            Call Invalidate()
+            Call ScheduleCanvasRetry()
+        Else
+            Call StopCanvasRetry()
+        End If
     End Sub
 
     Protected Overrides Sub OnSizeChanged(e As EventArgs)
@@ -289,6 +314,11 @@ Partial Public Class DxCanvas
                 m_lastError = ex.Message
                 Call ReleaseCanvas()
             End Try
+        Else
+            ' the control has a usable size again, so the creation is worth
+            ' another attempt
+            m_canvasRetry = 0
+            Call ScheduleCanvasRetry()
         End If
 
         Call Invalidate()
@@ -315,6 +345,11 @@ Partial Public Class DxCanvas
             Call CreateCanvas()
 
             If m_canvas Is Nothing Then
+                ' the window is not ready for a swap chain yet, so the creation
+                ' is retried: a paint request that is handled without drawing
+                ' does not produce another paint request by itself
+                Call ScheduleCanvasRetry()
+
                 Return
             End If
         End If
@@ -332,6 +367,7 @@ Partial Public Class DxCanvas
                 ' the gpu canvas is not usable, it is rebuilt by the next paint
                 m_lastError = ex.Message
                 Call ReleaseCanvas()
+                Call ScheduleCanvasRetry()
 
                 Return
             End Try
@@ -368,6 +404,7 @@ Partial Public Class DxCanvas
                 Catch ex As Exception
                     m_lastError = ex.Message
                     Call ReleaseCanvas()
+                    Call ScheduleCanvasRetry()
                 End Try
             End If
         Finally
@@ -390,6 +427,9 @@ Partial Public Class DxCanvas
         Dim size As Size = ClientSize
 
         If size.Width <= 0 OrElse size.Height <= 0 Then
+            ' the layout is not finished yet, the creation is retried later
+            Call ScheduleCanvasRetry()
+
             Return
         End If
 
@@ -399,6 +439,11 @@ Partial Public Class DxCanvas
             m_canvas = New DxWindowCanvas(Handle, size.Width, size.Height, 96.0F, m_vsync)
             m_graphics = m_canvas.Graphics
             m_lastError = Nothing
+            m_canvasRetry = 0
+
+            Call StopCanvasRetry()
+
+            RaiseEvent DeviceCreated(Me, EventArgs.Empty)
         Catch ex As Exception
             m_lastError = ex.Message
             Call ReleaseCanvas()
@@ -417,5 +462,101 @@ Partial Public Class DxCanvas
 
             m_canvas = Nothing
         End If
+    End Sub
+
+    ' /********************************************************************************/
+    '  the canvas creation retry
+    ' /********************************************************************************/
+
+    ''' <summary>
+    ''' raised after the directx canvas has been created successfully, the host
+    ''' may use it to refresh the device information of its user interface
+    ''' </summary>
+    Public Event DeviceCreated As EventHandler
+
+    ''' <summary>
+    ''' the number of the canvas creation attempts before the control gives up
+    ''' </summary>
+    ''' <remarks>
+    ''' the creation is retried because dxgi rejects a flip model swap chain
+    ''' while the hosting window is still being created
+    ''' </remarks>
+    <Browsable(False)>
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
+    Public Property MaxCanvasRetryCount As Integer = 100
+
+    ''' <summary>
+    ''' the delay in milliseconds between two canvas creation attempts
+    ''' </summary>
+    <Browsable(False)>
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
+    Public Property CanvasRetryInterval As Integer = 100
+
+    ''' <summary>
+    ''' has the directx canvas been created successfully?
+    ''' </summary>
+    <Browsable(False)>
+    Public ReadOnly Property IsCanvasCreated As Boolean
+        Get
+            Return m_canvas IsNot Nothing
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' schedule another attempt of the canvas creation
+    ''' </summary>
+    ''' <remarks>
+    ''' A paint request that is handled without drawing does not produce another
+    ''' paint request by itself, so a control that fails to create its swap chain
+    ''' would stay without a canvas for its whole lifetime. The creation is
+    ''' therefore retried on a timer until the hosting window is ready for the
+    ''' swap chain.
+    ''' </remarks>
+    Private Sub ScheduleCanvasRetry()
+        If IsDisposed OrElse m_canvas IsNot Nothing Then
+            Return
+        End If
+
+        If m_canvasRetry >= MaxCanvasRetryCount Then
+            Return
+        End If
+
+        If m_retryTimer Is Nothing Then
+            m_retryTimer = New System.Windows.Forms.Timer() With {
+                .Interval = If(CanvasRetryInterval < 10, 10, CanvasRetryInterval)
+            }
+
+            AddHandler m_retryTimer.Tick, AddressOf OnCanvasRetryTick
+        End If
+
+        If Not m_retryTimer.Enabled Then
+            m_retryTimer.Start()
+        End If
+    End Sub
+
+    Private Sub StopCanvasRetry()
+        If m_retryTimer IsNot Nothing AndAlso m_retryTimer.Enabled Then
+            Call m_retryTimer.Stop()
+        End If
+    End Sub
+
+    Private Sub OnCanvasRetryTick(sender As Object, e As EventArgs)
+        If IsDisposed OrElse m_canvas IsNot Nothing Then
+            Call StopCanvasRetry()
+
+            Return
+        End If
+
+        m_canvasRetry += 1
+
+        If m_canvasRetry > MaxCanvasRetryCount Then
+            ' the window never became ready for a swap chain, the reason is
+            ' exposed through LastError
+            Call StopCanvasRetry()
+
+            Return
+        End If
+
+        Call Invalidate()
     End Sub
 End Class
