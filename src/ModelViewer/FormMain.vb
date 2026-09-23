@@ -72,7 +72,15 @@ Public Class FormMain
             Dim candidate As String = arguments(i)
 
             If File.Exists(candidate) Then
-                Call OpenFile(candidate)
+                ' a model that can not be read is reported in the status bar
+                ' instead of a modal dialog: a dialog would block the startup of
+                ' the viewer before its window is even visible
+                Dim errorText As String = LoadFile(candidate)
+
+                If Not String.IsNullOrEmpty(errorText) Then
+                    Me.lblDevice.Text = $"加载失败: {errorText}"
+                    Me.lblDevice.ForeColor = Color.Firebrick
+                End If
 
                 Return
             End If
@@ -187,6 +195,24 @@ Public Class FormMain
     ''' instead of breaking the viewer
     ''' </summary>
     Private Sub OpenFile(filePath As String)
+        Dim errorText As String = LoadFile(filePath)
+
+        If Not String.IsNullOrEmpty(errorText) Then
+            MessageBox.Show(Me,
+                            "加载失败: " & errorText,
+                            "错误",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error)
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' load the given file into the scene
+    ''' </summary>
+    ''' <returns>
+    ''' the message of the failure, or nothing when the file was loaded
+    ''' </returns>
+    Private Function LoadFile(filePath As String) As String
         Try
             If ModelSceneLoader.IsPointCloudFile(filePath) Then
                 Dim points As PointCloudPoint() = ModelSceneLoader.LoadPointCloud(filePath)
@@ -215,14 +241,12 @@ Public Class FormMain
             currentFile = filePath
             Call ResetLighting()
             Call UpdateStatus()
+
+            Return Nothing
         Catch ex As Exception
-            MessageBox.Show(Me,
-                            "加载失败: " & ex.Message,
-                            "错误",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error)
+            Return ex.Message
         End Try
-    End Sub
+    End Function
 
     ' /********************************************************************************/
     '  the render modes
