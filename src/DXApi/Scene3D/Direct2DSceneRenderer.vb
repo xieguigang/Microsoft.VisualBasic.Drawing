@@ -7,6 +7,8 @@ Imports Microsoft.VisualBasic.Imaging.Drawing3D.Math3D
 Imports Brush = Microsoft.VisualBasic.Imaging.Brush
 Imports Pen = Microsoft.VisualBasic.Imaging.Pen
 Imports SolidBrush = Microsoft.VisualBasic.Imaging.SolidBrush
+Imports std = System.Math
+Imports Tpl = System.Threading.Tasks.Parallel
 
 Namespace Scene3D
 
@@ -177,20 +179,18 @@ Namespace Scene3D
             ' the faces are independent of each other, so the projection and the
             ' shading can run in parallel while the results are written back by
             ' index
-            Parallel.For(0, n, Sub(i As Integer)
-                                    Dim face As Surface = faces(i)
+            Tpl.For(0, n, Sub(i As Integer)
+                              Dim face As Surface = faces(i)
 
-                                    points(i) = face.vertices _
-                                        .Select(Function(p As Point3D) camera.Project(p).ToPointF(screen)) _
-                                        .ToArray()
+                              points(i) = face.vertices _
+                                  .Select(Function(p As Point3D) camera.Project(p).ToPointF(screen)) _
+                                  .ToArray()
 
-                                    colors(i) = camera.Lighting(face)
-                                End Sub)
+                              colors(i) = camera.Lighting(face)
+                          End Sub)
 
             ' the painter's algorithm: the farthest face is drawn first
-            Dim order As List(Of Integer) = PainterAlgorithm.OrderProvider(
-                faces,
-                Function(face As Surface) face.vertices.Average(Function(p As Point3D) p.Z))
+            Dim order As List(Of Integer) = PainterAlgorithm.OrderProvider(faces, AddressOf AverageZ)
 
             For Each index As Integer In order
                 Call canvas.FillPolygon(GetShadingBrush(colors(index)), points(index))
@@ -358,9 +358,14 @@ Namespace Scene3D
                                             ' a zero intensity falls back to the Z coordinate
                                             Dim value As Double = If(cloud(i).Intensity <> 0, cloud(i).Intensity, cloud(i).Z)
                                             Dim t As Double = (value - minIntensity) / range
-                                            Dim brush As Brush = Palette.GetHeatBrush(t, options.ColorScheme, options.PointAlpha)
 
-                                            colorIndex(i) = Palette.IndexOf(brush, options.ColorScheme, options.PointAlpha)
+                                            If t < 0 Then
+                                                t = 0
+                                            ElseIf t > 1 Then
+                                                t = 1
+                                            End If
+
+                                            colorIndex(i) = CInt(t * (colorCount - 1))
                                         End If
                                     End Sub)
 
