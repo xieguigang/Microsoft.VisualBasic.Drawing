@@ -173,6 +173,28 @@ Module Program
             Console.WriteLine($"   exported frame: {exportPath} ({New FileInfo(exportPath).Length} bytes)")
         End If
 
+        ' the captured frame has to contain the model itself, not only the
+        ' background color of the canvas
+        Dim frame = canvas.Snapshot()
+
+        Call Check(frame IsNot Nothing, "the frame capture returned an image")
+
+        If frame IsNot Nothing Then
+            Dim drawn As Integer = 0
+
+            For y As Integer = 0 To frame.Height - 1
+                For x As Integer = 0 To frame.Width - 1
+                    Dim pixel As Color = frame.GetPixel(x, y)
+
+                    If pixel.R < 250 OrElse pixel.G < 250 OrElse pixel.B < 250 Then
+                        drawn += 1
+                    End If
+                Next
+            Next
+
+            Call Check(drawn > 500, $"the captured frame contains the drawn model ({drawn} pixels of {frame.Width * frame.Height})")
+        End If
+
         ' the zoom interaction must work on the live canvas
         Dim beforeZoom As Single = canvas.Controller.Camera.ViewDistance
         Call canvas.ZoomIn()
