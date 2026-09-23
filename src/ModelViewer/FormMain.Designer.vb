@@ -22,491 +22,499 @@ Partial Class FormMain
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container()
-        Me.canvas = New Microsoft.VisualBasic.Drawing.DirectX.DxScene3DCanvas()
-        Me.lightPanel = New System.Windows.Forms.Panel()
-        Me.lblLightTitle = New System.Windows.Forms.Label()
-        Me.lblAzimuthCaption = New System.Windows.Forms.Label()
-        Me.trkAzimuth = New System.Windows.Forms.TrackBar()
-        Me.lblAzimuthValue = New System.Windows.Forms.Label()
-        Me.lblElevationCaption = New System.Windows.Forms.Label()
-        Me.trkElevation = New System.Windows.Forms.TrackBar()
-        Me.lblElevationValue = New System.Windows.Forms.Label()
-        Me.lblAmbientCaption = New System.Windows.Forms.Label()
-        Me.trkAmbient = New System.Windows.Forms.TrackBar()
-        Me.lblAmbientValue = New System.Windows.Forms.Label()
-        Me.lblIntensityCaption = New System.Windows.Forms.Label()
-        Me.trkIntensity = New System.Windows.Forms.TrackBar()
-        Me.lblIntensityValue = New System.Windows.Forms.Label()
-        Me.btnLightColor = New System.Windows.Forms.Button()
-        Me.lblLightColor = New System.Windows.Forms.Label()
-        Me.btnResetLight = New System.Windows.Forms.Button()
-        Me.statusStrip = New System.Windows.Forms.StatusStrip()
-        Me.lblStatus = New System.Windows.Forms.ToolStripStatusLabel()
-        Me.lblDevice = New System.Windows.Forms.ToolStripStatusLabel()
-        Me.toolStrip = New System.Windows.Forms.ToolStrip()
-        Me.cboMode = New System.Windows.Forms.ToolStripComboBox()
-        Me.cboScheme = New System.Windows.Forms.ToolStripComboBox()
-        Me.chkEmbedded = New System.Windows.Forms.ToolStripButton()
-        Me.numPointSize = New System.Windows.Forms.ToolStripComboBox()
-        Me.toolSep1 = New System.Windows.Forms.ToolStripSeparator()
-        Me.btnReset = New System.Windows.Forms.ToolStripButton()
-        Me.chkShowGround = New System.Windows.Forms.ToolStripButton()
-        Me.btnBgColor = New System.Windows.Forms.ToolStripButton()
-        Me.chkShowDebug = New System.Windows.Forms.ToolStripButton()
-        Me.toolSep2 = New System.Windows.Forms.ToolStripSeparator()
-        Me.btnSnapshot = New System.Windows.Forms.ToolStripButton()
-        Me.menuStrip = New System.Windows.Forms.MenuStrip()
-        Me.fileMenu = New System.Windows.Forms.ToolStripMenuItem()
-        Me.openItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.sepFile = New System.Windows.Forms.ToolStripSeparator()
-        Me.exitItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.viewMenu = New System.Windows.Forms.ToolStripMenuItem()
-        Me.resetViewItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.fitViewItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.groundItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.debugItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.sepView = New System.Windows.Forms.ToolStripSeparator()
-        Me.bgColorItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.snapshotItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.helpMenu = New System.Windows.Forms.ToolStripMenuItem()
-        Me.aboutItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.lightPanel.SuspendLayout()
-        CType(Me.trkAzimuth, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.trkElevation, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.trkAmbient, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.trkIntensity, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.statusStrip.SuspendLayout()
-        Me.toolStrip.SuspendLayout()
-        Me.menuStrip.SuspendLayout()
-        Me.SuspendLayout()
+        canvas = New Drawing.DirectX.DxScene3DCanvas()
+        lightPanel = New Panel()
+        lblLightTitle = New Label()
+        lblAzimuthCaption = New Label()
+        trkAzimuth = New TrackBar()
+        lblAzimuthValue = New Label()
+        lblElevationCaption = New Label()
+        trkElevation = New TrackBar()
+        lblElevationValue = New Label()
+        lblAmbientCaption = New Label()
+        trkAmbient = New TrackBar()
+        lblAmbientValue = New Label()
+        lblIntensityCaption = New Label()
+        trkIntensity = New TrackBar()
+        lblIntensityValue = New Label()
+        btnLightColor = New Button()
+        lblLightColor = New Label()
+        btnResetLight = New Button()
+        statusStrip = New StatusStrip()
+        lblStatus = New ToolStripStatusLabel()
+        lblDevice = New ToolStripStatusLabel()
+        toolStrip = New ToolStrip()
+        cboMode = New ToolStripComboBox()
+        cboScheme = New ToolStripComboBox()
+        chkEmbedded = New ToolStripButton()
+        numPointSize = New ToolStripComboBox()
+        toolSep1 = New ToolStripSeparator()
+        btnReset = New ToolStripButton()
+        chkShowGround = New ToolStripButton()
+        btnBgColor = New ToolStripButton()
+        chkShowDebug = New ToolStripButton()
+        toolSep2 = New ToolStripSeparator()
+        btnSnapshot = New ToolStripButton()
+        menuStrip = New MenuStrip()
+        fileMenu = New ToolStripMenuItem()
+        openItem = New ToolStripMenuItem()
+        sepFile = New ToolStripSeparator()
+        exitItem = New ToolStripMenuItem()
+        viewMenu = New ToolStripMenuItem()
+        resetViewItem = New ToolStripMenuItem()
+        fitViewItem = New ToolStripMenuItem()
+        groundItem = New ToolStripMenuItem()
+        debugItem = New ToolStripMenuItem()
+        sepView = New ToolStripSeparator()
+        bgColorItem = New ToolStripMenuItem()
+        snapshotItem = New ToolStripMenuItem()
+        helpMenu = New ToolStripMenuItem()
+        aboutItem = New ToolStripMenuItem()
+        复制设备错误信息ToolStripMenuItem = New ToolStripMenuItem()
+        lightPanel.SuspendLayout()
+        CType(trkAzimuth, ComponentModel.ISupportInitialize).BeginInit()
+        CType(trkElevation, ComponentModel.ISupportInitialize).BeginInit()
+        CType(trkAmbient, ComponentModel.ISupportInitialize).BeginInit()
+        CType(trkIntensity, ComponentModel.ISupportInitialize).BeginInit()
+        statusStrip.SuspendLayout()
+        toolStrip.SuspendLayout()
+        menuStrip.SuspendLayout()
+        SuspendLayout()
         ' 
         ' canvas
         ' 
-        Me.canvas.AutoClear = False
-        Me.canvas.BackColor = System.Drawing.Color.White
-        Me.canvas.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.canvas.Location = New System.Drawing.Point(0, 49)
-        Me.canvas.Name = "canvas"
-        Me.canvas.Size = New System.Drawing.Size(671, 477)
-        Me.canvas.TabIndex = 0
+        canvas.AutoClear = False
+        canvas.BackColor = Color.White
+        canvas.Dock = DockStyle.Fill
+        canvas.Location = New Point(0, 24)
+        canvas.Name = "canvas"
+        canvas.Size = New Size(671, 507)
+        canvas.TabIndex = 0
         ' 
         ' lightPanel
         ' 
-        Me.lightPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lightPanel.Controls.Add(Me.lblLightTitle)
-        Me.lightPanel.Controls.Add(Me.lblAzimuthCaption)
-        Me.lightPanel.Controls.Add(Me.trkAzimuth)
-        Me.lightPanel.Controls.Add(Me.lblAzimuthValue)
-        Me.lightPanel.Controls.Add(Me.lblElevationCaption)
-        Me.lightPanel.Controls.Add(Me.trkElevation)
-        Me.lightPanel.Controls.Add(Me.lblElevationValue)
-        Me.lightPanel.Controls.Add(Me.lblAmbientCaption)
-        Me.lightPanel.Controls.Add(Me.trkAmbient)
-        Me.lightPanel.Controls.Add(Me.lblAmbientValue)
-        Me.lightPanel.Controls.Add(Me.lblIntensityCaption)
-        Me.lightPanel.Controls.Add(Me.trkIntensity)
-        Me.lightPanel.Controls.Add(Me.lblIntensityValue)
-        Me.lightPanel.Controls.Add(Me.btnLightColor)
-        Me.lightPanel.Controls.Add(Me.lblLightColor)
-        Me.lightPanel.Controls.Add(Me.btnResetLight)
-        Me.lightPanel.Dock = System.Windows.Forms.DockStyle.Right
-        Me.lightPanel.Location = New System.Drawing.Point(671, 49)
-        Me.lightPanel.Name = "lightPanel"
-        Me.lightPanel.Size = New System.Drawing.Size(250, 477)
-        Me.lightPanel.TabIndex = 1
+        lightPanel.BorderStyle = BorderStyle.FixedSingle
+        lightPanel.Controls.Add(lblLightTitle)
+        lightPanel.Controls.Add(lblAzimuthCaption)
+        lightPanel.Controls.Add(trkAzimuth)
+        lightPanel.Controls.Add(lblAzimuthValue)
+        lightPanel.Controls.Add(lblElevationCaption)
+        lightPanel.Controls.Add(trkElevation)
+        lightPanel.Controls.Add(lblElevationValue)
+        lightPanel.Controls.Add(lblAmbientCaption)
+        lightPanel.Controls.Add(trkAmbient)
+        lightPanel.Controls.Add(lblAmbientValue)
+        lightPanel.Controls.Add(lblIntensityCaption)
+        lightPanel.Controls.Add(trkIntensity)
+        lightPanel.Controls.Add(lblIntensityValue)
+        lightPanel.Controls.Add(btnLightColor)
+        lightPanel.Controls.Add(lblLightColor)
+        lightPanel.Controls.Add(btnResetLight)
+        lightPanel.Dock = DockStyle.Right
+        lightPanel.Location = New Point(671, 24)
+        lightPanel.Name = "lightPanel"
+        lightPanel.Size = New Size(250, 507)
+        lightPanel.TabIndex = 1
         ' 
         ' lblLightTitle
         ' 
-        Me.lblLightTitle.AutoSize = True
-        Me.lblLightTitle.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
-        Me.lblLightTitle.Location = New System.Drawing.Point(12, 12)
-        Me.lblLightTitle.Name = "lblLightTitle"
-        Me.lblLightTitle.Size = New System.Drawing.Size(70, 15)
-        Me.lblLightTitle.TabIndex = 0
-        Me.lblLightTitle.Text = "光照参数"
+        lblLightTitle.AutoSize = True
+        lblLightTitle.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblLightTitle.Location = New Point(12, 12)
+        lblLightTitle.Name = "lblLightTitle"
+        lblLightTitle.Size = New Size(63, 15)
+        lblLightTitle.TabIndex = 0
+        lblLightTitle.Text = "光照参数"
         ' 
         ' lblAzimuthCaption
         ' 
-        Me.lblAzimuthCaption.AutoSize = True
-        Me.lblAzimuthCaption.Location = New System.Drawing.Point(12, 46)
-        Me.lblAzimuthCaption.Name = "lblAzimuthCaption"
-        Me.lblAzimuthCaption.Size = New System.Drawing.Size(70, 15)
-        Me.lblAzimuthCaption.TabIndex = 1
-        Me.lblAzimuthCaption.Text = "光源方位"
+        lblAzimuthCaption.AutoSize = True
+        lblAzimuthCaption.Location = New Point(12, 46)
+        lblAzimuthCaption.Name = "lblAzimuthCaption"
+        lblAzimuthCaption.Size = New Size(59, 15)
+        lblAzimuthCaption.TabIndex = 1
+        lblAzimuthCaption.Text = "光源方位"
         ' 
         ' trkAzimuth
         ' 
-        Me.trkAzimuth.LargeChange = 10
-        Me.trkAzimuth.Location = New System.Drawing.Point(96, 40)
-        Me.trkAzimuth.Maximum = 360
-        Me.trkAzimuth.Minimum = -360
-        Me.trkAzimuth.Name = "trkAzimuth"
-        Me.trkAzimuth.Size = New System.Drawing.Size(110, 45)
-        Me.trkAzimuth.SmallChange = 5
-        Me.trkAzimuth.TabIndex = 2
-        Me.trkAzimuth.TickFrequency = 30
-        Me.trkAzimuth.Value = -30
+        trkAzimuth.LargeChange = 10
+        trkAzimuth.Location = New Point(96, 40)
+        trkAzimuth.Maximum = 360
+        trkAzimuth.Minimum = -360
+        trkAzimuth.Name = "trkAzimuth"
+        trkAzimuth.Size = New Size(110, 45)
+        trkAzimuth.SmallChange = 5
+        trkAzimuth.TabIndex = 2
+        trkAzimuth.TickFrequency = 30
+        trkAzimuth.Value = -30
         ' 
         ' lblAzimuthValue
         ' 
-        Me.lblAzimuthValue.AutoSize = True
-        Me.lblAzimuthValue.Location = New System.Drawing.Point(212, 46)
-        Me.lblAzimuthValue.Name = "lblAzimuthValue"
-        Me.lblAzimuthValue.Size = New System.Drawing.Size(22, 15)
-        Me.lblAzimuthValue.TabIndex = 3
-        Me.lblAzimuthValue.Text = "-30"
+        lblAzimuthValue.AutoSize = True
+        lblAzimuthValue.Location = New Point(212, 46)
+        lblAzimuthValue.Name = "lblAzimuthValue"
+        lblAzimuthValue.Size = New Size(24, 15)
+        lblAzimuthValue.TabIndex = 3
+        lblAzimuthValue.Text = "-30"
         ' 
         ' lblElevationCaption
         ' 
-        Me.lblElevationCaption.AutoSize = True
-        Me.lblElevationCaption.Location = New System.Drawing.Point(12, 88)
-        Me.lblElevationCaption.Name = "lblElevationCaption"
-        Me.lblElevationCaption.Size = New System.Drawing.Size(70, 15)
-        Me.lblElevationCaption.TabIndex = 4
-        Me.lblElevationCaption.Text = "光源仰角"
+        lblElevationCaption.AutoSize = True
+        lblElevationCaption.Location = New Point(12, 88)
+        lblElevationCaption.Name = "lblElevationCaption"
+        lblElevationCaption.Size = New Size(59, 15)
+        lblElevationCaption.TabIndex = 4
+        lblElevationCaption.Text = "光源仰角"
         ' 
         ' trkElevation
         ' 
-        Me.trkElevation.LargeChange = 10
-        Me.trkElevation.Location = New System.Drawing.Point(96, 82)
-        Me.trkElevation.Maximum = 90
-        Me.trkElevation.Minimum = -90
-        Me.trkElevation.Name = "trkElevation"
-        Me.trkElevation.Size = New System.Drawing.Size(110, 45)
-        Me.trkElevation.SmallChange = 5
-        Me.trkElevation.TabIndex = 5
-        Me.trkElevation.TickFrequency = 15
-        Me.trkElevation.Value = 45
+        trkElevation.LargeChange = 10
+        trkElevation.Location = New Point(96, 82)
+        trkElevation.Maximum = 90
+        trkElevation.Minimum = -90
+        trkElevation.Name = "trkElevation"
+        trkElevation.Size = New Size(110, 45)
+        trkElevation.SmallChange = 5
+        trkElevation.TabIndex = 5
+        trkElevation.TickFrequency = 15
+        trkElevation.Value = 45
         ' 
         ' lblElevationValue
         ' 
-        Me.lblElevationValue.AutoSize = True
-        Me.lblElevationValue.Location = New System.Drawing.Point(212, 88)
-        Me.lblElevationValue.Name = "lblElevationValue"
-        Me.lblElevationValue.Size = New System.Drawing.Size(22, 15)
-        Me.lblElevationValue.TabIndex = 6
-        Me.lblElevationValue.Text = "45"
+        lblElevationValue.AutoSize = True
+        lblElevationValue.Location = New Point(212, 88)
+        lblElevationValue.Name = "lblElevationValue"
+        lblElevationValue.Size = New Size(19, 15)
+        lblElevationValue.TabIndex = 6
+        lblElevationValue.Text = "45"
         ' 
         ' lblAmbientCaption
         ' 
-        Me.lblAmbientCaption.AutoSize = True
-        Me.lblAmbientCaption.Location = New System.Drawing.Point(12, 130)
-        Me.lblAmbientCaption.Name = "lblAmbientCaption"
-        Me.lblAmbientCaption.Size = New System.Drawing.Size(70, 15)
-        Me.lblAmbientCaption.TabIndex = 7
-        Me.lblAmbientCaption.Text = "环境光"
+        lblAmbientCaption.AutoSize = True
+        lblAmbientCaption.Location = New Point(12, 130)
+        lblAmbientCaption.Name = "lblAmbientCaption"
+        lblAmbientCaption.Size = New Size(46, 15)
+        lblAmbientCaption.TabIndex = 7
+        lblAmbientCaption.Text = "环境光"
         ' 
         ' trkAmbient
         ' 
-        Me.trkAmbient.LargeChange = 10
-        Me.trkAmbient.Location = New System.Drawing.Point(96, 124)
-        Me.trkAmbient.Maximum = 100
-        Me.trkAmbient.Minimum = 0
-        Me.trkAmbient.Name = "trkAmbient"
-        Me.trkAmbient.Size = New System.Drawing.Size(110, 45)
-        Me.trkAmbient.SmallChange = 5
-        Me.trkAmbient.TabIndex = 8
-        Me.trkAmbient.TickFrequency = 10
-        Me.trkAmbient.Value = 25
+        trkAmbient.LargeChange = 10
+        trkAmbient.Location = New Point(96, 124)
+        trkAmbient.Maximum = 100
+        trkAmbient.Name = "trkAmbient"
+        trkAmbient.Size = New Size(110, 45)
+        trkAmbient.SmallChange = 5
+        trkAmbient.TabIndex = 8
+        trkAmbient.TickFrequency = 10
+        trkAmbient.Value = 25
         ' 
         ' lblAmbientValue
         ' 
-        Me.lblAmbientValue.AutoSize = True
-        Me.lblAmbientValue.Location = New System.Drawing.Point(212, 130)
-        Me.lblAmbientValue.Name = "lblAmbientValue"
-        Me.lblAmbientValue.Size = New System.Drawing.Size(22, 15)
-        Me.lblAmbientValue.TabIndex = 9
-        Me.lblAmbientValue.Text = "25"
+        lblAmbientValue.AutoSize = True
+        lblAmbientValue.Location = New Point(212, 130)
+        lblAmbientValue.Name = "lblAmbientValue"
+        lblAmbientValue.Size = New Size(19, 15)
+        lblAmbientValue.TabIndex = 9
+        lblAmbientValue.Text = "25"
         ' 
         ' lblIntensityCaption
         ' 
-        Me.lblIntensityCaption.AutoSize = True
-        Me.lblIntensityCaption.Location = New System.Drawing.Point(12, 172)
-        Me.lblIntensityCaption.Name = "lblIntensityCaption"
-        Me.lblIntensityCaption.Size = New System.Drawing.Size(70, 15)
-        Me.lblIntensityCaption.TabIndex = 10
-        Me.lblIntensityCaption.Text = "光照亮度"
+        lblIntensityCaption.AutoSize = True
+        lblIntensityCaption.Location = New Point(12, 172)
+        lblIntensityCaption.Name = "lblIntensityCaption"
+        lblIntensityCaption.Size = New Size(59, 15)
+        lblIntensityCaption.TabIndex = 10
+        lblIntensityCaption.Text = "光照亮度"
         ' 
         ' trkIntensity
         ' 
-        Me.trkIntensity.LargeChange = 10
-        Me.trkIntensity.Location = New System.Drawing.Point(96, 166)
-        Me.trkIntensity.Maximum = 100
-        Me.trkIntensity.Minimum = 0
-        Me.trkIntensity.Name = "trkIntensity"
-        Me.trkIntensity.Size = New System.Drawing.Size(110, 45)
-        Me.trkIntensity.SmallChange = 5
-        Me.trkIntensity.TabIndex = 11
-        Me.trkIntensity.TickFrequency = 10
-        Me.trkIntensity.Value = 65
+        trkIntensity.LargeChange = 10
+        trkIntensity.Location = New Point(96, 166)
+        trkIntensity.Maximum = 100
+        trkIntensity.Name = "trkIntensity"
+        trkIntensity.Size = New Size(110, 45)
+        trkIntensity.SmallChange = 5
+        trkIntensity.TabIndex = 11
+        trkIntensity.TickFrequency = 10
+        trkIntensity.Value = 65
         ' 
         ' lblIntensityValue
         ' 
-        Me.lblIntensityValue.AutoSize = True
-        Me.lblIntensityValue.Location = New System.Drawing.Point(212, 172)
-        Me.lblIntensityValue.Name = "lblIntensityValue"
-        Me.lblIntensityValue.Size = New System.Drawing.Size(22, 15)
-        Me.lblIntensityValue.TabIndex = 12
-        Me.lblIntensityValue.Text = "65"
+        lblIntensityValue.AutoSize = True
+        lblIntensityValue.Location = New Point(212, 172)
+        lblIntensityValue.Name = "lblIntensityValue"
+        lblIntensityValue.Size = New Size(19, 15)
+        lblIntensityValue.TabIndex = 12
+        lblIntensityValue.Text = "65"
         ' 
         ' btnLightColor
         ' 
-        Me.btnLightColor.Location = New System.Drawing.Point(12, 214)
-        Me.btnLightColor.Name = "btnLightColor"
-        Me.btnLightColor.Size = New System.Drawing.Size(110, 28)
-        Me.btnLightColor.TabIndex = 13
-        Me.btnLightColor.Text = "灯光颜色"
-        Me.btnLightColor.UseVisualStyleBackColor = True
+        btnLightColor.Location = New Point(12, 214)
+        btnLightColor.Name = "btnLightColor"
+        btnLightColor.Size = New Size(110, 28)
+        btnLightColor.TabIndex = 13
+        btnLightColor.Text = "灯光颜色"
+        btnLightColor.UseVisualStyleBackColor = True
         ' 
         ' lblLightColor
         ' 
-        Me.lblLightColor.BackColor = System.Drawing.Color.White
-        Me.lblLightColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblLightColor.Location = New System.Drawing.Point(130, 214)
-        Me.lblLightColor.Name = "lblLightColor"
-        Me.lblLightColor.Size = New System.Drawing.Size(60, 28)
-        Me.lblLightColor.TabIndex = 14
+        lblLightColor.BackColor = Color.White
+        lblLightColor.BorderStyle = BorderStyle.FixedSingle
+        lblLightColor.Location = New Point(130, 214)
+        lblLightColor.Name = "lblLightColor"
+        lblLightColor.Size = New Size(60, 28)
+        lblLightColor.TabIndex = 14
         ' 
         ' btnResetLight
         ' 
-        Me.btnResetLight.Location = New System.Drawing.Point(12, 252)
-        Me.btnResetLight.Name = "btnResetLight"
-        Me.btnResetLight.Size = New System.Drawing.Size(178, 28)
-        Me.btnResetLight.TabIndex = 15
-        Me.btnResetLight.Text = "重置光照"
-        Me.btnResetLight.UseVisualStyleBackColor = True
+        btnResetLight.Location = New Point(12, 252)
+        btnResetLight.Name = "btnResetLight"
+        btnResetLight.Size = New Size(178, 28)
+        btnResetLight.TabIndex = 15
+        btnResetLight.Text = "重置光照"
+        btnResetLight.UseVisualStyleBackColor = True
         ' 
         ' statusStrip
         ' 
-        Me.statusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.lblStatus, Me.lblDevice})
-        Me.statusStrip.Location = New System.Drawing.Point(0, 526)
-        Me.statusStrip.Name = "statusStrip"
-        Me.statusStrip.Size = New System.Drawing.Size(921, 27)
-        Me.statusStrip.TabIndex = 2
+        statusStrip.Items.AddRange(New ToolStripItem() {lblStatus, lblDevice})
+        statusStrip.Location = New Point(0, 531)
+        statusStrip.Name = "statusStrip"
+        statusStrip.Size = New Size(921, 22)
+        statusStrip.TabIndex = 2
         ' 
         ' lblStatus
         ' 
-        Me.lblStatus.Name = "lblStatus"
-        Me.lblStatus.Size = New System.Drawing.Size(700, 22)
-        Me.lblStatus.Spring = True
-        Me.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        lblStatus.Name = "lblStatus"
+        lblStatus.Size = New Size(834, 17)
+        lblStatus.Spring = True
+        lblStatus.TextAlign = ContentAlignment.MiddleLeft
         ' 
         ' lblDevice
         ' 
-        Me.lblDevice.Name = "lblDevice"
-        Me.lblDevice.Size = New System.Drawing.Size(120, 22)
+        lblDevice.Name = "lblDevice"
+        lblDevice.Size = New Size(72, 17)
+        lblDevice.Text = "准备就绪！"
         ' 
         ' toolStrip
         ' 
-        Me.toolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.cboMode, Me.cboScheme, Me.chkEmbedded, Me.numPointSize, Me.toolSep1, Me.btnReset, Me.chkShowGround, Me.btnBgColor, Me.chkShowDebug, Me.toolSep2, Me.btnSnapshot})
-        Me.toolStrip.Location = New System.Drawing.Point(0, 24)
-        Me.toolStrip.Name = "toolStrip"
-        Me.toolStrip.Padding = New System.Windows.Forms.Padding(4, 0, 1, 0)
-        Me.toolStrip.Size = New System.Drawing.Size(921, 25)
-        Me.toolStrip.TabIndex = 3
+        toolStrip.Items.AddRange(New ToolStripItem() {cboMode, cboScheme, chkEmbedded, numPointSize, toolSep1, btnReset, chkShowGround, btnBgColor, chkShowDebug, toolSep2, btnSnapshot})
+        toolStrip.Location = New Point(0, 24)
+        toolStrip.Name = "toolStrip"
+        toolStrip.Padding = New Padding(4, 0, 1, 0)
+        toolStrip.Size = New Size(671, 25)
+        toolStrip.TabIndex = 3
         ' 
         ' cboMode
         ' 
-        Me.cboMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboMode.Name = "cboMode"
-        Me.cboMode.Size = New System.Drawing.Size(120, 25)
+        cboMode.DropDownStyle = ComboBoxStyle.DropDownList
+        cboMode.Name = "cboMode"
+        cboMode.Size = New Size(120, 25)
         ' 
         ' cboScheme
         ' 
-        Me.cboScheme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboScheme.Name = "cboScheme"
-        Me.cboScheme.Size = New System.Drawing.Size(130, 25)
+        cboScheme.DropDownStyle = ComboBoxStyle.DropDownList
+        cboScheme.Name = "cboScheme"
+        cboScheme.Size = New Size(130, 25)
         ' 
         ' chkEmbedded
         ' 
-        Me.chkEmbedded.CheckOnClick = True
-        Me.chkEmbedded.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.chkEmbedded.Name = "chkEmbedded"
-        Me.chkEmbedded.Size = New System.Drawing.Size(150, 22)
-        Me.chkEmbedded.Text = "使用点云自带颜色"
+        chkEmbedded.CheckOnClick = True
+        chkEmbedded.DisplayStyle = ToolStripItemDisplayStyle.Text
+        chkEmbedded.Name = "chkEmbedded"
+        chkEmbedded.Size = New Size(115, 22)
+        chkEmbedded.Text = "使用点云自带颜色"
         ' 
         ' numPointSize
         ' 
-        Me.numPointSize.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.numPointSize.Name = "numPointSize"
-        Me.numPointSize.Size = New System.Drawing.Size(60, 25)
+        numPointSize.DropDownStyle = ComboBoxStyle.DropDownList
+        numPointSize.Name = "numPointSize"
+        numPointSize.Size = New Size(75, 25)
         ' 
         ' toolSep1
         ' 
-        Me.toolSep1.Name = "toolSep1"
-        Me.toolSep1.Size = New System.Drawing.Size(6, 25)
+        toolSep1.Name = "toolSep1"
+        toolSep1.Size = New Size(6, 25)
         ' 
         ' btnReset
         ' 
-        Me.btnReset.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.btnReset.Name = "btnReset"
-        Me.btnReset.Size = New System.Drawing.Size(70, 22)
-        Me.btnReset.Text = "重置视角"
+        btnReset.DisplayStyle = ToolStripItemDisplayStyle.Text
+        btnReset.Name = "btnReset"
+        btnReset.Size = New Size(63, 22)
+        btnReset.Text = "重置视角"
         ' 
         ' chkShowGround
         ' 
-        Me.chkShowGround.Checked = True
-        Me.chkShowGround.CheckOnClick = True
-        Me.chkShowGround.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.chkShowGround.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.chkShowGround.Name = "chkShowGround"
-        Me.chkShowGround.Size = New System.Drawing.Size(70, 22)
-        Me.chkShowGround.Text = "显示地面"
+        chkShowGround.Checked = True
+        chkShowGround.CheckOnClick = True
+        chkShowGround.CheckState = CheckState.Checked
+        chkShowGround.DisplayStyle = ToolStripItemDisplayStyle.Text
+        chkShowGround.Name = "chkShowGround"
+        chkShowGround.Size = New Size(63, 22)
+        chkShowGround.Text = "显示地面"
         ' 
         ' btnBgColor
         ' 
-        Me.btnBgColor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.btnBgColor.Name = "btnBgColor"
-        Me.btnBgColor.Size = New System.Drawing.Size(55, 22)
-        Me.btnBgColor.Text = "背景色"
+        btnBgColor.DisplayStyle = ToolStripItemDisplayStyle.Text
+        btnBgColor.Name = "btnBgColor"
+        btnBgColor.Size = New Size(50, 22)
+        btnBgColor.Text = "背景色"
         ' 
         ' chkShowDebug
         ' 
-        Me.chkShowDebug.CheckOnClick = True
-        Me.chkShowDebug.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.chkShowDebug.Name = "chkShowDebug"
-        Me.chkShowDebug.Size = New System.Drawing.Size(70, 22)
-        Me.chkShowDebug.Text = "调试信息"
+        chkShowDebug.CheckOnClick = True
+        chkShowDebug.DisplayStyle = ToolStripItemDisplayStyle.Text
+        chkShowDebug.Name = "chkShowDebug"
+        chkShowDebug.Size = New Size(63, 19)
+        chkShowDebug.Text = "调试信息"
         ' 
         ' toolSep2
         ' 
-        Me.toolSep2.Name = "toolSep2"
-        Me.toolSep2.Size = New System.Drawing.Size(6, 25)
+        toolSep2.Name = "toolSep2"
+        toolSep2.Size = New Size(6, 25)
         ' 
         ' btnSnapshot
         ' 
-        Me.btnSnapshot.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.btnSnapshot.Name = "btnSnapshot"
-        Me.btnSnapshot.Size = New System.Drawing.Size(45, 22)
-        Me.btnSnapshot.Text = "截图"
+        btnSnapshot.DisplayStyle = ToolStripItemDisplayStyle.Text
+        btnSnapshot.Name = "btnSnapshot"
+        btnSnapshot.Size = New Size(37, 19)
+        btnSnapshot.Text = "截图"
         ' 
         ' menuStrip
         ' 
-        Me.menuStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.fileMenu, Me.viewMenu, Me.helpMenu})
-        Me.menuStrip.Location = New System.Drawing.Point(0, 0)
-        Me.menuStrip.Name = "menuStrip"
-        Me.menuStrip.Size = New System.Drawing.Size(921, 24)
-        Me.menuStrip.TabIndex = 4
+        menuStrip.Items.AddRange(New ToolStripItem() {fileMenu, viewMenu, helpMenu})
+        menuStrip.Location = New Point(0, 0)
+        menuStrip.Name = "menuStrip"
+        menuStrip.Size = New Size(921, 24)
+        menuStrip.TabIndex = 4
         ' 
         ' fileMenu
         ' 
-        Me.fileMenu.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.openItem, Me.sepFile, Me.exitItem})
-        Me.fileMenu.Name = "fileMenu"
-        Me.fileMenu.Size = New System.Drawing.Size(58, 20)
-        Me.fileMenu.Text = "文件(&F)"
+        fileMenu.DropDownItems.AddRange(New ToolStripItem() {openItem, sepFile, exitItem})
+        fileMenu.Name = "fileMenu"
+        fileMenu.Size = New Size(59, 20)
+        fileMenu.Text = "文件(&F)"
         ' 
         ' openItem
         ' 
-        Me.openItem.Name = "openItem"
-        Me.openItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
-        Me.openItem.Size = New System.Drawing.Size(200, 22)
-        Me.openItem.Text = "打开模型/点云..."
+        openItem.Name = "openItem"
+        openItem.ShortcutKeys = Keys.Control Or Keys.O
+        openItem.Size = New Size(209, 22)
+        openItem.Text = "打开模型/点云..."
         ' 
         ' sepFile
         ' 
-        Me.sepFile.Name = "sepFile"
-        Me.sepFile.Size = New System.Drawing.Size(197, 6)
+        sepFile.Name = "sepFile"
+        sepFile.Size = New Size(206, 6)
         ' 
         ' exitItem
         ' 
-        Me.exitItem.Name = "exitItem"
-        Me.exitItem.Size = New System.Drawing.Size(200, 22)
-        Me.exitItem.Text = "关闭"
+        exitItem.Name = "exitItem"
+        exitItem.Size = New Size(209, 22)
+        exitItem.Text = "关闭"
         ' 
         ' viewMenu
         ' 
-        Me.viewMenu.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.resetViewItem, Me.fitViewItem, Me.groundItem, Me.debugItem, Me.sepView, Me.bgColorItem, Me.snapshotItem})
-        Me.viewMenu.Name = "viewMenu"
-        Me.viewMenu.Size = New System.Drawing.Size(58, 20)
-        Me.viewMenu.Text = "视图(&V)"
+        viewMenu.DropDownItems.AddRange(New ToolStripItem() {resetViewItem, fitViewItem, groundItem, debugItem, sepView, bgColorItem, snapshotItem})
+        viewMenu.Name = "viewMenu"
+        viewMenu.Size = New Size(60, 20)
+        viewMenu.Text = "视图(&V)"
         ' 
         ' resetViewItem
         ' 
-        Me.resetViewItem.Name = "resetViewItem"
-        Me.resetViewItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.R), System.Windows.Forms.Keys)
-        Me.resetViewItem.Size = New System.Drawing.Size(200, 22)
-        Me.resetViewItem.Text = "重置视角"
+        resetViewItem.Name = "resetViewItem"
+        resetViewItem.ShortcutKeys = Keys.Control Or Keys.R
+        resetViewItem.Size = New Size(175, 22)
+        resetViewItem.Text = "重置视角"
         ' 
         ' fitViewItem
         ' 
-        Me.fitViewItem.Name = "fitViewItem"
-        Me.fitViewItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.F), System.Windows.Forms.Keys)
-        Me.fitViewItem.Size = New System.Drawing.Size(200, 22)
-        Me.fitViewItem.Text = "适应窗口"
+        fitViewItem.Name = "fitViewItem"
+        fitViewItem.ShortcutKeys = Keys.Control Or Keys.F
+        fitViewItem.Size = New Size(175, 22)
+        fitViewItem.Text = "适应窗口"
         ' 
         ' groundItem
         ' 
-        Me.groundItem.Checked = True
-        Me.groundItem.CheckOnClick = True
-        Me.groundItem.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.groundItem.Name = "groundItem"
-        Me.groundItem.Size = New System.Drawing.Size(200, 22)
-        Me.groundItem.Text = "显示地面"
+        groundItem.Checked = True
+        groundItem.CheckOnClick = True
+        groundItem.CheckState = CheckState.Checked
+        groundItem.Name = "groundItem"
+        groundItem.Size = New Size(175, 22)
+        groundItem.Text = "显示地面"
         ' 
         ' debugItem
         ' 
-        Me.debugItem.CheckOnClick = True
-        Me.debugItem.Name = "debugItem"
-        Me.debugItem.Size = New System.Drawing.Size(200, 22)
-        Me.debugItem.Text = "调试信息"
+        debugItem.CheckOnClick = True
+        debugItem.Name = "debugItem"
+        debugItem.Size = New Size(175, 22)
+        debugItem.Text = "调试信息"
         ' 
         ' sepView
         ' 
-        Me.sepView.Name = "sepView"
-        Me.sepView.Size = New System.Drawing.Size(197, 6)
+        sepView.Name = "sepView"
+        sepView.Size = New Size(172, 6)
         ' 
         ' bgColorItem
         ' 
-        Me.bgColorItem.Name = "bgColorItem"
-        Me.bgColorItem.Size = New System.Drawing.Size(200, 22)
-        Me.bgColorItem.Text = "背景色..."
+        bgColorItem.Name = "bgColorItem"
+        bgColorItem.Size = New Size(175, 22)
+        bgColorItem.Text = "背景色..."
         ' 
         ' snapshotItem
         ' 
-        Me.snapshotItem.Name = "snapshotItem"
-        Me.snapshotItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.S), System.Windows.Forms.Keys)
-        Me.snapshotItem.Size = New System.Drawing.Size(200, 22)
-        Me.snapshotItem.Text = "保存截图..."
+        snapshotItem.Name = "snapshotItem"
+        snapshotItem.ShortcutKeys = Keys.Control Or Keys.S
+        snapshotItem.Size = New Size(175, 22)
+        snapshotItem.Text = "保存截图..."
         ' 
         ' helpMenu
         ' 
-        Me.helpMenu.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.aboutItem})
-        Me.helpMenu.Name = "helpMenu"
-        Me.helpMenu.Size = New System.Drawing.Size(58, 20)
-        Me.helpMenu.Text = "帮助(&H)"
+        helpMenu.DropDownItems.AddRange(New ToolStripItem() {aboutItem, 复制设备错误信息ToolStripMenuItem})
+        helpMenu.Name = "helpMenu"
+        helpMenu.Size = New Size(62, 20)
+        helpMenu.Text = "帮助(&H)"
         ' 
         ' aboutItem
         ' 
-        Me.aboutItem.Name = "aboutItem"
-        Me.aboutItem.Size = New System.Drawing.Size(200, 22)
-        Me.aboutItem.Text = "关于"
+        aboutItem.Name = "aboutItem"
+        aboutItem.Size = New Size(180, 22)
+        aboutItem.Text = "关于"
+        ' 
+        ' 复制设备错误信息ToolStripMenuItem
+        ' 
+        复制设备错误信息ToolStripMenuItem.Name = "复制设备错误信息ToolStripMenuItem"
+        复制设备错误信息ToolStripMenuItem.Size = New Size(180, 22)
+        复制设备错误信息ToolStripMenuItem.Text = "复制设备错误信息"
         ' 
         ' FormMain
         ' 
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(921, 553)
-        ' the fill control is added first so that every docked edge control is
-        ' laid out before it and the canvas receives the remaining area
-        Me.Controls.Add(Me.canvas)
-        Me.Controls.Add(Me.lightPanel)
-        Me.Controls.Add(Me.statusStrip)
-        Me.Controls.Add(Me.toolStrip)
-        Me.Controls.Add(Me.menuStrip)
-        Me.MainMenuStrip = Me.menuStrip
-        Me.Name = "FormMain"
-        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "三维模型查看器 - DirectX"
-        Me.lightPanel.ResumeLayout(False)
-        CType(Me.trkAzimuth, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.trkElevation, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.trkAmbient, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.trkIntensity, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.statusStrip.ResumeLayout(False)
-        Me.toolStrip.ResumeLayout(False)
-        Me.menuStrip.ResumeLayout(False)
-        Me.ResumeLayout(False)
+        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
+        AutoScaleMode = AutoScaleMode.Font
+        ClientSize = New Size(921, 553)
+        Controls.Add(toolStrip)
+        Controls.Add(canvas)
+        Controls.Add(lightPanel)
+        Controls.Add(statusStrip)
+        Controls.Add(menuStrip)
+        MainMenuStrip = menuStrip
+        Name = "FormMain"
+        StartPosition = FormStartPosition.CenterScreen
+        Text = "三维模型查看器 - DirectX"
+        lightPanel.ResumeLayout(False)
+        lightPanel.PerformLayout()
+        CType(trkAzimuth, ComponentModel.ISupportInitialize).EndInit()
+        CType(trkElevation, ComponentModel.ISupportInitialize).EndInit()
+        CType(trkAmbient, ComponentModel.ISupportInitialize).EndInit()
+        CType(trkIntensity, ComponentModel.ISupportInitialize).EndInit()
+        statusStrip.ResumeLayout(False)
+        statusStrip.PerformLayout()
+        toolStrip.ResumeLayout(False)
+        toolStrip.PerformLayout()
+        menuStrip.ResumeLayout(False)
+        menuStrip.PerformLayout()
+        ResumeLayout(False)
+        PerformLayout()
     End Sub
 
     Friend WithEvents canvas As Microsoft.VisualBasic.Drawing.DirectX.DxScene3DCanvas
@@ -557,4 +565,5 @@ Partial Class FormMain
     Friend WithEvents snapshotItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents helpMenu As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents aboutItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents 复制设备错误信息ToolStripMenuItem As ToolStripMenuItem
 End Class

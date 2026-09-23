@@ -502,4 +502,8 @@ Public Class FormMain
         Call UpdateStatus()
         Call Me.canvas.RequestRender()
     End Sub
+
+    Private Sub 复制设备错误信息ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 复制设备错误信息ToolStripMenuItem.Click
+        Call Clipboard.SetText(lblDevice.Text)
+    End Sub
 End Class
