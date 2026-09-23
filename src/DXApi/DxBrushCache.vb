@@ -1,16 +1,12 @@
 Imports System.Drawing
-Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.Imaging
-Imports std = System.Math
-
 Imports Brush = Microsoft.VisualBasic.Imaging.Brush
 Imports Font = Microsoft.VisualBasic.Imaging.Font
-Imports Image = Microsoft.VisualBasic.Imaging.Image
 Imports LinearGradientBrush = Microsoft.VisualBasic.Imaging.LinearGradientBrush
 Imports Pen = Microsoft.VisualBasic.Imaging.Pen
 Imports SolidBrush = Microsoft.VisualBasic.Imaging.SolidBrush
-Imports TextureBrush = Microsoft.VisualBasic.Imaging.TextureBrush
+Imports std = System.Math
 
 ''' <summary>
 ''' The direct2d resource cache of a render target.
