@@ -71,6 +71,8 @@ Namespace Scene3D
         Friend Const EntryUnlitPixel As String = "PS_Unlit"
         Friend Const EntryPointVertex As String = "VS_Point"
         Friend Const EntryPointPixel As String = "PS_Point"
+        Friend Const EntryBlitVertex As String = "VS_Blit"
+        Friend Const EntryBlitPixel As String = "PS_Blit"
 
         ''' <summary>
         ''' the shader source of the whole 3d pipeline
@@ -91,8 +93,8 @@ Namespace Scene3D
                 "    float4   heatParams;" & vbCrLf &
                 "};" & vbCrLf &
                 "" & vbCrLf &
-                "Texture2D    paletteTexture : register(t0);" & vbCrLf &
-                "SamplerState paletteSampler : register(s0);" & vbCrLf &
+                "Texture2D    sceneTexture : register(t0);" & vbCrLf &
+                "SamplerState sceneSampler : register(s0);" & vbCrLf &
                 "" & vbCrLf &
                 "struct SurfaceInput" & vbCrLf &
                 "{" & vbCrLf &
@@ -221,7 +223,30 @@ Namespace Scene3D
                 "    float index = floor(saturate(heat) * (levels - 1) + 0.5f);" & vbCrLf &
                 "    float u = (index + 0.5f) / levels;" & vbCrLf &
                 "" & vbCrLf &
-                "    return paletteTexture.Sample(paletteSampler, float2(u, 0.5f));" & vbCrLf &
+                "    return sceneTexture.Sample(sceneSampler, float2(u, 0.5f));" & vbCrLf &
+                "}" & vbCrLf &
+                "" & vbCrLf &
+                "struct BlitOutput" & vbCrLf &
+                "{" & vbCrLf &
+                "    float4 position : SV_POSITION;" & vbCrLf &
+                "    float2 uv       : TEXCOORD0;" & vbCrLf &
+                "};" & vbCrLf &
+                "" & vbCrLf &
+                "BlitOutput VS_Blit(uint vertexId : SV_VertexID)" & vbCrLf &
+                "{" & vbCrLf &
+                "    BlitOutput output;" & vbCrLf &
+                "    float2 corner = float2((vertexId << 1) & 2, vertexId & 2);" & vbCrLf &
+                "" & vbCrLf &
+                "    output.uv = corner;" & vbCrLf &
+                "    output.position = float4(corner * float2(2, -2) + float2(-1, 1), 0, 1);" & vbCrLf &
+                "    return output;" & vbCrLf &
+                "}" & vbCrLf &
+                "" & vbCrLf &
+                "float4 PS_Blit(BlitOutput input) : SV_TARGET" & vbCrLf &
+                "{" & vbCrLf &
+                "    float4 color = sceneTexture.Sample(sceneSampler, input.uv);" & vbCrLf &
+                "" & vbCrLf &
+                "    return float4(color.rgb, 1.0f);" & vbCrLf &
                 "}" & vbCrLf
 
             Return hlsl
