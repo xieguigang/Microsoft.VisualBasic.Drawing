@@ -35,8 +35,6 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     Private Const SLOT_PRESENT As Integer = 8
     ''' <summary>the slot of <c>IDXGISwapChain::GetBuffer</c></summary>
     Private Const SLOT_GET_BUFFER As Integer = 9
-    ''' <summary>the slot of <c>IDXGISwapChain::ResizeBuffers</c></summary>
-    Private Const SLOT_RESIZE_BUFFERS As Integer = 13
 
     ''' <summary>
     ''' the amount of the back buffers of the swap chain, a flip model swap
@@ -51,11 +49,6 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     Private Delegate Function GetBufferFn(instance As IntPtr, buffer As UInteger,
                                            ByRef riid As Guid, ByRef surface As IntPtr) As Integer
 
-    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
-    Private Delegate Function ResizeBuffersFn(instance As IntPtr, bufferCount As UInteger,
-                                              width As UInteger, height As UInteger,
-                                              newFormat As Integer, flags As UInteger) As Integer
-
     Private factory As IDXGIFactory2
 
     ''' <summary>
@@ -69,7 +62,6 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     ''' </summary>
     Private presentApi As PresentFn
     Private getBufferApi As GetBufferFn
-    Private resizeBuffersApi As ResizeBuffersFn
 
     ''' <summary>
     ''' the raw IDXGISurface pointer of the current back buffer
@@ -201,7 +193,6 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
             swapChain = rawSwapChain
             presentApi = ResolveVtable(Of PresentFn)(swapChain, SLOT_PRESENT)
             getBufferApi = ResolveVtable(Of GetBufferFn)(swapChain, SLOT_GET_BUFFER)
-            resizeBuffersApi = ResolveVtable(Of ResizeBuffersFn)(swapChain, SLOT_RESIZE_BUFFERS)
         Finally
             Call Marshal.Release(rawDevice)
         End Try
@@ -347,21 +338,20 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
         Call EndDraw()
         Call ReleaseTargetResources()
 
+        ' A flip model swap chain rejects IDXGISwapChain::ResizeBuffers while any
+        ' direct or indirect reference to one of its back buffers is still alive
+        ' (DXGI_ERROR_INVALID_CALL), and the indirect references that the direct2d
+        ' device context keeps are not under the control of this class. The chain
+        ' is therefore rebuilt on the new size instead of being resized, which
+        ' costs the same amount of work for a canvas of this kind.
+        ' The caller (the drawing canvas) has already released its direct2d
+        ' resources before this method is called.
+        Call ReleaseSwapChain()
         Call SetSize(newWidth, newHeight)
 
-        If m_needsRecreate Then
-            ' the swap chain itself is not usable any more, it is rebuilt on
-            ' the new size instead of being resized
-            Call ReleaseSwapChain()
-            Call CreateSwapChain()
+        Call CreateSwapChain()
 
-            m_needsRecreate = False
-        Else
-            Call ThrowIfFailed(
-                resizeBuffersApi(swapChain, 0UI, CUInt(newWidth), CUInt(newHeight), DXGI_FORMAT.UNKNOWN, 0UI),
-                "IDXGISwapChain::ResizeBuffers"
-            )
-        End If
+        m_needsRecreate = False
 
         Call CreateTarget()
         Call BeginDraw()
