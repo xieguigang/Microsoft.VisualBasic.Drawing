@@ -21,6 +21,11 @@ Friend Class DxRenderTarget : Inherits DxRenderSurface
     ''' </summary>
     Private texture As ID3D11Texture2D
     ''' <summary>
+    ''' the raw pointer of <see cref="texture"/>, it is handed out to the 3d
+    ''' pipeline which renders into the very same texture
+    ''' </summary>
+    Private textureHandle As IntPtr = IntPtr.Zero
+    ''' <summary>
     ''' the cpu readable mirror of <see cref="texture"/>, used for the pixel read back
     ''' </summary>
     Private staging As ID3D11Texture2D
@@ -36,6 +41,15 @@ Friend Class DxRenderTarget : Inherits DxRenderSurface
     Friend Overrides ReadOnly Property Target As ID2D1RenderTarget
         Get
             Return m_target
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' the d3d11 texture that both direct2d and the 3d pipeline draw on
+    ''' </summary>
+    Friend Overrides ReadOnly Property RenderTargetTexture As IntPtr
+        Get
+            Return textureHandle
         End Get
     End Property
 
@@ -79,6 +93,12 @@ Friend Class DxRenderTarget : Inherits DxRenderSurface
         )
 
         texture = ComObject(Of ID3D11Texture2D)(texPtr)
+
+        ' the wrapper above owns the reference that the factory handed out, so
+        ' one more reference is taken for the raw pointer that is shared with
+        ' the 3d pipeline (the pointer stays alive until the canvas is rebuilt)
+        textureHandle = texPtr
+        Call Marshal.AddRef(textureHandle)
 
         ' the staging texture for the pixel read back
         desc.Usage = D3D11_USAGE.STAGING
@@ -137,6 +157,11 @@ Friend Class DxRenderTarget : Inherits DxRenderSurface
         Call SafeRelease(m_target)
         Call SafeRelease(staging)
         Call SafeRelease(texture)
+
+        If textureHandle <> IntPtr.Zero Then
+            Call Marshal.Release(textureHandle)
+            textureHandle = IntPtr.Zero
+        End If
 
         If surface <> IntPtr.Zero Then
             Call Marshal.Release(surface)

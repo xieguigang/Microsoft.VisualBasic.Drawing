@@ -80,6 +80,13 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     ''' the raw IDXGISurface pointer of the current back buffer
     ''' </summary>
     Private surface As IntPtr
+
+    ''' <summary>
+    ''' the raw ID3D11Texture2D pointer of the very same back buffer: the 3d
+    ''' pipeline renders into the back buffer through its own render target view
+    ''' </summary>
+    Private targetTexture As IntPtr = IntPtr.Zero
+
     Private m_target As ID2D1RenderTarget
 
     ''' <summary>
@@ -104,6 +111,16 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     Friend Overrides ReadOnly Property NeedsRecreate As Boolean
         Get
             Return m_needsRecreate
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' the d3d11 texture of the current back buffer, it is shared by the
+    ''' direct2d overlay and by the 3d pipeline
+    ''' </summary>
+    Friend Overrides ReadOnly Property RenderTargetTexture As IntPtr
+        Get
+            Return targetTexture
         End Get
     End Property
 
@@ -225,6 +242,16 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
         )
 
         surface = rawSurface
+
+        ' the very same back buffer is requested once more as a d3d11 texture:
+        ' the reference is owned by this class and is released again before the
+        ' back buffers are resized
+        Dim iidTexture As Guid = GetType(ID3D11Texture2D).GUID
+        Dim rawTexture As IntPtr = IntPtr.Zero
+
+        If getBufferApi(swapChain, 0UI, iidTexture, rawTexture) >= 0 Then
+            targetTexture = rawTexture
+        End If
 
         Dim target As ID2D1RenderTarget = Nothing
 
@@ -538,6 +565,14 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
         If surface <> IntPtr.Zero Then
             Call Marshal.Release(surface)
             surface = IntPtr.Zero
+        End If
+
+        ' the back buffer texture must be released before the swap chain is
+        ' resized: a flip model chain rejects ResizeBuffers while any reference
+        ' to a back buffer is still alive
+        If targetTexture <> IntPtr.Zero Then
+            Call Marshal.Release(targetTexture)
+            targetTexture = IntPtr.Zero
         End If
 
         Call SafeRelease(staging)

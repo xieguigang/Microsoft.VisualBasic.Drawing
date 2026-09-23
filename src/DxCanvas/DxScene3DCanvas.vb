@@ -22,8 +22,14 @@ Imports std = System.Math
 ''' * the scene geometry is owned by <see cref="Scene3D.Scene"/>
 ''' * the view interaction is owned by <see cref="OrbitCameraController"/>
 ''' * the lighting is owned by <see cref="SceneLighting"/>
-''' * the rendering is done by an <see cref="ISceneRenderBackend"/>, the default
-'''   back end renders through the direct2d gpu canvas of the base class
+''' * the rendering is done by an <see cref="ISceneRenderBackend"/>. The default
+'''   back end is the real direct3d 11 pipeline
+'''   (<see cref="Direct3D11SceneRenderer"/>): the geometry is uploaded once and
+'''   every frame only a constant buffer and a handful of draw calls are sent to
+'''   the gpu device. <see cref="Direct3D11DirectSceneRenderer"/> renders
+'''   straight into the canvas back buffer without any copy, and
+'''   <see cref="Direct2DSceneRenderer"/> keeps the original polygon painter as
+'''   the comparison and fall back path.
 '''
 ''' The control only translates the winforms mouse and keyboard events into the
 ''' neutral input model of the controller and requests a repaint afterwards, so
@@ -39,7 +45,13 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     Private ReadOnly m_controller As New OrbitCameraController()
     Private ReadOnly m_lighting As New SceneLighting()
 
-    Private m_renderer As ISceneRenderBackend = Direct2DSceneRenderer.Default
+    ''' <remarks>
+    ''' every control owns its own back end instance: the gpu back ends cache the
+    ''' geometry of the scene that they rendered, a shared instance would rebuild
+    ''' that cache for every canvas of the process
+    ''' </remarks>
+    Private ReadOnly m_ownedRenderer As New Direct3D11SceneRenderer()
+    Private m_renderer As ISceneRenderBackend = m_ownedRenderer
     ''' <summary>the font of the debug overlay, it is created once and reused</summary>
     Private ReadOnly m_debugFont As New Font("Consolas", 9)
     Private m_showDebugOverlay As Boolean = False
@@ -144,10 +156,16 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
             Return m_renderer
         End Get
         Set(value As ISceneRenderBackend)
-            m_renderer = If(value, Direct2DSceneRenderer.Default)
+            m_renderer = If(value, New Direct3D11SceneRenderer())
             Call Invalidate()
+            RaiseEvent RendererChanged(Me, EventArgs.Empty)
         End Set
     End Property
+
+    ''' <summary>
+    ''' the rendering back end has been replaced
+    ''' </summary>
+    Public Event RendererChanged As EventHandler
 
     ''' <summary>
     ''' a readable description of the rendering back end that is in use
@@ -157,6 +175,99 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
         Get
             Return m_renderer.Description
         End Get
+    End Property
+
+    ''' <summary>
+    ''' the sample count of the multi sample anti aliasing that the gpu device
+    ''' actually granted, one when the anti aliasing is off
+    ''' </summary>
+    <Browsable(False)>
+    Public ReadOnly Property ActiveMultisampleCount As Integer
+        Get
+            Dim gpu As Direct3D11SceneRenderer = TryCast(m_renderer, Direct3D11SceneRenderer)
+
+            If gpu Is Nothing Then
+                Return 1
+            End If
+
+            Return gpu.MultisampleCount
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' is the frame rendered by the direct3d 11 pipeline?
+    ''' </summary>
+    <Browsable(False)>
+    Public ReadOnly Property IsGpuPipelineActive As Boolean
+        Get
+            Dim gpu As Direct3D11SceneRenderer = TryCast(m_renderer, Direct3D11SceneRenderer)
+
+            If gpu IsNot Nothing Then
+                Return gpu.IsGpuAvailable
+            End If
+
+            Dim direct As Direct3D11DirectSceneRenderer = TryCast(m_renderer, Direct3D11DirectSceneRenderer)
+
+            If direct IsNot Nothing Then
+                Return direct.IsGpuAvailable
+            End If
+
+            Return False
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' the message of the last fall back of the gpu pipeline to the polygon
+    ''' painter, an empty text means that the gpu pipeline is in use
+    ''' </summary>
+    <Browsable(False)>
+    Public ReadOnly Property RendererFallbackReason As String
+        Get
+            Dim gpu As Direct3D11SceneRenderer = TryCast(m_renderer, Direct3D11SceneRenderer)
+
+            If gpu IsNot Nothing Then
+                Return gpu.LastError
+            End If
+
+            Dim direct As Direct3D11DirectSceneRenderer = TryCast(m_renderer, Direct3D11DirectSceneRenderer)
+
+            If direct IsNot Nothing Then
+                Return direct.LastError
+            End If
+
+            Return ""
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' the number of the samples of the multi sample anti aliasing of the gpu
+    ''' back end, one disables it
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(1)>
+    Public Property MultisampleCount As Integer
+        Get
+            Return m_options.MultisampleCount
+        End Get
+        Set(value As Integer)
+            m_options.MultisampleCount = std.Max(1, value)
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' discard the faces that point away from the viewer
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(False)>
+    Public Property CullBackFaces As Boolean
+        Get
+            Return m_options.CullBackFaces
+        End Get
+        Set(value As Boolean)
+            m_options.CullBackFaces = value
+            Call Invalidate()
+        End Set
     End Property
 
     ''' <summary>
@@ -735,5 +846,20 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     Private Sub OnControllerViewChanged(sender As Object, e As EventArgs)
         RaiseEvent ViewChanged(Me, EventArgs.Empty)
         Call Invalidate()
+    End Sub
+
+    ''' <summary>
+    ''' release the gpu resources of the back end that this control created
+    ''' </summary>
+    ''' <remarks>
+    ''' a back end that the host assigned itself is not released here: it may be
+    ''' shared with other canvases of the application
+    ''' </remarks>
+    Protected Overrides Sub Dispose(disposing As Boolean)
+        If disposing AndAlso m_renderer Is m_ownedRenderer Then
+            Call m_ownedRenderer.Dispose()
+        End If
+
+        MyBase.Dispose(disposing)
     End Sub
 End Class

@@ -69,6 +69,26 @@ Friend MustInherit Class DxRenderSurface : Implements IDisposable
     End Property
 
     ''' <summary>
+    ''' the native d3d11 texture that is behind the direct2d render target of
+    ''' this surface, or zero when the surface can not be used as a direct3d
+    ''' output.
+    ''' </summary>
+    ''' <remarks>
+    ''' The 3d pipeline of the scene3d namespace renders into the very same
+    ''' texture that direct2d draws on, so the gpu accelerated 3d scene and the
+    ''' 2d overlay of the canvas end up on one surface without a copy in
+    ''' between.
+    '''
+    ''' The returned pointer is owned by this surface: it must not be released
+    ''' by the caller, and it is only valid until the surface is rebuilt.
+    ''' </remarks>
+    Friend Overridable ReadOnly Property RenderTargetTexture As IntPtr
+        Get
+            Return IntPtr.Zero
+        End Get
+    End Property
+
+    ''' <summary>
     ''' can the rendered pixels be read back into the managed memory?
     ''' </summary>
     ''' <remarks>
