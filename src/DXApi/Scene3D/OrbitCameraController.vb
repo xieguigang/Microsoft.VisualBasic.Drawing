@@ -1,5 +1,6 @@
 Imports System.Drawing
 Imports Microsoft.VisualBasic.Imaging.Drawing3D
+Imports std = System.Math
 
 Namespace Scene3D
 

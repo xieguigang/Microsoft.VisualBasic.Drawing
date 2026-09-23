@@ -81,7 +81,12 @@ Namespace Scene3D
             End If
 
             Dim index As Integer = CInt(t * (n - 1))
-            index = Math.Max(0, Math.Min(n - 1, index))
+
+            If index < 0 Then
+                index = 0
+            ElseIf index > n - 1 Then
+                index = n - 1
+            End If
 
             Return table(index)
         End Function

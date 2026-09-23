@@ -239,18 +239,18 @@ Namespace Scene3D
 
             ' the faces are independent of each other, so the projection and the
             ' intensity can run in parallel
-            Parallel.For(0, n, Sub(i As Integer)
-                                    Dim face As Surface = faces(i)
-                                    Dim projected As Point3D() = camera.Project(camera.Rotate(face.vertices)).ToArray()
-                                    Dim buffer(projected.Length - 1) As PointF
+            Tpl.For(0, n, Sub(i As Integer)
+                              Dim face As Surface = faces(i)
+                              Dim projected As Point3D() = camera.Project(camera.Rotate(face.vertices)).ToArray()
+                              Dim buffer(projected.Length - 1) As PointF
 
-                                    For k As Integer = 0 To projected.Length - 1
-                                        buffer(k) = New PointF(CSng(projected(k).X), CSng(projected(k).Y))
-                                    Next
+                              For k As Integer = 0 To projected.Length - 1
+                                  buffer(k) = New PointF(CSng(projected(k).X), CSng(projected(k).Y))
+                              Next
 
-                                    facePoints(i) = buffer
-                                    faceIntensity(i) = FaceLightFactor(camera, face)
-                                End Sub)
+                              facePoints(i) = buffer
+                              faceIntensity(i) = FaceLightFactor(camera, face)
+                          End Sub)
 
             Dim total As Integer = 0
             For i As Integer = 0 To n - 1
@@ -273,8 +273,18 @@ Namespace Scene3D
                 Next
             Next
 
-            Dim minIntensity As Double = intensities.Min()
-            Dim maxIntensity As Double = intensities.Max()
+            Dim minIntensity As Double = Double.MaxValue
+            Dim maxIntensity As Double = Double.MinValue
+
+            For i As Integer = 0 To total - 1
+                If intensities(i) < minIntensity Then
+                    minIntensity = intensities(i)
+                End If
+                If intensities(i) > maxIntensity Then
+                    maxIntensity = intensities(i)
+                End If
+            Next
+
             Dim range As Double = maxIntensity - minIntensity
 
             If range < 1.0E-09 Then
@@ -282,7 +292,7 @@ Namespace Scene3D
             End If
 
             Dim brushes As Brush() = Palette.GetBrushes(options.ColorScheme, options.PointAlpha)
-            Dim sz As Integer = Math.Max(1, options.PointSize)
+            Dim sz As Integer = std.Max(1, options.PointSize)
             Dim half As Single = sz / 2.0F
 
             For i As Integer = 0 To total - 1
@@ -311,7 +321,7 @@ Namespace Scene3D
 
             Dim brushes As Brush() = Palette.GetBrushes(options.ColorScheme, options.PointAlpha)
             Dim colorCount As Integer = brushes.Length
-            Dim sz As Integer = Math.Max(1, options.PointSize)
+            Dim sz As Integer = std.Max(1, options.PointSize)
             Dim half As Single = sz / 2.0F
 
             Dim xy(count - 1) As PointF
@@ -343,7 +353,7 @@ Namespace Scene3D
             ' the projection of the point cloud is a scalar loop that matches the
             ' formula of the camera, so it can run in parallel with the color
             ' lookup while the results are written back by index
-            Parallel.For(0, count, Sub(i As Integer)
+            Tpl.For(0, count, Sub(i As Integer)
                                         Dim p As Point3D = rotated(i)
                                         Dim depth As Single = viewDistance + CSng(p.Z)
                                         Dim factor As Single = If(depth <= 0, 0, fov / depth)
@@ -379,12 +389,32 @@ Namespace Scene3D
                         brush = brushes(0)
                     End If
                 Else
-                    brush = brushes(Math.Max(0, Math.Min(colorCount - 1, colorIndex(i))))
+                    brush = brushes(std.Max(0, std.Min(colorCount - 1, colorIndex(i))))
                 End If
 
                 Call canvas.FillRectangle(brush, xy(i).X - half, xy(i).Y - half, CSng(sz), CSng(sz))
             Next
         End Sub
+
+        ''' <summary>
+        ''' the average Z coordinate of the vertices of a face, this is the depth
+        ''' key of the painter's algorithm
+        ''' </summary>
+        Private Shared Function AverageZ(face As Surface) As Double
+            Dim vertices As Point3D() = face.vertices
+
+            If vertices Is Nothing OrElse vertices.Length = 0 Then
+                Return 0
+            End If
+
+            Dim sum As Double = 0
+
+            For i As Integer = 0 To vertices.Length - 1
+                sum += vertices(i).Z
+            Next
+
+            Return sum / vertices.Length
+        End Function
 
         ''' <summary>
         ''' the light intensity factor of a face, this is the very same formula
@@ -415,7 +445,7 @@ Namespace Scene3D
                 normal = normal.Multiply(-1)
             End If
 
-            Dim diffuse As Double = Math.Max(0, normal.DotProduct(camera.LightDirection))
+            Dim diffuse As Double = std.Max(0, normal.DotProduct(camera.LightDirection))
 
             Return camera.AmbientStrength + (1 - camera.AmbientStrength) * diffuse
         End Function
