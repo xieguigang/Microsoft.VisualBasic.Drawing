@@ -107,7 +107,11 @@ The `Microsoft.VisualBasic.Drawing.DirectX.Scene3D` namespace hosts the reusable
 | `SceneRenderMode` | `Surface`, `Mesh` or `PointCloud`. |
 | `SceneRenderOptions` | The presentation options: mode, heat map scheme, point size and alpha, embedded point colors, ground grid and the colors. |
 | `ISceneRenderBackend` | The pluggable rendering back end contract: one frame receives the canvas, the scene, the camera and the options. |
-| `Direct2DSceneRenderer` | The default back end; it projects the faces, shades them and fills them through the shared `IGraphics` api, so it runs on the `DxGraphics` gpu canvas. |
+| `Direct3D11SceneRenderer` | **The default back end**: a true 3d pipeline. The geometry is uploaded once into vertex / instance buffers, an hlsl vertex shader applies the rotation and the pseudo perspective of the imaging framework, a pixel shader evaluates the per face lighting, and the depth buffer resolves the visibility. The frame is drawn off screen (optionally with 4x multi sampling) and composited onto the canvas through a Direct2D bitmap. Only the constant buffer is updated per frame, so the frame cost is independent of the face count. |
+| `Direct3D11DirectSceneRenderer` | The same pipeline, but rendered directly into the back buffer of the canvas: no copy at all, at the price of no anti aliasing. It falls back to `Direct3D11SceneRenderer` when the canvas surface does not expose a direct3d texture. |
+| `Direct2DSceneRenderer` | The reference back end; it projects the faces, shades them and fills them through the shared `IGraphics` api, so it runs on the `DxGraphics` gpu canvas. It is the fall back of the 3d back ends and the reference for a pixel comparison. |
+| `SceneTransform` | The rotation and the projection of the camera, replicated from the imaging framework (`Camera.RotationMatrix` is private there) as the matrices that the shader consumes. |
+| `GpuSceneGeometry` | The device side geometry: the face / mesh vertex buffer, the point cloud instance buffer, the ground line list and the 256x1 heat map palette texture. It is rebuilt only when the scene version or the presentation options change. |
 | `OrbitCameraController` | The ui independent view interaction: orbit on a left drag, screen space pan on a right drag, zoom on the wheel and a reset. It exposes `ViewChanged` and never references winforms. |
 | `SceneLighting` | The lighting parameters (azimuth, elevation, ambient strength, intensity and light color) that are applied onto the camera. |
 | `SceneColorPalette` | The cached heat map color / brush tables and the cached per point colors. |
@@ -128,7 +132,14 @@ Call scene.FitView(controller.Camera, New Size(800, 600))
 Call lighting.ApplyTo(controller.Camera)
 
 Using canvas As New DxGraphics(800, 600, Color.White)
-    Dim renderer As New Direct2DSceneRenderer()
+    Dim renderer As New Direct3D11SceneRenderer()
+
+    ' 4x multi sampling and back face culling are the optional quality
+    ' enhancements of the 3d pipeline, both are off by default so that the
+    ' output matches the polygon painter of Direct2DSceneRenderer
+    options.MultisampleCount = 4
+    options.CullBackFaces = True
+
     Call renderer.Render(canvas, scene, controller.Camera, options)
 End Using
 ```
@@ -139,4 +150,6 @@ The winforms adapter of this pipeline is the `DxScene3DCanvas` control of the `M
 
 - The GDI image data model (`IGraphicsData`) is not provided by this backend; use `DxGraphics.GetRasterImage` to read the raster image of the canvas instead.
 - Because it talks to DirectX directly, this library is Windows only.
-- The default `Scene3D` back end follows the projection and the painter's algorithm of the imaging framework exactly (`factor = fov / (viewDistance + z)`), so its output matches the cpu based renderer of that framework.
+- The `Scene3D` back ends follow the projection and the painter's algorithm of the imaging framework exactly (`factor = fov / (viewDistance + z)`), so their output matches the cpu based renderer of that framework. The pseudo perspective is not a standard frustum: `ViewDistance` is a plain additive offset, `FieldOfView` is a pixel focal length and `Offset` is a translation in screen pixels.
+- The matrices of `SceneTransform` are uploaded into the constant buffer exactly as the managed row vector matrices are stored, and the hlsl shaders apply them with `mul(matrix, vector)`. Transposing them on the way in would move the w row of the pseudo perspective into the depth row, which distorts the image while still looking plausible.
+- The hlsl sources are compiled at run time through `d3dcompiler_47.dll` (shipped with Windows 10 and later). A missing compiler, a compilation error, a canvas that is not a `DxGraphics` or a device that can not create the resources all fall back to `Direct2DSceneRenderer`: a frame never throws at the host.

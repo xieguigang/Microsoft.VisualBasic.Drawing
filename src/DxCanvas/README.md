@@ -97,7 +97,9 @@ Both methods force a synchronous repaint of the control and capture the pixels o
 
 ## DxScene3DCanvas
 
-`DxScene3DCanvas` derives from `DxCanvas` and renders an interactive 3d scene, so it is the ready to use control for any window that has to display a 3d model. It is a thin winforms adapter of the reusable scene pipeline: the geometry lives in `Scene3D.Scene`, the view interaction in `Scene3D.OrbitCameraController`, the lighting in `Scene3D.SceneLighting` and the rendering in a `Scene3D.ISceneRenderBackend` (the default back end renders through the gpu canvas of the base class).
+`DxScene3DCanvas` derives from `DxCanvas` and renders an interactive 3d scene, so it is the ready to use control for any window that has to display a 3d model. It is a thin winforms adapter of the reusable scene pipeline: the geometry lives in `Scene3D.Scene`, the view interaction in `Scene3D.OrbitCameraController`, the lighting in `Scene3D.SceneLighting` and the rendering in a `Scene3D.ISceneRenderBackend`.
+
+The default back end is `Direct3D11SceneRenderer`, a true 3d pipeline: the faces are uploaded once into gpu buffers and the per frame cost is a constant buffer update plus a few draw calls, so the frame rate does not depend on the face count any more. Assign `Direct2DSceneRenderer.Default` to `Renderer` to go back to the polygon painter, or `Direct3D11DirectSceneRenderer` to render straight into the back buffer without any copy. When the 3d pipeline can not be used - the canvas is not a `DxGraphics`, `d3dcompiler_47.dll` is missing, the shaders do not compile - the control silently hands the frame over to the polygon painter and reports the reason in `RendererFallbackReason`.
 
 ### Input
 
@@ -121,7 +123,9 @@ Both methods force a synchronous repaint of the control and capture the pixels o
 | `Scene` | The geometry of the scene, it is never `Nothing`. |
 | `LoadSurfaces(faces)` / `LoadPointCloud(points)` | Replace the geometry, reset the view and fit it onto the new model. |
 | `ClearScene()` | Drop the geometry. |
-| `Renderer` | The rendering back end, assign another `ISceneRenderBackend` to render the same scene differently. |
+| `Renderer` | The rendering back end, assign another `ISceneRenderBackend` to render the same scene differently (`Direct2DSceneRenderer.Default` selects the polygon painter). |
+| `MultisampleCount`, `CullBackFaces` | The optional quality enhancements of the 3d pipeline: the number of samples of the anti aliasing (1 or 4, one only for the direct back end) and whether the faces that point away from the viewer are discarded. Both are off by default, which keeps the output identical to the polygon painter. |
+| `IsGpuPipelineActive`, `ActiveMultisampleCount`, `RendererFallbackReason` | The state of the back end: whether the last frame really went through the 3d pipeline, the sample count that is in effect and why the frame was handed over to the polygon painter. |
 | `Controller` / `Lighting` / `Options` | The view interaction, the lighting and the presentation options. |
 | `RenderMode`, `ColorScheme`, `PointSize`, `PointAlpha`, `UseEmbeddedColor` | The presentation options as designer friendly properties. |
 | `ShowGround`, `GroundColor`, `BackgroundColor` | The ground grid and the background. |
