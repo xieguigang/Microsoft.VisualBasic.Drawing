@@ -78,6 +78,10 @@ Namespace Scene3D
         Friend Const EntryUnlitPixel As String = "PS_Unlit"
         Friend Const EntryPointVertex As String = "VS_Point"
         Friend Const EntryPointPixel As String = "PS_Point"
+        ''' <summary>the vertex shader of the connection lines (position + per vertex color)</summary>
+        Friend Const EntryLineVertex As String = "VS_Line"
+        ''' <summary>the pixel shader of the connection lines (returns the interpolated vertex color)</summary>
+        Friend Const EntryLinePixel As String = "PS_LineColor"
         Friend Const EntryBlitVertex As String = "VS_Blit"
         Friend Const EntryBlitPixel As String = "PS_Blit"
 
@@ -271,6 +275,8 @@ Namespace Scene3D
         Friend Const PointInstanceStride As UInteger = 32
         ''' <summary>the stride of one corner of the unit quad of a point</summary>
         Friend Const PointQuadStride As UInteger = 8
+        ''' <summary>the stride of one end point of a connection line</summary>
+        Friend Const LineStride As UInteger = 16
 
         ''' <summary>
         ''' one face corner: position, face normal and face color
@@ -299,6 +305,21 @@ Namespace Scene3D
             Element("TEXCOORD", 1, DXGI_FORMAT.R32_FLOAT, 1, 24, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
             Element("COLOR", 0, DXGI_FORMAT.R8G8B8A8_UNORM, 1, 28, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
             Element("TEXCOORD", 2, DXGI_FORMAT.R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0)
+        }
+
+        ''' <summary>
+        ''' one end point of a connection line: the position plus the color of the
+        ''' line itself
+        ''' </summary>
+        ''' <remarks>
+        ''' Both end points of one line repeat the same color, so the interpolator
+        ''' of the gpu cannot introduce a color gradient along the line. The layout
+        ''' is a line list (two vertices per line), the gpu draws one pixel wide
+        ''' lines exactly like the direct2d back end does.
+        ''' </remarks>
+        Friend ReadOnly LineElements As D3D11_INPUT_ELEMENT_DESC() = New D3D11_INPUT_ELEMENT_DESC() {
+            Element("POSITION", 0, DXGI_FORMAT.R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0),
+            Element("COLOR", 0, DXGI_FORMAT.R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0)
         }
 
         ''' <summary>

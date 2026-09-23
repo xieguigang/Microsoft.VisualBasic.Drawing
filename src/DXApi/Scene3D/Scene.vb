@@ -27,6 +27,7 @@ Namespace Scene3D
 
         Private m_surfaces As Surface() = New Surface() {}
         Private m_points As PointCloudPoint() = New PointCloudPoint() {}
+        Private m_lines As LineSegment() = New LineSegment() {}
         Private m_center As Point3D = New Point3D(0, 0, 0)
         Private m_radius As Double = 1
         Private m_groundZ As Double = 0
@@ -51,6 +52,21 @@ Namespace Scene3D
         Public ReadOnly Property Points As PointCloudPoint()
             Get
                 Return m_points
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the connection lines of the scene, an empty array means that the scene
+        ''' has no connections to draw
+        ''' </summary>
+        ''' <remarks>
+        ''' the lines are an overlay: they are stored next to the faces and the
+        ''' points instead of replacing them, so a network graph can be drawn on
+        ''' top of the point cloud of its neurons
+        ''' </remarks>
+        Public ReadOnly Property Lines As LineSegment()
+            Get
+                Return m_lines
             End Get
         End Property
 
@@ -120,11 +136,20 @@ Namespace Scene3D
         End Property
 
         ''' <summary>
+        ''' the number of the connection lines in this scene
+        ''' </summary>
+        Public ReadOnly Property LineCount As Integer
+            Get
+                Return m_lines.Length
+            End Get
+        End Property
+
+        ''' <summary>
         ''' does the scene hold any geometry at all?
         ''' </summary>
         Public ReadOnly Property HasData As Boolean
             Get
-                Return m_surfaces.Length > 0 OrElse m_points.Length > 0
+                Return m_surfaces.Length > 0 OrElse m_points.Length > 0 OrElse m_lines.Length > 0
             End Get
         End Property
 
@@ -148,6 +173,7 @@ Namespace Scene3D
         Public Sub Clear()
             m_surfaces = New Surface() {}
             m_points = New PointCloudPoint() {}
+            m_lines = New LineSegment() {}
             m_center = New Point3D(0, 0, 0)
             m_radius = 1
             m_groundZ = 0
@@ -169,6 +195,7 @@ Namespace Scene3D
             m_intensityMin = 0
             m_intensityMax = 1
 
+            Dim previous As Point3D = m_center
             Dim accepted As New List(Of Surface)()
             Dim allPoints As New List(Of Point3D)()
 
@@ -182,7 +209,13 @@ Namespace Scene3D
             End If
 
             m_center = CentroidOf(allPoints)
-            m_radius = RadiusOf(allPoints, m_center)
+
+            ' the connection lines share the model space, so they follow the new
+            ' centre; the bounding sphere grows with them so that FitView keeps
+            ' the end points of the lines inside the view
+            Call TranslateLines(previous, m_center)
+
+            m_radius = RadiusWithLines(RadiusOf(allPoints, m_center), m_center)
 
             Dim centered(accepted.Count - 1) As Surface
 
@@ -197,7 +230,7 @@ Namespace Scene3D
             Next
 
             m_surfaces = centered
-            m_groundZ = LowestZ(m_surfaces, m_points)
+            m_groundZ = LowestZ(m_surfaces, m_points, m_lines)
             m_version += 1
         End Sub
 
@@ -215,13 +248,19 @@ Namespace Scene3D
                 m_points = points.ToArray()
             End If
 
+            Dim previous As Point3D = m_center
             Dim source As New List(Of Point3D)(m_points.Length)
             For Each p As PointCloudPoint In m_points
                 source.Add(New Point3D(p.X, p.Y, p.Z))
             Next
 
             m_center = CentroidOf(source)
-            m_radius = RadiusOf(source, m_center)
+
+            ' see LoadSurfaces: the lines follow the centre of the primary
+            ' geometry and participate in the bounding sphere
+            Call TranslateLines(previous, m_center)
+
+            m_radius = RadiusWithLines(RadiusOf(source, m_center), m_center)
 
             Dim minIntensity As Double = Double.MaxValue
             Dim maxIntensity As Double = Double.MinValue
@@ -244,7 +283,59 @@ Namespace Scene3D
 
             m_intensityMin = minIntensity
             m_intensityMax = maxIntensity
-            m_groundZ = LowestZ(m_surfaces, m_points)
+            m_groundZ = LowestZ(m_surfaces, m_points, m_lines)
+            m_version += 1
+        End Sub
+
+        ''' <summary>
+        ''' load the connection lines of this scene, they are drawn on top of the
+        ''' faces and of the point cloud
+        ''' </summary>
+        ''' <remarks>
+        ''' The lines share the model space of the primary geometry: they are
+        ''' translated by the centre of the point cloud (or of the faces) that was
+        ''' loaded before them, so the natural order "load the cloud, then load its
+        ''' connections" puts both into the same space. Loading the primary geometry
+        ''' afterwards re-translates the lines, so the reverse order works as well.
+        ''' The bounding sphere grows with the lines: without that FitView would clip
+        ''' the end points of the connections that stick out of the point cloud.
+        ''' </remarks>
+        ''' <param name="lines">
+        ''' the lines of the graph, <c>Nothing</c> or an empty sequence drops the
+        ''' lines of the scene
+        ''' </param>
+        Public Sub LoadLineSegments(lines As IEnumerable(Of LineSegment))
+            If lines Is Nothing Then
+                m_lines = New LineSegment() {}
+            Else
+                m_lines = lines.ToArray()
+            End If
+
+            Dim center As Point3D = m_center
+
+            For i As Integer = 0 To m_lines.Length - 1
+                Dim line As LineSegment = m_lines(i)
+
+                line.A = New Point3D(line.A.X - center.X, line.A.Y - center.Y, line.A.Z - center.Z)
+                line.B = New Point3D(line.B.X - center.X, line.B.Y - center.Y, line.B.Z - center.Z)
+                m_lines(i) = line
+            Next
+
+            m_radius = RadiusWithLines(m_radius, center)
+            m_groundZ = LowestZ(m_surfaces, m_points, m_lines)
+            m_version += 1
+        End Sub
+
+        ''' <summary>
+        ''' drop the connection lines of the scene and keep the faces and the point
+        ''' cloud
+        ''' </summary>
+        Public Sub ClearLines()
+            If m_lines.Length = 0 Then
+                Return
+            End If
+
+            m_lines = New LineSegment() {}
             m_version += 1
         End Sub
 
@@ -347,9 +438,72 @@ Namespace Scene3D
         End Function
 
         ''' <summary>
+        ''' translate the connection lines so that they stay in the same model space
+        ''' when the centre of the primary geometry moves
+        ''' </summary>
+        ''' <remarks>
+        ''' the model space is "world - centre", so a line that is already expressed
+        ''' in the previous space has to be shifted by the change of the centre
+        ''' </remarks>
+        Private Sub TranslateLines(previous As Point3D, current As Point3D)
+            If m_lines.Length = 0 Then
+                Return
+            End If
+
+            Dim dx As Double = current.X - previous.X
+            Dim dy As Double = current.Y - previous.Y
+            Dim dz As Double = current.Z - previous.Z
+
+            If dx = 0 AndAlso dy = 0 AndAlso dz = 0 Then
+                Return
+            End If
+
+            For i As Integer = 0 To m_lines.Length - 1
+                Dim line As LineSegment = m_lines(i)
+
+                line.A = New Point3D(line.A.X - dx, line.A.Y - dy, line.A.Z - dz)
+                line.B = New Point3D(line.B.X - dx, line.B.Y - dy, line.B.Z - dz)
+                m_lines(i) = line
+            Next
+        End Sub
+
+        ''' <summary>
+        ''' grow the bounding radius so that it covers the end points of the
+        ''' connection lines as well
+        ''' </summary>
+        ''' <remarks>
+        ''' The radius is computed without allocating a point list: a connectome
+        ''' provides millions of lines, so the end points are walked in place.
+        ''' </remarks>
+        Private Function RadiusWithLines(radius As Double, center As Point3D) As Double
+            For i As Integer = 0 To m_lines.Length - 1
+                Dim line As LineSegment = m_lines(i)
+                Dim a As Double = Distance(line.A, center)
+                Dim b As Double = Distance(line.B, center)
+
+                If a > radius Then
+                    radius = a
+                End If
+                If b > radius Then
+                    radius = b
+                End If
+            Next
+
+            Return radius
+        End Function
+
+        Private Shared Function Distance(p As Point3D, center As Point3D) As Double
+            Dim dx As Double = p.X - center.X
+            Dim dy As Double = p.Y - center.Y
+            Dim dz As Double = p.Z - center.Z
+
+            Return std.Sqrt(dx * dx + dy * dy + dz * dz)
+        End Function
+
+        ''' <summary>
         ''' the lowest Z coordinate of all of the loaded geometry
         ''' </summary>
-        Private Function LowestZ(faces As Surface(), points As PointCloudPoint()) As Double
+        Private Function LowestZ(faces As Surface(), points As PointCloudPoint(), lines As LineSegment()) As Double
             Dim lowest As Double = Double.MaxValue
 
             For Each face As Surface In faces
@@ -363,6 +517,15 @@ Namespace Scene3D
             For Each p As PointCloudPoint In points
                 If p.Z < lowest Then
                     lowest = p.Z
+                End If
+            Next
+
+            For Each line As LineSegment In lines
+                If line.A.Z < lowest Then
+                    lowest = line.A.Z
+                End If
+                If line.B.Z < lowest Then
+                    lowest = line.B.Z
                 End If
             Next
 

@@ -41,6 +41,20 @@ struct PositionInput
     float3 position : POSITION;
 };
 
+// one end point of a connection line, every vertex carries its own color (see
+// the LineElements layout of Scene3DInputLayout, the stride is 16 bytes)
+struct LineInput
+{
+    float3 position : POSITION;
+    float4 color    : COLOR;
+};
+
+struct LineOutput
+{
+    float4 position : SV_POSITION;
+    float4 color    : COLOR;
+};
+
 struct PointInstanceInput
 {
     float3 position : POSITION;
@@ -101,6 +115,23 @@ float4 VS_Position(PositionInput input) : SV_POSITION
 float4 PS_Unlit(float4 position : SV_POSITION) : SV_TARGET
 {
     return unlitColor;
+}
+
+LineOutput VS_Line(LineInput input)
+{
+    LineOutput output;
+
+    output.position = mul(worldViewProj, float4(input.position, 1));
+    output.color = input.color;
+    return output;
+}
+
+// every line keeps its own color, so the unlit color of the constant buffer is
+// not used here: the connection lines are an overlay that is drawn as it was
+// provided (this is the very reason why the line channel exists)
+float4 PS_LineColor(LineOutput input) : SV_TARGET
+{
+    return input.color;
 }
 
 PointOutput VS_Point(PointInstanceInput instance, PointQuadInput quad)

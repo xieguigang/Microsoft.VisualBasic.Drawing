@@ -70,6 +70,26 @@ Namespace Scene3D
     End Structure
 
     ''' <summary>
+    ''' one end point of a connection line on the gpu: the position plus the color
+    ''' of the line itself.
+    ''' </summary>
+    ''' <remarks>
+    ''' Both end points of one line carry the same color, so a line list of these
+    ''' vertices draws a solid colored line. The size of this structure is the
+    ''' stride of <see cref="Scene3DInputLayout.LineStride"/>.
+    ''' </remarks>
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure LineVertex
+        Public X As Single
+        Public Y As Single
+        Public Z As Single
+        Public R As Byte
+        Public G As Byte
+        Public B As Byte
+        Public A As Byte
+    End Structure
+
+    ''' <summary>
     ''' The gpu mirror of the geometry of one <see cref="Scene"/>.
     ''' </summary>
     ''' <remarks>
@@ -93,6 +113,8 @@ Namespace Scene3D
         Private m_groundBuffer As IntPtr = IntPtr.Zero
         Private m_groundVertexCount As Integer = 0
         Private m_quadBuffer As IntPtr = IntPtr.Zero
+        Private m_lineBuffer As IntPtr = IntPtr.Zero
+        Private m_lineVertexCount As Integer = 0
         Private m_instanceBuffer As IntPtr = IntPtr.Zero
         Private m_instanceCount As Integer = 0
         Private m_paletteTexture As IntPtr = IntPtr.Zero
@@ -152,6 +174,7 @@ Namespace Scene3D
             Call BuildPalette(options)
             Call BuildSurfaces(scene)
             Call BuildGround(scene)
+            Call BuildLines(scene)
             Call BuildQuad()
 
             ' the point instances are only needed by the point cloud modes, so
@@ -195,6 +218,25 @@ Namespace Scene3D
         Friend ReadOnly Property GroundVertexCount As Integer
             Get
                 Return m_groundVertexCount
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the line list of the connection lines of the scene, two vertices per
+        ''' line
+        ''' </summary>
+        Friend ReadOnly Property LineBuffer As IntPtr
+            Get
+                Return m_lineBuffer
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the number of the vertices in <see cref="LineBuffer"/>
+        ''' </summary>
+        Friend ReadOnly Property LineVertexCount As Integer
+            Get
+                Return m_lineVertexCount
             End Get
         End Property
 
@@ -430,6 +472,59 @@ Namespace Scene3D
 
             m_groundVertexCount = lines.Count
             m_groundBuffer = CreateImmutableBuffer(lines.ToArray(), D3D11_BIND_FLAG.VERTEX_BUFFER)
+        End Sub
+
+        ''' <summary>
+        ''' build the vertex buffer of the connection lines of the scene
+        ''' </summary>
+        ''' <remarks>
+        ''' One line becomes two vertices of a line list and both vertices repeat
+        ''' the color of the line (see <see cref="LineSegment"/>). The array is
+        ''' allocated with its final size instead of being collected into a list
+        ''' first: a connectome of a whole brain provides millions of lines, so the
+        ''' doubling of the peak memory of a list plus a ToArray copy is worth
+        ''' avoiding here.
+        ''' The buffer is immutable like every other buffer of this class: the scene
+        ''' revision changes whenever the caller loads another set of lines, which
+        ''' rebuilds the whole geometry (see D3D11ScenePipeline.GeometryOf).
+        ''' </remarks>
+        Private Sub BuildLines(scene As Scene)
+            Dim lines As LineSegment() = scene.Lines
+            Dim n As Integer = If(lines Is Nothing, 0, lines.Length)
+
+            If n = 0 Then
+                Return
+            End If
+
+            Dim vertices(n * 2 - 1) As LineVertex
+
+            For i As Integer = 0 To n - 1
+                Dim line As LineSegment = lines(i)
+                Dim color As Color = If(line.Color.A = 0, LineSegment.DefaultColor, line.Color)
+                Dim head As Integer = i * 2
+
+                vertices(head) = New LineVertex With {
+                    .X = CSng(line.A.X),
+                    .Y = CSng(line.A.Y),
+                    .Z = CSng(line.A.Z),
+                    .R = color.R,
+                    .G = color.G,
+                    .B = color.B,
+                    .A = color.A
+                }
+                vertices(head + 1) = New LineVertex With {
+                    .X = CSng(line.B.X),
+                    .Y = CSng(line.B.Y),
+                    .Z = CSng(line.B.Z),
+                    .R = color.R,
+                    .G = color.G,
+                    .B = color.B,
+                    .A = color.A
+                }
+            Next
+
+            m_lineVertexCount = vertices.Length
+            m_lineBuffer = CreateImmutableBuffer(vertices, D3D11_BIND_FLAG.VERTEX_BUFFER)
         End Sub
 
         ''' <summary>
@@ -686,6 +781,7 @@ Namespace Scene3D
             Call ReleaseHandle(m_paletteTexture)
             Call ReleaseHandle(m_instanceBuffer)
             Call ReleaseHandle(m_quadBuffer)
+            Call ReleaseHandle(m_lineBuffer)
             Call ReleaseHandle(m_groundBuffer)
             Call ReleaseHandle(m_surfaceBuffer)
 
@@ -693,11 +789,13 @@ Namespace Scene3D
             m_paletteTexture = IntPtr.Zero
             m_instanceBuffer = IntPtr.Zero
             m_quadBuffer = IntPtr.Zero
+            m_lineBuffer = IntPtr.Zero
             m_groundBuffer = IntPtr.Zero
             m_surfaceBuffer = IntPtr.Zero
             m_instanceCount = 0
             m_surfaceVertexCount = 0
             m_groundVertexCount = 0
+            m_lineVertexCount = 0
             m_faceNormals = Nothing
         End Sub
 

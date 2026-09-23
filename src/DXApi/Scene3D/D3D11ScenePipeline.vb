@@ -27,6 +27,7 @@ Namespace Scene3D
         Private ReadOnly m_surfaceLayout As IntPtr
         Private ReadOnly m_positionLayout As IntPtr
         Private ReadOnly m_pointLayout As IntPtr
+        Private ReadOnly m_lineLayout As IntPtr
 
         Private ReadOnly m_surfaceVertex As IntPtr
         Private ReadOnly m_surfacePixel As IntPtr
@@ -34,6 +35,8 @@ Namespace Scene3D
         Private ReadOnly m_unlitPixel As IntPtr
         Private ReadOnly m_pointVertex As IntPtr
         Private ReadOnly m_pointPixel As IntPtr
+        Private ReadOnly m_lineVertex As IntPtr
+        Private ReadOnly m_linePixel As IntPtr
         Private ReadOnly m_blitVertex As IntPtr
         Private ReadOnly m_blitPixel As IntPtr
 
@@ -92,6 +95,8 @@ Namespace Scene3D
             Dim unlitPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryUnlitPixel, Scene3DShaders.PixelProfile)
             Dim pointVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointVertex, Scene3DShaders.VertexProfile)
             Dim pointPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointPixel, Scene3DShaders.PixelProfile)
+            Dim lineVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLineVertex, Scene3DShaders.VertexProfile)
+            Dim linePixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLinePixel, Scene3DShaders.PixelProfile)
             Dim blitVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryBlitVertex, Scene3DShaders.VertexProfile)
             Dim blitPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryBlitPixel, Scene3DShaders.PixelProfile)
 
@@ -101,12 +106,15 @@ Namespace Scene3D
             m_unlitPixel = CreatePixelShader(unlitPixelCode)
             m_pointVertex = CreateVertexShader(pointVertexCode)
             m_pointPixel = CreatePixelShader(pointPixelCode)
+            m_lineVertex = CreateVertexShader(lineVertexCode)
+            m_linePixel = CreatePixelShader(linePixelCode)
             m_blitVertex = CreateVertexShader(blitVertexCode)
             m_blitPixel = CreatePixelShader(blitPixelCode)
 
             m_surfaceLayout = CreateInputLayout(Scene3DInputLayout.SurfaceElements, surfaceVertexCode)
             m_positionLayout = CreateInputLayout(Scene3DInputLayout.PositionElements, positionVertexCode)
             m_pointLayout = CreateInputLayout(Scene3DInputLayout.PointElements, pointVertexCode)
+            m_lineLayout = CreateInputLayout(Scene3DInputLayout.LineElements, lineVertexCode)
 
             m_constantBuffer = CreateConstantBuffer(Marshal.SizeOf(GetType(SceneConstants)))
             m_sampler = CreateSampler()
@@ -327,6 +335,36 @@ Namespace Scene3D
             Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
             Call BindSingleBuffer(0, geometry.GroundBuffer, Scene3DInputLayout.PositionStride)
             Call context.Draw(CUInt(geometry.GroundVertexCount), 0UI)
+        End Sub
+
+        ''' <summary>
+        ''' draw the connection lines of the scene, every line keeps its own color
+        ''' </summary>
+        ''' <remarks>
+        ''' The lines are one line list that is drawn with depth writing, so they
+        ''' are occluded by the model exactly like the ground grid is. The width of
+        ''' a line is one pixel (``AntialiasedLineEnable`` is off in every
+        ''' rasterizer state), which keeps a connectome of millions of lines cheap
+        ''' to draw and matches the line width of the direct2d back end.
+        ''' </remarks>
+        Friend Sub DrawLines(geometry As GpuSceneGeometry)
+            If geometry.LineVertexCount = 0 Then
+                Return
+            End If
+
+            Dim context As ID3D11DeviceContext = m_device.Context
+
+            Call UploadConstants()
+
+            Call context.IASetPrimitiveTopology(CInt(D3D11_PRIMITIVE_TOPOLOGY.LINELIST))
+            Call context.IASetInputLayout(m_lineLayout)
+            Call context.VSSetShader(m_lineVertex, IntPtr.Zero, 0UI)
+            Call context.PSSetShader(m_linePixel, IntPtr.Zero, 0UI)
+            Call context.RSSetState(m_rasterSolid)
+            Call context.OMSetDepthStencilState(m_depthWrite, 0UI)
+            Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
+            Call BindSingleBuffer(0, geometry.LineBuffer, Scene3DInputLayout.LineStride)
+            Call context.Draw(CUInt(geometry.LineVertexCount), 0UI)
         End Sub
 
         ''' <summary>
@@ -800,12 +838,15 @@ Namespace Scene3D
             Call ReleaseHandle(m_constantBuffer)
             Call ReleaseHandle(m_blitPixel)
             Call ReleaseHandle(m_blitVertex)
+            Call ReleaseHandle(m_linePixel)
+            Call ReleaseHandle(m_lineVertex)
             Call ReleaseHandle(m_pointPixel)
             Call ReleaseHandle(m_pointVertex)
             Call ReleaseHandle(m_unlitPixel)
             Call ReleaseHandle(m_positionVertex)
             Call ReleaseHandle(m_surfacePixel)
             Call ReleaseHandle(m_surfaceVertex)
+            Call ReleaseHandle(m_lineLayout)
             Call ReleaseHandle(m_pointLayout)
             Call ReleaseHandle(m_positionLayout)
             Call ReleaseHandle(m_surfaceLayout)
