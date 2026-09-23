@@ -49,6 +49,20 @@ Namespace Scene3D
         Public Property GroundColor As Color = Color.Gray
 
         ''' <summary>
+        ''' draw the connection lines of the scene
+        ''' </summary>
+        ''' <remarks>
+        ''' The lines are an overlay: the point cloud of the neurons and the network
+        ''' graph of the connections are two views of the same data, so both can be
+        ''' shown at the same time.
+        ''' Toggling this option does not rebuild the gpu geometry (see
+        ''' <see cref="GeometrySignature"/>): a connectome of a whole brain uploads
+        ''' hundreds of megabytes of line vertices, a visibility switch must not pay
+        ''' that price again.
+        ''' </remarks>
+        Public Property ShowConnections As Boolean = True
+
+        ''' <summary>
         ''' the background color of the canvas
         ''' </summary>
         Public Property BackgroundColor As Color = Color.White
@@ -87,6 +101,7 @@ Namespace Scene3D
                 .UseEmbeddedColor = UseEmbeddedColor,
                 .ShowGround = ShowGround,
                 .GroundColor = GroundColor,
+                .ShowConnections = ShowConnections,
                 .BackgroundColor = BackgroundColor,
                 .MultisampleCount = MultisampleCount,
                 .CullBackFaces = CullBackFaces
