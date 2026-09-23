@@ -38,10 +38,10 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     ''' <summary>the slot of <c>IDXGISwapChain::ResizeBuffers</c></summary>
     Private Const SLOT_RESIZE_BUFFERS As Integer = 13
 
-    ''' <summary>
-    ''' the swap chain of a flip model canvas is rebuilt when the back buffers can
-    ''' not be resized in place
-    ''' </summary>
+    '
+    ' the swap chain of a flip model canvas is rebuilt when the back buffers can
+    ' not be resized in place
+    '
 
     ''' <summary>
     ''' the amount of the back buffers of the swap chain, a flip model swap
