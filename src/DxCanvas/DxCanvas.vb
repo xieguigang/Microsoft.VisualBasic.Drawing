@@ -372,9 +372,17 @@ Partial Public Class DxCanvas
                 Return
             End Try
 
-            ' an exception of the render handler is a caller bug and is not
-            ' swallowed here, the frame is only finished when it returns
-            RaiseEvent Render(Me, New DxRenderEventArgs(m_graphics, m_graphics.Size))
+            ' a render handler that throws must not leave the window without a
+            ' frame: the failure is recorded and the frame is still submitted,
+            ' so a broken handler degrades into a visible error message instead
+            ' of a permanently blank canvas
+            Dim handlerError As String = Nothing
+
+            Try
+                RaiseEvent Render(Me, New DxRenderEventArgs(m_graphics, m_graphics.Size))
+            Catch ex As Exception
+                handlerError = ex.Message
+            End Try
 
             If m_capturePending Then
                 m_capturePending = False
@@ -390,7 +398,7 @@ Partial Public Class DxCanvas
                     End If
 
                     m_captureResult = True
-                    m_lastError = Nothing
+                    m_lastError = handlerError
                 Catch ex As Exception
                     m_capturedImage = Nothing
                     m_lastError = ex.Message
@@ -400,7 +408,7 @@ Partial Public Class DxCanvas
                 Try
                     Call m_canvas.EndDraw()
 
-                    m_lastError = Nothing
+                    m_lastError = handlerError
                 Catch ex As Exception
                     m_lastError = ex.Message
                     Call ReleaseCanvas()

@@ -640,13 +640,16 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
 
         ' the background color of the base control is the single source of truth
         m_options.BackgroundColor = Me.BackgroundColor
-        Call m_lighting.ApplyTo(m_controller.Camera)
 
         Try
+            Call m_lighting.ApplyTo(m_controller.Camera)
+
+            ' the background is cleared first, so a failed scene render still
+            ' shows the background color instead of undefined back buffer content
+            Call canvas.Clear(Me.BackgroundColor)
+
             If m_scene.HasData Then
                 Call m_renderer.Render(canvas, m_scene, m_controller.Camera, m_options)
-            Else
-                Call canvas.Clear(Me.BackgroundColor)
             End If
 
             m_lastSceneError = Nothing
@@ -656,7 +659,18 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
             m_lastSceneError = ex.Message
         End Try
 
-        Call DrawDebugOverlay(canvas)
+        If Not m_showDebugOverlay Then
+            Return
+        End If
+
+        Try
+            Call DrawDebugOverlay(canvas)
+        Catch ex As Exception
+            ' a failure of the overlay must not abort the whole frame, so the
+            ' overlay is switched off and the reason is reported instead
+            m_showDebugOverlay = False
+            m_lastSceneError = "debug overlay disabled: " & ex.Message
+        End Try
     End Sub
 
     ''' <summary>

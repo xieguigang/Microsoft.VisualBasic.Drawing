@@ -157,7 +157,7 @@ Friend Module DWrite
     <ComImport>
     <Guid("53737037-6d14-410b-9bfe-0b182fb709a6")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Friend Interface IDWriteTextLayout
+    Public Interface IDWriteTextLayout
 
         ' slot 3 .. slot 27, the methods that are inherited from IDWriteTextFormat
         <PreserveSig> Function SetTextAlignment(alignment As Integer) As Integer
