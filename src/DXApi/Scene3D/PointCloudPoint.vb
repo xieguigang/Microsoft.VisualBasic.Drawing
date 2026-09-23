@@ -21,15 +21,21 @@ Namespace Scene3D
         ''' that the Z coordinate is used as the scalar value instead
         ''' </param>
         ''' <param name="color">optional per point color as an html color string</param>
+        ''' <param name="sizeScale">
+        ''' optional per point size factor (1 = the global point size); it is only
+        ''' honoured while the embedded per point colors are in use
+        ''' </param>
         Sub New(x As Double, y As Double, z As Double,
                 Optional intensity As Double = 0,
-                Optional color As String = Nothing)
+                Optional color As String = Nothing,
+                Optional sizeScale As Double = 0)
 
             Me.X = x
             Me.Y = y
             Me.Z = z
             Me.Intensity = intensity
             Me.Color = color
+            Me.SizeScale = sizeScale
         End Sub
 
         ''' <summary>X coordinate in the model space.</summary>
@@ -50,5 +56,22 @@ Namespace Scene3D
         ''' optional per point color as an html color string, for example ``#ff0000``
         ''' </summary>
         Public Property Color As String
+
+        ''' <summary>
+        ''' optional per point size factor, ``&lt;= 0`` means "use the global point size".
+        ''' </summary>
+        ''' <remarks>
+        ''' Per point sizes are for highlighting a subset of the cloud — for example
+        ''' the neurons that fired in the current frame of an activity replay, which
+        ''' should stand out from the resting cloud of a whole brain model.
+        ''' 
+        ''' The factor multiplies the global <c>options.PointSize</c> in the vertex
+        ''' shader. It is carried in the otherwise unused scalar slot of the point
+        ''' instance and therefore costs no extra vertex memory, but it is only
+        ''' readable while the point cloud is drawn with the embedded per point colors
+        ''' (that scalar slot doubles as the heat map value otherwise, which is what
+        ''' the palette lookup needs).
+        ''' </remarks>
+        Public Property SizeScale As Double
     End Structure
 End Namespace

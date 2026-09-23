@@ -161,7 +161,18 @@ PointOutput VS_Point(PointInstanceInput instance, PointQuadInput quad)
         heat = lightColor.a + (1 - lightColor.a) * max(0, dot(normalize(n), normalize(lightDirection.xyz)));
     }
 
-    clip.xy += quad.corner * shadingParams.x * viewportScale.xy * clip.w;
+    // Per point size factor (see PointCloudPoint.SizeScale). It has to live in a
+    // slot that stays free in the mode at hand: the embedded color mode never
+    // reads the heat value, the palette mode never reads the normal, so both
+    // modes can carry a per point size without extra vertex memory.
+    float scale = 1.0f;
+
+    if (shadingParams.y <= 0.5f)
+    {
+        scale = max(0.05f, shadingParams.w > 0.5f ? instance.heat : instance.normal.x);
+    }
+
+    clip.xy += quad.corner * shadingParams.x * scale * viewportScale.xy * clip.w;
     output.position = clip;
     output.heat = heat;
     output.color = instance.color;

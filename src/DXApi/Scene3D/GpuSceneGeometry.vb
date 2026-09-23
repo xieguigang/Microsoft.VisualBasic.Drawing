@@ -601,6 +601,11 @@ Namespace Scene3D
                         instance.G = color.G
                         instance.B = color.B
                         instance.A = CByte(alpha)
+
+                        ' the hand drawn point sizes are carried in the scalar slot,
+                        ' which the embedded color mode leaves unused; a factor of
+                        ' one keeps every existing caller at the global point size
+                        instance.Heat = CSng(If(p.SizeScale > 0, p.SizeScale, 1))
                     Else
                         ' a zero intensity falls back to the Z coordinate
                         Dim value As Double = If(p.Intensity <> 0, p.Intensity, p.Z)
@@ -613,6 +618,11 @@ Namespace Scene3D
                         End If
 
                         instance.Heat = CSng(t)
+
+                        ' the heat slot is taken by the palette lookup here, so the
+                        ' per point size travels in the normal slot instead
+                        ' (the palette mode never reads it)
+                        instance.NX = CSng(If(p.SizeScale > 0, p.SizeScale, 1))
                     End If
 
                     instances(i) = instance
