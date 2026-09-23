@@ -280,6 +280,14 @@ Namespace Scene3D
 
                 Call m_pipeline.DrawPoints(scene, geometry, options)
             End If
+
+            ' the connection lines are an overlay of the scene: they are drawn last
+            ' so that the whole graph stays visible on top of the point cloud of its
+            ' neurons (the point cloud itself is drawn without any depth relation,
+            ' see D3D11ScenePipeline.DrawPoints)
+            If scene.LineCount > 0 AndAlso options.ShowConnections Then
+                Call m_pipeline.DrawLines(geometry)
+            End If
         End Sub
 
         Private Sub EnsurePipeline(device As DxDevice)

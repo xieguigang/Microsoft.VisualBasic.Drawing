@@ -54,6 +54,16 @@ Namespace Scene3D
         ''' </summary>
         Public Const BrushCacheLimit As Integer = 8192
 
+        ''' <summary>
+        ''' the highest number of connection lines that this cpu based back end
+        ''' projects per frame, a denser graph is subsampled
+        ''' </summary>
+        ''' <remarks>
+        ''' every line of this back end costs one <c>DrawLine</c> call plus two point
+        ''' projections, a connectome of a whole brain provides millions of them.
+        ''' </remarks>
+        Public Const MaxProjectedLines As Integer = 50000
+
         Private ReadOnly m_brushCache As New Dictionary(Of Color, Brush)()
 
         ''' <summary>
@@ -106,6 +116,12 @@ Namespace Scene3D
             ElseIf scene.PointCount > 0 Then
                 Call DrawGround(canvas, scene, camera, options)
                 Call DrawPointCloud(canvas, scene, camera, options)
+            End If
+
+            ' the connection lines are an overlay of the scene, they are drawn
+            ' after the primary geometry just like the gpu back end draws them
+            If scene.LineCount > 0 AndAlso options.ShowConnections Then
+                Call DrawConnections(canvas, scene, camera)
             End If
         End Sub
 
@@ -449,6 +465,58 @@ Namespace Scene3D
 
             Return camera.AmbientStrength + (1 - camera.AmbientStrength) * diffuse
         End Function
+
+        ''' <summary>
+        ''' draw the connection lines of the scene
+        ''' </summary>
+        ''' <remarks>
+        ''' This is the slow path by nature: one ``DrawLine`` call and two point
+        ''' projections per connection, while the gpu back end draws the whole graph
+        ''' with a single line list draw call. The lines are therefore subsampled
+        ''' when there are more than <see cref="MaxProjectedLines"/> of them, so a
+        ''' connectome of millions of connections cannot freeze the user interface
+        ''' while the fallback is active (the shape of the graph stays readable, the
+        ''' density is only reduced). The pens are cached per color: a graph colors
+        ''' its connections by kind, so the number of distinct colors stays small.
+        ''' </remarks>
+        Private Sub DrawConnections(canvas As IGraphics, scene As Scene, camera As Camera)
+            Dim lines As LineSegment() = scene.Lines
+            Dim n As Integer = If(lines Is Nothing, 0, lines.Length)
+
+            If n = 0 Then
+                Return
+            End If
+
+            Dim stride As Integer = 1
+
+            If n > MaxProjectedLines Then
+                stride = CInt(std.Ceiling(n / CDbl(MaxProjectedLines)))
+            End If
+
+            Dim pens As New Dictionary(Of Color, Pen)()
+
+            Try
+                For i As Integer = 0 To n - 1 Step stride
+                    Dim line As LineSegment = lines(i)
+                    Dim color As Color = If(line.Color.A = 0, LineSegment.DefaultColor, line.Color)
+                    Dim pen As Pen = Nothing
+
+                    If Not pens.TryGetValue(color, pen) Then
+                        pen = New Pen(color, 1)
+                        pens(color) = pen
+                    End If
+
+                    Dim a As PointF = ToScreen(camera, line.A)
+                    Dim b As PointF = ToScreen(camera, line.B)
+
+                    Call canvas.DrawLine(pen, a.X, a.Y, b.X, b.Y)
+                Next
+            Finally
+                For Each pen As Pen In pens.Values
+                    pen.Dispose()
+                Next
+            End Try
+        End Sub
 
         ''' <summary>
         ''' rotate and project a single point onto the screen coordinates
