@@ -522,7 +522,8 @@ Partial Class FormMain
         ' 
         AutoScaleDimensions = New SizeF(7.0F, 15.0F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(921, 553)
+        ClientSize = New Size(1180, 660)
+        MinimumSize = New Size(900, 520)
         Controls.Add(toolStrip)
         Controls.Add(canvas)
         Controls.Add(lightPanel)
