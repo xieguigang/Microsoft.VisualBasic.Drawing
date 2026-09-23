@@ -22,15 +22,19 @@ Namespace Scene3D
     '''
     ''' The .net matrix convention is the row vector one (``result = v * M``),
     ''' so the world view projection matrix is ``rotation * projection``.
-    ''' <see cref="WorldViewProjection"/> and <see cref="Rotation"/> are already
-    ''' transposed for the hlsl compiler: they can be uploaded as they are and
-    ''' used through the classic ``mul(matrix, vector)`` form with the default
-    ''' column major packing of the shader constants.
+    '''
+    ''' The matrices of this class are uploaded into the constant buffer as they
+    ''' are, and the shader applies them through ``mul(m, v)`` with the default
+    ''' column major packing, which matches the row vector transform exactly.
+    ''' Note that the opposite - transposing the matrix before the upload - is
+    ''' the classic trap here: the transpose would move the w row of the pseudo
+    ''' perspective into the depth row and the image would only look "almost"
+    ''' right while every depth value is wrong.
     ''' </remarks>
     Public NotInheritable Class SceneTransform
 
         ''' <summary>
-        ''' the rotation of the camera, transposed for the shader.
+        ''' the rotation of the camera, ready for the constant buffer
         ''' </summary>
         ''' <remarks>
         ''' the shader rotates the face normal of a model with this matrix, this
@@ -46,7 +50,7 @@ Namespace Scene3D
         Public ReadOnly Property Projection As Matrix4x4
 
         ''' <summary>
-        ''' ``rotation * projection``, transposed for the shader.
+        ''' ``rotation * projection``, ready for the constant buffer
         ''' </summary>
         Public ReadOnly Property WorldViewProjection As Matrix4x4
 
@@ -73,9 +77,9 @@ Namespace Scene3D
         Public ReadOnly Property PixelScaleY As Single
 
         Private Sub New(rotation As Matrix4x4, projection As Matrix4x4, nearPlane As Double, screenSize As Size)
-            _Rotation = Matrix4x4.Transpose(rotation)
+            _Rotation = rotation
             _Projection = projection
-            _WorldViewProjection = Matrix4x4.Transpose(Matrix4x4.Multiply(rotation, projection))
+            _WorldViewProjection = Matrix4x4.Multiply(rotation, projection)
             _NearPlane = nearPlane
             _ScreenSize = screenSize
             _PixelScaleX = CSng(2.0 / std.Max(screenSize.Width, 1))

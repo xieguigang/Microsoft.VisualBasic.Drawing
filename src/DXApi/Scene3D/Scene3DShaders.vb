@@ -9,17 +9,21 @@ Namespace Scene3D
     ''' is the layout of the ``SceneConstants`` constant buffer of the hlsl code.
     ''' </summary>
     ''' <remarks>
-    ''' The two matrices are stored already transposed (see
-    ''' <see cref="SceneTransform"/>), so the shader can use the classic
-    ''' ``mul(matrix, vector)`` form with the default column major packing.
-    ''' The size of this structure is 208 bytes, a multiple of the 16 byte
+    ''' The two matrices are uploaded exactly as the managed ``System.Numerics``
+    ''' row vector matrices are stored (the translation of a matrix lives in its
+    ''' fourth row, like ``Vector4.Transform`` expects it). A constant buffer of
+    ''' a ``float4x4`` is packed column major by default, which reads such a row
+    ''' vector matrix correctly through the ``mul(matrix, vector)`` form of the
+    ''' shader: the two conventions cancel out. Do not transpose the matrices on
+    ''' the way in, that would only swap the w row with the depth row.
+    ''' The size of this structure is 224 bytes, a multiple of the 16 byte
     ''' alignment that a constant buffer requires.
     ''' </remarks>
     <StructLayout(LayoutKind.Sequential)>
     Friend Structure SceneConstants
-        ''' <summary>``rotation * projection``, transposed</summary>
+        ''' <summary>``rotation * projection``</summary>
         Public WorldViewProjection As Matrix4x4
-        ''' <summary>the rotation of the camera, transposed</summary>
+        ''' <summary>the rotation of the camera</summary>
         Public WorldRotation As Matrix4x4
         ''' <summary>xyz = the unit vector that points towards the light source</summary>
         Public LightDirection As Vector4
