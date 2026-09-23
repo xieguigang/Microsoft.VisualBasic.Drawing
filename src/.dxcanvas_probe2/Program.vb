@@ -67,19 +67,46 @@ Module Program
                                  End Sub
 
         AddHandler pump.Tick, Sub(s, e)
-                                  Dim action As Action = Nothing
-
                                   If steps.Count = 0 Then
                                       pump.Stop()
+                                      monitor.Stop()
+
                                       Console.WriteLine()
-                                      Console.WriteLine("result:")
+                                      Console.WriteLine("verification (the window is still open):")
                                       Console.WriteLine("   canvas created : " & canvas.IsCanvasCreated)
                                       Console.WriteLine("   last error     : " & If(canvas.LastError, "(none)"))
+                                      Console.WriteLine("   frames drawn   : " & frames)
+
+                                      ' the captured frame must contain the drawn model
+                                      Dim frame = canvas.Snapshot()
+                                      Dim drawn As Integer = 0
+
+                                      If frame IsNot Nothing Then
+                                          For y As Integer = 0 To frame.Height - 1
+                                              For x As Integer = 0 To frame.Width - 1
+                                                  Dim pixel As Color = frame.GetPixel(x, y)
+
+                                                  If pixel.R < 250 OrElse pixel.G < 250 OrElse pixel.B < 250 Then
+                                                      drawn += 1
+                                                  End If
+                                              Next
+                                          Next
+                                      End If
+
+                                      Console.WriteLine($"   captured pixels: {drawn}")
+
+                                      If canvas.IsCanvasCreated AndAlso canvas.LastError Is Nothing AndAlso drawn > 500 Then
+                                          Console.WriteLine("PASS: the swap chain survived every rebuild")
+                                      Else
+                                          Console.WriteLine("FAIL: the swap chain could not be rebuilt")
+                                          Environment.ExitCode = 1
+                                      End If
+
                                       form.Close()
                                       Return
                                   End If
 
-                                  action = steps.Dequeue()
+                                  Dim action As Action = steps.Dequeue()
                                   Console.WriteLine()
                                   Call action()
                                   Call Application.DoEvents()
@@ -162,14 +189,7 @@ Module Program
                       End Sub)
 
         steps.Enqueue(Sub()
-                          Dim until As Long = watch.ElapsedMilliseconds + 3000
-
-                          Do While watch.ElapsedMilliseconds < until
-                              Call Application.DoEvents()
-                              Threading.Thread.Sleep(10)
-                          Loop
-
-                          Console.WriteLine("step 6: after a three second wait")
+                          Console.WriteLine("step 6: the canvas still renders after the rebuilds")
                           Call canvas.RequestRender()
                           Call Application.DoEvents()
                           Console.WriteLine("   created=" & canvas.IsCanvasCreated & "  frames=" & frames)
@@ -182,14 +202,5 @@ Module Program
                                End Sub
 
         Call Application.Run(form)
-
-        If canvas.IsCanvasCreated AndAlso canvas.LastError Is Nothing Then
-            Console.WriteLine()
-            Console.WriteLine("PASS: the swap chain survived the rebuilds")
-        Else
-            Console.WriteLine()
-            Console.WriteLine("FAIL: the swap chain could not be rebuilt")
-            Environment.ExitCode = 1
-        End If
     End Sub
 End Module

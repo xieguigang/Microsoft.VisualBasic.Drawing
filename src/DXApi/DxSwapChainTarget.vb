@@ -39,6 +39,11 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     Private Const SLOT_RESIZE_BUFFERS As Integer = 13
 
     ''' <summary>
+    ''' the swap chain of a flip model canvas is rebuilt when the back buffers can
+    ''' not be resized in place
+    ''' </summary>
+
+    ''' <summary>
     ''' the amount of the back buffers of the swap chain, a flip model swap
     ''' chain requires at least two of them.
     ''' </summary>
@@ -372,6 +377,14 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
     ''' resize the back buffers of the swap chain, a failure is reported instead
     ''' of being thrown so that the caller can rebuild the whole chain
     ''' </summary>
+    ''' <remarks>
+    ''' A flip model swap chain rejects <c>IDXGISwapChain::ResizeBuffers</c> with
+    ''' ``DXGI_ERROR_INVALID_CALL`` while any direct or indirect reference to one
+    ''' of its back buffers is still alive. The references that the direct2d and
+    ''' d3d11 device context keep are not fully under the control of this class,
+    ''' so the resize is only attempted here and the caller rebuilds the whole
+    ''' swap chain when it does not succeed.
+    ''' </remarks>
     Private Function TryResizeBuffers(width As Integer, height As Integer) As Boolean
         If resizeBuffersApi Is Nothing Then
             Return False
@@ -379,7 +392,7 @@ Friend Class DxSwapChainTarget : Inherits DxRenderSurface
 
         Dim hr As Integer = resizeBuffersApi(
             swapChain,
-            0UI,
+            BACK_BUFFER_COUNT,
             CUInt(width),
             CUInt(height),
             DXGI_FORMAT.UNKNOWN,

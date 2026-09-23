@@ -298,6 +298,16 @@ Partial Public Class DxCanvas
         Call StopCanvasRetry()
         Call ReleaseCanvas()
         Call MyBase.OnHandleDestroyed(e)
+
+        ' the released canvas was bound to the window that has just been
+        ' destroyed, so a new canvas has to be built for the new handle: a fresh
+        ' attempt is scheduled here because winforms does not necessarily send
+        ' another paint request for the recreated window
+        If Not IsDisposed Then
+            m_canvasRetry = 0
+
+            Call ScheduleCanvasRetry()
+        End If
     End Sub
 
     ''' <summary>
@@ -324,8 +334,20 @@ Partial Public Class DxCanvas
             Try
                 Call m_canvas.Resize(ClientSize.Width, ClientSize.Height)
             Catch ex As Exception
-                m_lastError = ex.Message
+                ' the back buffers of a flip model swap chain can not always be
+                ' resized in place, and dxgi keeps the released chain bound to
+                ' its window, so the canvas is rebuilt on a fresh window handle
+                ' by the retry of the control
+                If String.IsNullOrEmpty(m_lastError) Then
+                    m_lastError = ex.Message
+                End If
+
                 Call ReleaseCanvas()
+
+                m_needsFreshHandle = True
+                m_canvasRetry = FreshHandleRetryCount
+
+                Call ScheduleCanvasRetry()
             End Try
         Else
             ' the control has a usable size again, so the creation is worth
@@ -461,6 +483,7 @@ Partial Public Class DxCanvas
             m_graphics = m_canvas.Graphics
             m_lastError = Nothing
             m_canvasRetry = 0
+            m_needsFreshHandle = False
 
             Call StopCanvasRetry()
 
