@@ -1063,8 +1063,8 @@ Global
 		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.NPSearch|x86.Build.0 = Debug|Any CPU
 		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|Any CPU.Build.0 = Release|Any CPU
-		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|x64.ActiveCfg = Release|Any CPU
-		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|x64.Build.0 = Release|Any CPU
+		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|x64.ActiveCfg = Release|x64
+		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|x64.Build.0 = Release|x64
 		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|x86.ActiveCfg = Release|Any CPU
 		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.nuget_release|x86.Build.0 = Release|Any CPU
 		{7D818E78-BF37-4031-AD21-988ACB0F5EDC}.PlantMAT|Any CPU.ActiveCfg = Release|Any CPU
