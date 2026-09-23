@@ -249,8 +249,23 @@ Friend Class DxBrushCache : Implements IDisposable
     End Function
 
     ''' <summary>
+    ''' the vtable slot of <c>IDWriteTextLayout::GetMetrics</c>: the 25 methods of
+    ''' <see cref="IDWriteTextFormat"/> occupy slot 3 to slot 27, and the layout
+    ''' adds 32 more methods before its metrics getter
+    ''' </summary>
+    Private Const SLOT_GET_METRICS As Integer = 60
+
+    <UnmanagedFunctionPointer(CallingConvention.StdCall)>
+    Private Delegate Function GetMetricsFn(instance As IntPtr, ByRef metrics As DWRITE_TEXT_METRICS) As Integer
+
+    ''' <summary>
     ''' measure the text size through the directwrite text layout api
     ''' </summary>
+    ''' <remarks>
+    ''' The text layout object can not be wrapped into a typed runtime callable
+    ''' wrapper (the cast of <see cref="Marshal.GetTypedObjectForIUnknown(IntPtr, Type)"/>
+    ''' fails for it), so its metrics are read through the raw vtable slot instead.
+    ''' </remarks>
     Friend Function MeasureText(text As String, font As Font, Optional maxWidth As Single = 1.0E+07F) As SizeF
         If String.IsNullOrEmpty(text) Then
             Return SizeF.Empty
@@ -264,16 +279,17 @@ Friend Class DxBrushCache : Implements IDisposable
             "IDWriteFactory::CreateTextLayout"
         )
 
-        Dim layout As IDWriteTextLayout = ComObject(Of IDWriteTextLayout)(layoutPtr)
-
         Try
+            Dim getMetrics As GetMetricsFn = ResolveVtable(Of GetMetricsFn)(layoutPtr, SLOT_GET_METRICS)
             Dim metrics As DWRITE_TEXT_METRICS
 
-            Call ThrowIfFailed(layout.GetMetrics(metrics), "IDWriteTextLayout::GetMetrics")
+            Call ThrowIfFailed(getMetrics(layoutPtr, metrics), "IDWriteTextLayout::GetMetrics")
 
             Return New SizeF(metrics.width, metrics.height)
         Finally
-            Call SafeRelease(layout)
+            ' the create call hands out one reference of the layout object that
+            ' this method owns
+            Call Marshal.Release(layoutPtr)
         End Try
     End Function
 

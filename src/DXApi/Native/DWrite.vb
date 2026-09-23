@@ -84,14 +84,20 @@ Friend Module DWrite
 
     End Module
 
+    ''' <summary>
+    ''' the metrics of a text layout, the field order follows ``DWRITE_TEXT_METRICS``
+    ''' </summary>
+    ''' <remarks>
+    ''' the binary layout of this structure must match the native declaration
+    ''' exactly: the metrics are read as a whole block through the raw com vtable
+    ''' </remarks>
     <StructLayout(LayoutKind.Sequential)>
     Friend Structure DWRITE_TEXT_METRICS
         Public left As Single
         Public top As Single
         Public width As Single
-        Public height As Single
         Public widthIncludingTrailingWhitespace As Single
-        Public heightIncludingTrailingWhitespace As Single
+        Public height As Single
         Public layoutWidth As Single
         Public layoutHeight As Single
         Public maxBidiReorderingDepth As UInteger
@@ -157,7 +163,7 @@ Friend Module DWrite
     <ComImport>
     <Guid("53737037-6d14-410b-9bfe-0b182fb709a6")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
-    Public Interface IDWriteTextLayout
+    Friend Interface IDWriteTextLayout
 
         ' slot 3 .. slot 27, the methods that are inherited from IDWriteTextFormat
         <PreserveSig> Function SetTextAlignment(alignment As Integer) As Integer

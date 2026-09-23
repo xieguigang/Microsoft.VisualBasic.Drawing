@@ -104,6 +104,29 @@ Imports std = System.Math
             Return DirectCast(Marshal.GetTypedObjectForIUnknown(raw, GetType(T)), T)
         End Function
 
+        ''' <summary>
+        ''' Resolve one vtable slot of a raw com interface pointer as a delegate.
+        ''' </summary>
+        ''' <remarks>
+        ''' Some api hand out an object whose interface can not be wrapped by
+        ''' <see cref="Marshal.GetTypedObjectForIUnknown(IntPtr, Type)"/> - a
+        ''' directwrite text layout for example - so such a call is dispatched
+        ''' through the raw vtable slot instead.
+        '''
+        ''' The returned delegate must be kept alive as long as it is used: it is
+        ''' only valid while the interface pointer is alive.
+        ''' </remarks>
+        Friend Function ResolveVtable(Of TDelegate As Class)(instance As IntPtr, slot As Integer) As TDelegate
+            If instance = IntPtr.Zero Then
+                Throw New ArgumentNullException(NameOf(instance), "a com interface pointer is required to resolve a vtable slot")
+            End If
+
+            Dim vtable As IntPtr = Marshal.ReadIntPtr(instance)
+            Dim entry As IntPtr = Marshal.ReadIntPtr(vtable, slot * IntPtr.Size)
+
+            Return Marshal.GetDelegateForFunctionPointer(Of TDelegate)(entry)
+        End Function
+
         <MethodImpl(MethodImplOptions.AggressiveInlining)>
         Friend Function ToColorF(color As Color) As D2D1_COLOR_F
             Return New D2D1_COLOR_F With {
