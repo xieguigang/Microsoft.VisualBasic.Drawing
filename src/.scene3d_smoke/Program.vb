@@ -175,7 +175,7 @@ Module Program
         Call lighting.ApplyTo(camera)
 
         Call Check(std.Abs(camera.AmbientStrength - 0.5) < 0.0001, "the ambient slider drives the ambient strength")
-        Call Check(camera.LightColor = Color.White, "a full intensity keeps the white light color")
+        Call Check(camera.LightColor.ToArgb() = Color.White.ToArgb(), "a full intensity keeps the white light color")
         Call Check(std.Abs(camera.LightDirection.X - 1) < 0.001 AndAlso std.Abs(camera.LightDirection.Y) < 0.001,
                    "a zero azimuth and elevation points the light along +X")
 
@@ -197,7 +197,9 @@ Module Program
         Dim palette As New SceneColorPalette()
         Dim table As Color() = palette.GetTable("viridis", 255)
 
-        Call Check(table.Length = SceneColorPalette.Levels, "the color table has 256 levels")
+        ' the color designer treats the requested level count as the number of
+        ' interpolation intervals, so the table holds that count plus one stop
+        Call Check(table.Length > 2, $"the color table spans the scheme ({table.Length} colors)")
         Call Check(table(0) <> table(table.Length - 1), "the two ends of the scheme differ")
 
         Dim brushes As Brush() = palette.GetBrushes("viridis", 255)

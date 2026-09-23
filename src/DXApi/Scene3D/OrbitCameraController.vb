@@ -55,6 +55,12 @@ Namespace Scene3D
         ''' </summary>
         Public Property MinViewDistance As Single = 1.0F
 
+        ''' <summary>
+        ''' the view distance that a fresh camera of this controller starts with,
+        ''' <see cref="Scene.FitView"/> recomputes it for a loaded model
+        ''' </summary>
+        Public Property DefaultViewDistance As Single = 100.0F
+
         Private ReadOnly m_buttons As New HashSet(Of SceneMouseButton)()
         Private m_lastX As Integer = 0
         Private m_lastY As Integer = 0
@@ -77,6 +83,7 @@ Namespace Scene3D
                 .AngleX = Scene.DefaultAngleX
                 .AngleY = Scene.DefaultAngleY
                 .AngleZ = Scene.DefaultAngleZ
+                .ViewDistance = Me.DefaultViewDistance
                 .FieldOfView = 256
                 .Offset = New PointF(0, 0)
                 .Screen = New Size(800, 600)
