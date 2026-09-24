@@ -104,11 +104,13 @@ Namespace Scene3D
 
             If embedded.TryGetValue(htmlColor, brush) Then
                 Return brush
+            Else
+                Dim color As Color = htmlColor.TranslateColor(throwEx:=False)
+                brush = New SolidBrush(color)
+                SyncLock embedded
+                    embedded(htmlColor) = brush
+                End SyncLock
             End If
-
-            Dim color As Color = htmlColor.TranslateColor(throwEx:=False)
-            brush = New SolidBrush(color)
-            embedded(htmlColor) = brush
 
             Return brush
         End Function

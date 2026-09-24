@@ -625,9 +625,13 @@ Public Class DxGraphics : Inherits IGraphics
         m_released = True
 
         Try
-            Call batch.Flush()
+            If Not batch Is Nothing Then
+                Call batch.Flush()
+            End If
+
             Call PopAllClips()
-        Catch
+        Catch ex As Exception
+            Call App.LogException(ex)
         End Try
 
         ' the batch and the brush cache are pure managed wrappers, so they
