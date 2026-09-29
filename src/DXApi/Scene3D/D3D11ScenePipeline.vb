@@ -48,6 +48,7 @@ Namespace Scene3D
 
         Private ReadOnly m_blendAlpha As IntPtr
         Private ReadOnly m_depthWrite As IntPtr
+        Private ReadOnly m_depthTestNoWrite As IntPtr
         Private ReadOnly m_depthDisabled As IntPtr
 
         Private ReadOnly m_rasterSolid As IntPtr
@@ -134,7 +135,8 @@ Namespace Scene3D
             m_sampler = CreateSampler()
             m_blendAlpha = CreateBlendState()
             m_depthWrite = CreateDepthStencilState(True)
-            m_depthDisabled = CreateDepthStencilState(False)
+            m_depthTestNoWrite = CreateDepthStencilState(True, False)
+            m_depthDisabled = CreateDepthStencilState(False, False)
             m_rasterSolid = CreateRasterizerState(D3D11_FILL_MODE.SOLID, D3D11_CULL_MODE.NONE)
             m_rasterSolidCulled = CreateRasterizerState(D3D11_FILL_MODE.SOLID, D3D11_CULL_MODE.BACK)
             m_rasterWireframe = CreateRasterizerState(D3D11_FILL_MODE.WIREFRAME, D3D11_CULL_MODE.NONE)
@@ -301,10 +303,11 @@ Namespace Scene3D
             m_constants.HeatParams = New Vector4(heatRange.X, heatRange.Y, 0, 0)
 
             ' the world space edge lengths of the voxel cubes of the cube point
-            ' shape (the quad point shape ignores them)
+            ' shape (the quad point shape ignores them), w carries the global
+            ' opacity of the cubes
             Dim edge As Vector3 = options.CubeEdge
 
-            m_constants.PointParams = New Vector4(edge.X, edge.Y, edge.Z, 0)
+            m_constants.PointParams = New Vector4(edge.X, edge.Y, edge.Z, options.PointOpacity)
         End Sub
 
         ''' <summary>
@@ -479,8 +482,13 @@ Namespace Scene3D
 
             ' the depth buffer is what turns the point cloud into a solid volume:
             ' the nearest cube surface wins and the faces of the far side of the
-            ' volume are hidden behind it
-            Call context.OMSetDepthStencilState(m_depthWrite, 0UI)
+            ' volume are hidden behind it. A semi transparent volume keeps the
+            ' depth test (the hidden sides of a cube must not paint over its
+            ' visible ones) but stops writing depth, so the cubes blend over
+            ' the rest of the volume that stands behind them.
+            Dim transparent As Boolean = options.PointOpacity < 0.999F
+
+            Call context.OMSetDepthStencilState(If(transparent, m_depthTestNoWrite, m_depthWrite), 0UI)
             Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
 
             Call BindVertexBuffers(geometry.CubeBuffer, Scene3DInputLayout.CubeStride,
@@ -953,11 +961,11 @@ Namespace Scene3D
         ''' the depth test of the faces, the nearest face wins which is what the
         ''' painter's algorithm of the cpu approximates by sorting the faces
         ''' </summary>
-        Private Function CreateDepthStencilState(depthEnabled As Boolean) As IntPtr
+        Private Function CreateDepthStencilState(depthTest As Boolean, Optional depthWrite As Boolean = True) As IntPtr
             Dim state As IntPtr = IntPtr.Zero
             Dim desc As New D3D11_DEPTH_STENCIL_DESC With {
-                .DepthEnable = If(depthEnabled, 1, 0),
-                .DepthWriteMask = If(depthEnabled, CInt(D3D11_DEPTH_WRITE_MASK.ALL), CInt(D3D11_DEPTH_WRITE_MASK.ZERO)),
+                .DepthEnable = If(depthTest, 1, 0),
+                .DepthWriteMask = If(depthTest AndAlso depthWrite, CInt(D3D11_DEPTH_WRITE_MASK.ALL), CInt(D3D11_DEPTH_WRITE_MASK.ZERO)),
                 .DepthFunc = CInt(D3D11_COMPARISON_FUNC.LESS),
                 .StencilEnable = 0,
                 .StencilReadMask = &HFF,

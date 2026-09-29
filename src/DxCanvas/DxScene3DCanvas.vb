@@ -627,6 +627,29 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     End Property
 
     ''' <summary>
+    ''' the global opacity of the voxel cubes, one means opaque and a lower
+    ''' value blends the volume semi transparent over the scene behind it
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(1.0F)>
+    <Description("the global opacity of the voxel cubes, 0..1")>
+    Public Property PointOpacity As Single
+        Get
+            Return m_options.PointOpacity
+        End Get
+        Set(value As Single)
+            value = std.Max(0.0F, std.Min(1.0F, value))
+
+            If Math.Abs(m_options.PointOpacity - value) < 0.001F Then
+                Return
+            End If
+
+            m_options.PointOpacity = value
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
     ''' draw the screen space grid onto the background of the canvas, the grid
     ''' is not part of the 3d scene and never moves with the camera
     ''' </summary>

@@ -132,7 +132,12 @@ float4 PS_VoxelCube(SurfaceOutput input) : SV_TARGET
     float diffuse = max(0, dot(normalize(lit), normalize(lightDirection.xyz)));
     float factor = lightColor.a + (1 - lightColor.a) * diffuse;
 
-    return float4(input.color.rgb * factor, input.color.a);
+    // the global opacity of the voxel cubes travels in the w component of
+    // pointParams (xyz carry the world space edge lengths), one keeps the
+    // embedded alpha of the point color untouched
+    float alpha = input.color.a * pointParams.w;
+
+    return float4(input.color.rgb * factor, alpha);
 }
 
 float4 VS_Position(PositionInput input) : SV_POSITION

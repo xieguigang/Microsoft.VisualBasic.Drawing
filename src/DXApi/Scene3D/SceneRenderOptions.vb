@@ -61,6 +61,13 @@ Namespace Scene3D
         Public Property UseEmbeddedColor As Boolean = False
 
         ''' <summary>
+        ''' the global opacity of the voxel cubes of the cube point shape, in
+        ''' the range [0, 1]; one means opaque, a lower value blends the cubes
+        ''' semi transparent over the scene behind them
+        ''' </summary>
+        Public Property PointOpacity As Single = 1.0F
+
+        ''' <summary>
         ''' draw the ground grid below the model
         ''' </summary>
         Public Property ShowGround As Boolean = True
@@ -154,6 +161,7 @@ Namespace Scene3D
                 .PointSize = PointSize,
                 .PointAlpha = PointAlpha,
                 .UseEmbeddedColor = UseEmbeddedColor,
+                .PointOpacity = PointOpacity,
                 .ShowGround = ShowGround,
                 .GroundColor = GroundColor,
                 .ShowConnections = ShowConnections,
