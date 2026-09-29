@@ -70,6 +70,26 @@ Namespace Scene3D
     End Structure
 
     ''' <summary>
+    ''' one corner of the unit cube that one point of the cloud is expanded into
+    ''' by the cube mode: the corner offset (half edges, plus and minus one
+    ''' half) and the normal of the cube face that the corner belongs to. The
+    ''' offset is scaled by the per frame cube edge lengths of the options.
+    ''' </summary>
+    ''' <remarks>
+    ''' The size of this structure is the stride of
+    ''' <see cref="Scene3DInputLayout.CubeStride"/>.
+    ''' </remarks>
+    <StructLayout(LayoutKind.Sequential)>
+    Friend Structure CubeCorner
+        Public X As Single
+        Public Y As Single
+        Public Z As Single
+        Public NX As Single
+        Public NY As Single
+        Public NZ As Single
+    End Structure
+
+    ''' <summary>
     ''' one end point of a connection line on the gpu: the position plus the color
     ''' of the line itself.
     ''' </summary>
@@ -113,6 +133,7 @@ Namespace Scene3D
         Private m_groundBuffer As IntPtr = IntPtr.Zero
         Private m_groundVertexCount As Integer = 0
         Private m_quadBuffer As IntPtr = IntPtr.Zero
+        Private m_cubeBuffer As IntPtr = IntPtr.Zero
         Private m_lineBuffer As IntPtr = IntPtr.Zero
         Private m_lineVertexCount As Integer = 0
         Private m_instanceBuffer As IntPtr = IntPtr.Zero
@@ -176,6 +197,7 @@ Namespace Scene3D
             Call BuildGround(scene)
             Call BuildLines(scene)
             Call BuildQuad()
+            Call BuildCube()
 
             ' the point instances are only needed by the point cloud modes, so
             ' they are built when they are requested the first time
@@ -246,6 +268,16 @@ Namespace Scene3D
         Friend ReadOnly Property QuadBuffer As IntPtr
             Get
                 Return m_quadBuffer
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the 36 corners of the unit cube (twelve triangles) that every point
+        ''' is expanded into by the cube mode of the point cloud
+        ''' </summary>
+        Friend ReadOnly Property CubeBuffer As IntPtr
+            Get
+                Return m_cubeBuffer
             End Get
         End Property
 
@@ -544,6 +576,110 @@ Namespace Scene3D
         End Sub
 
         ''' <summary>
+        ''' build the unit cube that every point is expanded into by the cube
+        ''' mode of the point cloud: twelve triangles, two per face, each corner
+        ''' carries the offset (half edges) and the normal of its face
+        ''' </summary>
+        ''' <remarks>
+        ''' The vertex shader scales the offsets with the per frame cube edge
+        ''' lengths of the options, so the buffer never has to be rebuilt when
+        ''' the voxel size changes.
+        ''' </remarks>
+        Private Sub BuildCube()
+            Dim half As Single = 0.5F
+            Dim faces(5) As CubeFace
+
+            faces(0) = New CubeFace With {.NX = 1, .NY = 0, .NZ = 0}
+            faces(1) = New CubeFace With {.NX = -1, .NY = 0, .NZ = 0}
+            faces(2) = New CubeFace With {.NX = 0, .NY = 1, .NZ = 0}
+            faces(3) = New CubeFace With {.NX = 0, .NY = -1, .NZ = 0}
+            faces(4) = New CubeFace With {.NX = 0, .NY = 0, .NZ = 1}
+            faces(5) = New CubeFace With {.NX = 0, .NY = 0, .NZ = -1}
+
+            ' the two triangles of every face are wound so that their cross
+            ' product points along the face normal (the rasterizer does not
+            ' cull, but a consistent winding keeps the future paths open)
+            Dim corners As New List(Of CubeCorner)(36)
+
+            For Each face As CubeFace In faces
+                ' the two axes of the face plane, the normal axis is the third
+                Dim u As Integer = 0, v As Integer = 0
+
+                If face.NX <> 0 Then
+                    u = 1 : v = 2
+                ElseIf face.NY <> 0 Then
+                    u = 0 : v = 2
+                Else
+                    u = 0 : v = 1
+                End If
+
+                ' the four corners of the face in one consistent circular
+                ' order, the sign of the normal axis selects the face plane
+                Dim plane As Single = If(WhichSign(face) > 0, half, -half)
+                Dim quad As Single()() = New Single(3)() {}
+
+                quad(0) = New Single() {-half, -half}
+                quad(1) = New Single() {half, -half}
+                quad(2) = New Single() {half, half}
+                quad(3) = New Single() {-half, half}
+
+                If WhichSign(face) < 0 Then
+                    ' mirror the circular order on the negative faces so that
+                    ' the winding stays outward on every side of the cube
+                    Call Swap(quad(1), quad(3))
+                End If
+
+                For Each tri As Integer() In {New Integer() {0, 1, 2}, New Integer() {0, 2, 3}}
+                    For Each k As Integer In tri
+                        Dim p() As Single = {0, 0, 0}
+                        p(WhichNormalAxis(face)) = plane
+                        p(u) = quad(k)(0)
+                        p(v) = quad(k)(1)
+
+                        Call corners.Add(New CubeCorner With {
+                            .X = p(0), .Y = p(1), .Z = p(2),
+                            .NX = face.NX, .NY = face.NY, .NZ = face.NZ
+                        })
+                    Next
+                Next
+            Next
+
+            m_cubeBuffer = CreateImmutableBuffer(corners.ToArray(), D3D11_BIND_FLAG.VERTEX_BUFFER)
+        End Sub
+
+        Private Structure CubeFace
+            Public NX As Single
+            Public NY As Single
+            Public NZ As Single
+        End Structure
+
+        Private Shared Function WhichNormalAxis(face As CubeFace) As Integer
+            If face.NX <> 0 Then
+                Return 0
+            ElseIf face.NY <> 0 Then
+                Return 1
+            Else
+                Return 2
+            End If
+        End Function
+
+        Private Shared Function WhichSign(face As CubeFace) As Integer
+            If WhichNormalAxis(face) = 0 Then
+                Return std.Sign(face.NX)
+            ElseIf WhichNormalAxis(face) = 1 Then
+                Return std.Sign(face.NY)
+            Else
+                Return std.Sign(face.NZ)
+            End If
+        End Function
+
+        Private Shared Sub Swap(ByRef a As Single(), ByRef b As Single())
+            Dim t As Single() = a
+            a = b
+            b = t
+        End Sub
+
+        ''' <summary>
         ''' build the point instances of a point cloud, the heat value is the
         ''' normalized intensity exactly as the cpu painter computes it
         ''' </summary>
@@ -791,6 +927,7 @@ Namespace Scene3D
             Call ReleaseHandle(m_paletteTexture)
             Call ReleaseHandle(m_instanceBuffer)
             Call ReleaseHandle(m_quadBuffer)
+            Call ReleaseHandle(m_cubeBuffer)
             Call ReleaseHandle(m_lineBuffer)
             Call ReleaseHandle(m_groundBuffer)
             Call ReleaseHandle(m_surfaceBuffer)
@@ -799,6 +936,7 @@ Namespace Scene3D
             m_paletteTexture = IntPtr.Zero
             m_instanceBuffer = IntPtr.Zero
             m_quadBuffer = IntPtr.Zero
+            m_cubeBuffer = IntPtr.Zero
             m_lineBuffer = IntPtr.Zero
             m_groundBuffer = IntPtr.Zero
             m_surfaceBuffer = IntPtr.Zero

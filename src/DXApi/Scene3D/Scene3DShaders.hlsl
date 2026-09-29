@@ -17,6 +17,7 @@ cbuffer SceneConstants : register(b0)
     float4   viewportScale;
     float4   unlitColor;
     float4   heatParams;
+    float4   pointParams;   // xyz = the world space edge lengths of one voxel cube (the cube mode of the point cloud), w = reserved
 };
 
 Texture2D    sceneTexture : register(t0);
@@ -192,6 +193,37 @@ float4 PS_Point(PointOutput input) : SV_TARGET
     float u = (index + 0.5f) / levels;
 
     return sceneTexture.Sample(sceneSampler, float2(u, 0.5f));
+}
+
+struct PointCubeInstanceInput
+{
+    float3 position : POSITION;
+    float3 normal   : TEXCOORD0;
+    float  heat     : TEXCOORD1;
+    float4 color    : COLOR;
+};
+
+struct PointCubeCornerInput
+{
+    float3 offset : TEXCOORD2;
+    float3 normal : TEXCOORD3;
+};
+
+// One voxel of the point cloud expanded into a world space cube: the corner
+// offset and the face normal come from the unit cube corner buffer of slot
+// zero, the center and the embedded color come from the point instance of
+// slot one. The output feeds the very same lambert pixel shader that shades
+// the faces of a model (PS_Surface), so the cubes get the same lighting.
+// The world space edge lengths of the cube live in pointParams.xyz.
+SurfaceOutput VS_PointCube(PointCubeInstanceInput instance, PointCubeCornerInput corner)
+{
+    SurfaceOutput output;
+    float3 center = instance.position + corner.offset * pointParams.xyz;
+
+    output.position = mul(worldViewProj, float4(center, 1));
+    output.normal = corner.normal;
+    output.color = instance.color;
+    return output;
 }
 
 struct BlitOutput

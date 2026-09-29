@@ -95,6 +95,11 @@ Namespace Scene3D
             camera.Screen = canvas.Size
             canvas.Clear(options.BackgroundColor)
 
+            ' the screen space background grid goes onto the cleared canvas and
+            ' below the scene geometry, so the model is painted over it while
+            ' the grid itself never moves with the camera
+            Call DrawBackgroundGrid(canvas, options)
+
             If Not scene.HasData Then
                 Return
             End If
@@ -132,6 +137,30 @@ Namespace Scene3D
         Public Sub Clear()
             m_brushCache.Clear()
             Palette.Clear()
+        End Sub
+
+        ''' <summary>
+        ''' draw the screen space background grid: straight lines that span the
+        ''' whole canvas at fixed pixel intervals, they are not part of the 3d
+        ''' scene and never move with the camera
+        ''' </summary>
+        Private Shared Sub DrawBackgroundGrid(canvas As IGraphics, options As SceneRenderOptions)
+            If Not options.ShowBackgroundGrid Then
+                Return
+            End If
+
+            Dim screen As Size = canvas.Size
+            Dim cell As Integer = std.Max(4, options.BackgroundGridCellSize)
+
+            Using pen As New Pen(options.BackgroundGridColor, 1)
+                For x As Integer = 0 To screen.Width Step cell
+                    Call canvas.DrawLine(pen, CSng(x), 0.0F, CSng(x), CSng(screen.Height))
+                Next
+
+                For y As Integer = 0 To screen.Height Step cell
+                    Call canvas.DrawLine(pen, 0.0F, CSng(y), CSng(screen.Width), CSng(y))
+                Next
+            End Using
         End Sub
 
         ''' <summary>

@@ -590,6 +590,101 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
         End Set
     End Property
 
+    ''' <summary>
+    ''' the shape that one point of the point cloud is expanded into: a screen
+    ''' aligned square or a world space voxel cube
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(ScenePointShape.Square)>
+    <Description("the shape that one point of the point cloud is expanded into")>
+    Public Property PointShape As ScenePointShape
+        Get
+            Return m_options.PointShape
+        End Get
+        Set(value As ScenePointShape)
+            If m_options.PointShape = value Then
+                Return
+            End If
+
+            m_options.PointShape = value
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' the world space edge lengths of one voxel cube of the cube point shape
+    ''' </summary>
+    <Browsable(False)>
+    <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
+    Public Property CubeEdge As System.Numerics.Vector3
+        Get
+            Return m_options.CubeEdge
+        End Get
+        Set(value As System.Numerics.Vector3)
+            m_options.CubeEdge = value
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' draw the screen space grid onto the background of the canvas, the grid
+    ''' is not part of the 3d scene and never moves with the camera
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(False)>
+    <Description("draw a screen space grid onto the background of the canvas")>
+    Public Property ShowBackgroundGrid As Boolean
+        Get
+            Return m_options.ShowBackgroundGrid
+        End Get
+        Set(value As Boolean)
+            If m_options.ShowBackgroundGrid = value Then
+                Return
+            End If
+
+            m_options.ShowBackgroundGrid = value
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' the color of the background grid lines
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(GetType(Color), "White")>
+    <Description("the color of the background grid lines")>
+    Public Property BackgroundGridColor As Color
+        Get
+            Return m_options.BackgroundGridColor
+        End Get
+        Set(value As Color)
+            m_options.BackgroundGridColor = value
+            Call Invalidate()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' the edge length in pixels of one cell of the background grid
+    ''' </summary>
+    <Category("DirectX")>
+    <DefaultValue(32)>
+    <Description("the edge length in pixels of one cell of the background grid")>
+    Public Property BackgroundGridCellSize As Integer
+        Get
+            Return m_options.BackgroundGridCellSize
+        End Get
+        Set(value As Integer)
+            Dim size As Integer = std.Max(4, value)
+
+            If m_options.BackgroundGridCellSize = size Then
+                Return
+            End If
+
+            m_options.BackgroundGridCellSize = size
+            Call Invalidate()
+        End Set
+    End Property
+
     ' /********************************************************************************/
     '  the debug overlay
     ' /********************************************************************************/

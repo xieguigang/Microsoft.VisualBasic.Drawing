@@ -27,6 +27,7 @@ Namespace Scene3D
         Private ReadOnly m_surfaceLayout As IntPtr
         Private ReadOnly m_positionLayout As IntPtr
         Private ReadOnly m_pointLayout As IntPtr
+        Private ReadOnly m_cubeLayout As IntPtr
         Private ReadOnly m_lineLayout As IntPtr
 
         Private ReadOnly m_surfaceVertex As IntPtr
@@ -35,6 +36,7 @@ Namespace Scene3D
         Private ReadOnly m_unlitPixel As IntPtr
         Private ReadOnly m_pointVertex As IntPtr
         Private ReadOnly m_pointPixel As IntPtr
+        Private ReadOnly m_cubeVertex As IntPtr
         Private ReadOnly m_lineVertex As IntPtr
         Private ReadOnly m_linePixel As IntPtr
         Private ReadOnly m_blitVertex As IntPtr
@@ -63,6 +65,12 @@ Namespace Scene3D
         Private m_geometryScene As Scene = Nothing
         Private m_sampleProbe As String = ""
         Private m_disposed As Boolean = False
+
+        ' the cached vertex buffer of the screen space background grid, it is
+        ' rebuilt only when the viewport size or the cell size changes
+        Private m_gridBuffer As IntPtr = IntPtr.Zero
+        Private m_gridVertexCount As Integer = 0
+        Private m_gridKey As String = ""
 
         ''' <summary>
         ''' the outcome of the multi sample probe of the gpu device, for
@@ -95,6 +103,7 @@ Namespace Scene3D
             Dim unlitPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryUnlitPixel, Scene3DShaders.PixelProfile)
             Dim pointVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointVertex, Scene3DShaders.VertexProfile)
             Dim pointPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointPixel, Scene3DShaders.PixelProfile)
+            Dim cubeVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointCubeVertex, Scene3DShaders.VertexProfile)
             Dim lineVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLineVertex, Scene3DShaders.VertexProfile)
             Dim linePixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLinePixel, Scene3DShaders.PixelProfile)
             Dim blitVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryBlitVertex, Scene3DShaders.VertexProfile)
@@ -106,6 +115,7 @@ Namespace Scene3D
             m_unlitPixel = CreatePixelShader(unlitPixelCode)
             m_pointVertex = CreateVertexShader(pointVertexCode)
             m_pointPixel = CreatePixelShader(pointPixelCode)
+            m_cubeVertex = CreateVertexShader(cubeVertexCode)
             m_lineVertex = CreateVertexShader(lineVertexCode)
             m_linePixel = CreatePixelShader(linePixelCode)
             m_blitVertex = CreateVertexShader(blitVertexCode)
@@ -114,6 +124,7 @@ Namespace Scene3D
             m_surfaceLayout = CreateInputLayout(Scene3DInputLayout.SurfaceElements, surfaceVertexCode)
             m_positionLayout = CreateInputLayout(Scene3DInputLayout.PositionElements, positionVertexCode)
             m_pointLayout = CreateInputLayout(Scene3DInputLayout.PointElements, pointVertexCode)
+            m_cubeLayout = CreateInputLayout(Scene3DInputLayout.CubeElements, cubeVertexCode)
             m_lineLayout = CreateInputLayout(Scene3DInputLayout.LineElements, lineVertexCode)
 
             m_constantBuffer = CreateConstantBuffer(Marshal.SizeOf(GetType(SceneConstants)))
@@ -285,6 +296,12 @@ Namespace Scene3D
                 If(options.UseEmbeddedColor, 1.0F, 0.0F))
             m_constants.ViewportScale = New Vector4(transform.PixelScaleX, -transform.PixelScaleY, 0, 0)
             m_constants.HeatParams = New Vector4(heatRange.X, heatRange.Y, 0, 0)
+
+            ' the world space edge lengths of the voxel cubes of the cube point
+            ' shape (the quad point shape ignores them)
+            Dim edge As Vector3 = options.CubeEdge
+
+            m_constants.PointParams = New Vector4(edge.X, edge.Y, edge.Z, 0)
         End Sub
 
         ''' <summary>
@@ -429,6 +446,175 @@ Namespace Scene3D
 
             Call UnbindShaderResource()
         End Sub
+
+        ''' <summary>
+        ''' draw the points of the point cloud as world space voxel cubes: every
+        ''' point is expanded into twelve triangles by the gpu instancing, the
+        ''' depth test is enabled so that the cubes occlude each other exactly
+        ''' like the faces of a solid model do
+        ''' </summary>
+        ''' <remarks>
+        ''' The lambert pixel shader of the surfaces (PS_Surface) shades the cube
+        ''' faces, the base color of a face is the embedded color of the point.
+        ''' </remarks>
+        Friend Sub DrawPointsCubes(scene As Scene, geometry As GpuSceneGeometry, options As SceneRenderOptions)
+            Dim instances As IntPtr = geometry.EnsureInstances(scene, options)
+
+            If instances = IntPtr.Zero OrElse geometry.InstanceCount = 0 OrElse geometry.CubeBuffer = IntPtr.Zero Then
+                Return
+            End If
+
+            Dim context As ID3D11DeviceContext = m_device.Context
+
+            Call UploadConstants()
+
+            Call context.IASetPrimitiveTopology(CInt(D3D11_PRIMITIVE_TOPOLOGY.TRIANGLELIST))
+            Call context.IASetInputLayout(m_cubeLayout)
+            Call context.VSSetShader(m_cubeVertex, IntPtr.Zero, 0UI)
+            Call context.PSSetShader(m_surfacePixel, IntPtr.Zero, 0UI)
+            Call context.RSSetState(m_rasterSolid)
+
+            ' the depth buffer is what turns the point cloud into a solid volume:
+            ' the nearest cube surface wins and the faces of the far side of the
+            ' volume are hidden behind it
+            Call context.OMSetDepthStencilState(m_depthWrite, 0UI)
+            Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
+
+            Call BindVertexBuffers(geometry.CubeBuffer, Scene3DInputLayout.CubeStride,
+                                   instances, Scene3DInputLayout.PointInstanceStride)
+            Call context.DrawInstanced(36UI, CUInt(geometry.InstanceCount), 0UI, 0UI)
+        End Sub
+
+        ''' <summary>
+        ''' draw the screen space background grid: straight lines in clip space
+        ''' that span the whole viewport, they are not part of the 3d scene and
+        ''' never move with the camera. The pass must be called right after the
+        ''' clear and before any scene geometry, so that the model is drawn on
+        ''' top of the grid through the depth buffer.
+        ''' </summary>
+        Friend Sub DrawBackgroundGrid(size As Size, options As SceneRenderOptions)
+            If Not options.ShowBackgroundGrid Then
+                Return
+            End If
+
+            Dim cell As Integer = std.Max(4, options.BackgroundGridCellSize)
+            Dim key As String = $"{size.Width}x{size.Height}x{cell}"
+
+            If key <> m_gridKey Then
+                Call RebuildGrid(size.Width, size.Height, cell)
+                m_gridKey = key
+            End If
+
+            If m_gridBuffer = IntPtr.Zero OrElse m_gridVertexCount = 0 Then
+                Return
+            End If
+
+            Dim context As ID3D11DeviceContext = m_device.Context
+
+            ' the grid lives in clip space already, so the vertex transform is
+            ' the identity: the scene matrix is restored right after the draw,
+            ' the next scene batch uploads its own constants anyway
+            Dim sceneMatrix As Matrix4x4 = m_constants.WorldViewProjection
+
+            m_constants.WorldViewProjection = Matrix4x4.Identity
+            m_constants.UnlitColor = ToVector4(options.BackgroundGridColor)
+
+            Call UploadConstants()
+
+            Call context.IASetPrimitiveTopology(CInt(D3D11_PRIMITIVE_TOPOLOGY.LINELIST))
+            Call context.IASetInputLayout(m_positionLayout)
+            Call context.VSSetShader(m_positionVertex, IntPtr.Zero, 0UI)
+            Call context.PSSetShader(m_unlitPixel, IntPtr.Zero, 0UI)
+            Call context.RSSetState(m_rasterSolid)
+            Call context.OMSetDepthStencilState(m_depthDisabled, 0UI)
+            Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
+            Call BindSingleBuffer(0, m_gridBuffer, Scene3DInputLayout.PositionStride)
+            Call context.Draw(CUInt(m_gridVertexCount), 0UI)
+
+            m_constants.WorldViewProjection = sceneMatrix
+        End Sub
+
+        ''' <summary>
+        ''' rebuild the vertex buffer of the background grid for the given
+        ''' viewport size and cell size, the lines are one pixel wide
+        ''' </summary>
+        Private Sub RebuildGrid(width As Integer, height As Integer, cell As Integer)
+            Call ReleaseHandle(m_gridBuffer)
+            m_gridBuffer = IntPtr.Zero
+            m_gridVertexCount = 0
+
+            If width < 1 OrElse height < 1 Then
+                Return
+            End If
+
+            Dim lines As New List(Of Vector3)
+
+            For i As Integer = 0 To width \ cell
+                Dim x As Single = 2.0F * (i * cell) / width - 1.0F
+
+                Call lines.Add(New Vector3(x, -1.0F, 0))
+                Call lines.Add(New Vector3(x, 1.0F, 0))
+            Next
+
+            For j As Integer = 0 To height \ cell
+                Dim y As Single = 1.0F - 2.0F * (j * cell) / height
+
+                Call lines.Add(New Vector3(-1.0F, y, 0))
+                Call lines.Add(New Vector3(1.0F, y, 0))
+            Next
+
+            m_gridVertexCount = lines.Count
+
+            If m_gridVertexCount > 0 Then
+                m_gridBuffer = CreateVertexBuffer(lines.ToArray())
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' create an immutable vertex buffer that is initialized with the given
+        ''' blittable array (the geometry cache of <see cref="GpuSceneGeometry"/>
+        ''' owns its own copy of this little factory, the pipeline needs one for
+        ''' the dynamic content of the background grid)
+        ''' </summary>
+        Private Function CreateVertexBuffer(Of T As Structure)(items As T()) As IntPtr
+            If items Is Nothing OrElse items.Length = 0 Then
+                Return IntPtr.Zero
+            End If
+
+            Dim pinned As GCHandle = GCHandle.Alloc(items, GCHandleType.Pinned)
+
+            Try
+                Dim desc As New D3D11_BUFFER_DESC With {
+                    .ByteWidth = CUInt(items.Length * Marshal.SizeOf(GetType(T))),
+                    .Usage = CInt(D3D11_USAGE.IMMUTABLE),
+                    .BindFlags = CUInt(D3D11_BIND_FLAG.VERTEX_BUFFER),
+                    .CPUAccessFlags = 0,
+                    .MiscFlags = 0,
+                    .StructureByteStride = 0
+                }
+                Dim initial As New D3D11_SUBRESOURCE_DATA With {
+                    .pSysMem = pinned.AddrOfPinnedObject(),
+                    .SysMemPitch = 0,
+                    .SysMemSlicePitch = 0
+                }
+                Dim pinnedDesc As GCHandle = GCHandle.Alloc(desc, GCHandleType.Pinned)
+                Dim pinnedInitial As GCHandle = GCHandle.Alloc(initial, GCHandleType.Pinned)
+                Dim buffer As IntPtr = IntPtr.Zero
+
+                Try
+                    Call ThrowIfFailed(
+                        m_device.Device.CreateBuffer(pinnedDesc.AddrOfPinnedObject(), pinnedInitial.AddrOfPinnedObject(), buffer),
+                        "ID3D11Device::CreateBuffer(grid)")
+                Finally
+                    pinnedDesc.Free()
+                    pinnedInitial.Free()
+                End Try
+
+                Return buffer
+            Finally
+                pinned.Free()
+            End Try
+        End Function
 
         ''' <summary>
         ''' copy the rendered color buffer onto the render target of the canvas
@@ -828,6 +1014,11 @@ Namespace Scene3D
                 m_geometry = Nothing
             End If
 
+            Call ReleaseHandle(m_gridBuffer)
+            m_gridBuffer = IntPtr.Zero
+            m_gridVertexCount = 0
+            m_gridKey = ""
+
             Call ReleaseHandle(m_rasterWireframe)
             Call ReleaseHandle(m_rasterSolidCulled)
             Call ReleaseHandle(m_rasterSolid)
@@ -842,12 +1033,14 @@ Namespace Scene3D
             Call ReleaseHandle(m_lineVertex)
             Call ReleaseHandle(m_pointPixel)
             Call ReleaseHandle(m_pointVertex)
+            Call ReleaseHandle(m_cubeVertex)
             Call ReleaseHandle(m_unlitPixel)
             Call ReleaseHandle(m_positionVertex)
             Call ReleaseHandle(m_surfacePixel)
             Call ReleaseHandle(m_surfaceVertex)
             Call ReleaseHandle(m_lineLayout)
             Call ReleaseHandle(m_pointLayout)
+            Call ReleaseHandle(m_cubeLayout)
             Call ReleaseHandle(m_positionLayout)
             Call ReleaseHandle(m_surfaceLayout)
 

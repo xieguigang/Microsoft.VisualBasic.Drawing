@@ -17,7 +17,7 @@ Namespace Scene3D
     ''' vector matrix correctly through the ``mul(matrix, vector)`` form of the
     ''' shader: the two conventions cancel out. Do not transpose the matrices on
     ''' the way in, that would only swap the w row with the depth row.
-    ''' The size of this structure is 224 bytes, a multiple of the 16 byte
+    ''' The size of this structure is 240 bytes, a multiple of the 16 byte
     ''' alignment that a constant buffer requires.
     ''' </remarks>
     <StructLayout(LayoutKind.Sequential)>
@@ -38,6 +38,8 @@ Namespace Scene3D
         Public UnlitColor As Vector4
         ''' <summary>x = the lowest heat value, y = 1 / (the highest heat value - the lowest one)</summary>
         Public HeatParams As Vector4
+        ''' <summary>xyz = the world space edge lengths of one voxel cube (the cube mode of the point cloud), w = reserved</summary>
+        Public PointParams As Vector4
     End Structure
 
     ''' <summary>
@@ -78,6 +80,8 @@ Namespace Scene3D
         Friend Const EntryUnlitPixel As String = "PS_Unlit"
         Friend Const EntryPointVertex As String = "VS_Point"
         Friend Const EntryPointPixel As String = "PS_Point"
+        ''' <summary>the vertex shader that expands one point instance into a world space voxel cube</summary>
+        Friend Const EntryPointCubeVertex As String = "VS_PointCube"
         ''' <summary>the vertex shader of the connection lines (position + per vertex color)</summary>
         Friend Const EntryLineVertex As String = "VS_Line"
         ''' <summary>the pixel shader of the connection lines (returns the interpolated vertex color)</summary>
@@ -275,6 +279,8 @@ Namespace Scene3D
         Friend Const PointInstanceStride As UInteger = 32
         ''' <summary>the stride of one corner of the unit quad of a point</summary>
         Friend Const PointQuadStride As UInteger = 8
+        ''' <summary>the stride of one corner of the unit cube of a point (offset + face normal)</summary>
+        Friend Const CubeStride As UInteger = 24
         ''' <summary>the stride of one end point of a connection line</summary>
         Friend Const LineStride As UInteger = 16
 
@@ -305,6 +311,21 @@ Namespace Scene3D
             Element("TEXCOORD", 1, DXGI_FORMAT.R32_FLOAT, 1, 24, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
             Element("COLOR", 0, DXGI_FORMAT.R8G8B8A8_UNORM, 1, 28, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
             Element("TEXCOORD", 2, DXGI_FORMAT.R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0)
+        }
+
+        ''' <summary>
+        ''' one corner of the unit cube of a point: the corner offset and the
+        ''' normal of the cube face in slot zero, the point instance of slot one
+        ''' keeps the layout of <see cref="PointElements"/> (the semantics stay
+        ''' unique per input slot, the instance reuses POSITION/TEXCOORD0/1)
+        ''' </summary>
+        Friend ReadOnly CubeElements As D3D11_INPUT_ELEMENT_DESC() = New D3D11_INPUT_ELEMENT_DESC() {
+            Element("TEXCOORD", 2, DXGI_FORMAT.R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0),
+            Element("TEXCOORD", 3, DXGI_FORMAT.R32G32B32_FLOAT, 0, 12, D3D11_INPUT_CLASSIFICATION.PER_VERTEX_DATA, 0),
+            Element("POSITION", 0, DXGI_FORMAT.R32G32B32_FLOAT, 1, 0, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
+            Element("TEXCOORD", 0, DXGI_FORMAT.R32G32B32_FLOAT, 1, 12, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
+            Element("TEXCOORD", 1, DXGI_FORMAT.R32_FLOAT, 1, 24, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1),
+            Element("COLOR", 0, DXGI_FORMAT.R8G8B8A8_UNORM, 1, 28, D3D11_INPUT_CLASSIFICATION.PER_INSTANCE_DATA, 1)
         }
 
         ''' <summary>

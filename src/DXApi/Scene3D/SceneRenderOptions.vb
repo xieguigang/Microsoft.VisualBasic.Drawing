@@ -1,6 +1,28 @@
 Imports System.Drawing
+Imports System.Numerics
 
 Namespace Scene3D
+
+    ''' <summary>
+    ''' The shape that one point of a point cloud is expanded into by the gpu
+    ''' back end.
+    ''' </summary>
+    Public Enum ScenePointShape
+
+        ''' <summary>
+        ''' a screen aligned square of <see cref="SceneRenderOptions.PointSize"/> pixels
+        ''' (the classic billboard, the default for backwards compatibility)
+        ''' </summary>
+        Square
+
+        ''' <summary>
+        ''' a world space cube whose edge lengths are
+        ''' <see cref="SceneRenderOptions.CubeEdge"/> world units: voxels keep
+        ''' their volume from every camera angle and occlude each other through
+        ''' the depth buffer. The cube mode reads the per point embedded colors.
+        ''' </summary>
+        Cube
+    End Enum
 
     ''' <summary>
     ''' The presentation options of a 3D scene.
@@ -90,6 +112,39 @@ Namespace Scene3D
         Public Property CullBackFaces As Boolean = False
 
         ''' <summary>
+        ''' the shape that one point of the point cloud is expanded into by the
+        ''' gpu back end, squares by default (see <see cref="ScenePointShape"/>)
+        ''' </summary>
+        Public Property PointShape As ScenePointShape = ScenePointShape.Square
+
+        ''' <summary>
+        ''' the world space edge lengths of one voxel cube of the cube point
+        ''' shape, one world unit per axis by default
+        ''' </summary>
+        ''' <remarks>
+        ''' The value is a per frame constant only: it does not change the vertex
+        ''' data, so it is not part of <see cref="GeometrySignature"/> and the
+        ''' cached geometry is not rebuilt when it changes.
+        ''' </remarks>
+        Public Property CubeEdge As Vector3 = Vector3.One
+
+        ''' <summary>
+        ''' draw a screen space grid onto the background of the canvas, the grid
+        ''' is not part of the 3d scene and never moves with the camera
+        ''' </summary>
+        Public Property ShowBackgroundGrid As Boolean = False
+
+        ''' <summary>
+        ''' the color of the background grid lines
+        ''' </summary>
+        Public Property BackgroundGridColor As Color = Color.White
+
+        ''' <summary>
+        ''' the edge length in pixels of one cell of the background grid
+        ''' </summary>
+        Public Property BackgroundGridCellSize As Integer = 32
+
+        ''' <summary>
         ''' create a copy of the current options
         ''' </summary>
         Public Function Clone() As SceneRenderOptions
@@ -104,7 +159,12 @@ Namespace Scene3D
                 .ShowConnections = ShowConnections,
                 .BackgroundColor = BackgroundColor,
                 .MultisampleCount = MultisampleCount,
-                .CullBackFaces = CullBackFaces
+                .CullBackFaces = CullBackFaces,
+                .PointShape = PointShape,
+                .CubeEdge = CubeEdge,
+                .ShowBackgroundGrid = ShowBackgroundGrid,
+                .BackgroundGridColor = BackgroundGridColor,
+                .BackgroundGridCellSize = BackgroundGridCellSize
             }
         End Function
 

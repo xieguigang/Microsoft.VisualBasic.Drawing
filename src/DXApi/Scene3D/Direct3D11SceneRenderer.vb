@@ -234,6 +234,12 @@ Namespace Scene3D
             Call m_pipeline.BeginFrame(size)
             Call m_pipeline.SetRenderTarget(m_target.RenderTargetView, m_target.DepthStencilView)
             Call m_pipeline.Clear(m_target.RenderTargetView, m_target.DepthStencilView, options.BackgroundColor)
+
+            ' the screen space background grid goes onto the cleared buffer and
+            ' below the scene geometry, so the model occludes it through the
+            ' depth buffer while the grid itself never moves with the camera
+            Call m_pipeline.DrawBackgroundGrid(size, options)
+
             Call m_pipeline.SetScene(geometry, transform, camera, options, heatRange)
 
             Call DrawScene(scene, geometry, options)
@@ -269,7 +275,7 @@ Namespace Scene3D
                         ' even a solid model can be presented as a point cloud:
                         ' every vertex becomes a heat map colored point and the
                         ' color is driven by the light intensity of its face
-                        Call m_pipeline.DrawPoints(scene, geometry, options)
+                        Call DrawPointCloud(scene, geometry, options)
                     Case Else
                         Call m_pipeline.DrawSurfaces(geometry, options)
                 End Select
@@ -278,7 +284,7 @@ Namespace Scene3D
                     Call m_pipeline.DrawGround(geometry, options.GroundColor)
                 End If
 
-                Call m_pipeline.DrawPoints(scene, geometry, options)
+                Call DrawPointCloud(scene, geometry, options)
             End If
 
             ' the connection lines are an overlay of the scene: they are drawn last
@@ -287,6 +293,19 @@ Namespace Scene3D
             ' see D3D11ScenePipeline.DrawPoints)
             If scene.LineCount > 0 AndAlso options.ShowConnections Then
                 Call m_pipeline.DrawLines(geometry)
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' draw the point cloud in the point shape that the options request:
+        ''' screen aligned squares (the classic billboard) or world space voxel
+        ''' cubes that occlude each other through the depth buffer
+        ''' </summary>
+        Private Sub DrawPointCloud(scene As Scene, geometry As GpuSceneGeometry, options As SceneRenderOptions)
+            If options.PointShape = ScenePointShape.Cube AndAlso geometry.CubeBuffer <> IntPtr.Zero Then
+                Call m_pipeline.DrawPointsCubes(scene, geometry, options)
+            Else
+                Call m_pipeline.DrawPoints(scene, geometry, options)
             End If
         End Sub
 
