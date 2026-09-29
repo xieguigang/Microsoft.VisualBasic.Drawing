@@ -37,6 +37,7 @@ Namespace Scene3D
         Private ReadOnly m_pointVertex As IntPtr
         Private ReadOnly m_pointPixel As IntPtr
         Private ReadOnly m_cubeVertex As IntPtr
+        Private ReadOnly m_cubePixel As IntPtr
         Private ReadOnly m_lineVertex As IntPtr
         Private ReadOnly m_linePixel As IntPtr
         Private ReadOnly m_blitVertex As IntPtr
@@ -104,6 +105,7 @@ Namespace Scene3D
             Dim pointVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointVertex, Scene3DShaders.VertexProfile)
             Dim pointPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointPixel, Scene3DShaders.PixelProfile)
             Dim cubeVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryPointCubeVertex, Scene3DShaders.VertexProfile)
+            Dim cubePixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryVoxelCubePixel, Scene3DShaders.PixelProfile)
             Dim lineVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLineVertex, Scene3DShaders.VertexProfile)
             Dim linePixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLinePixel, Scene3DShaders.PixelProfile)
             Dim blitVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryBlitVertex, Scene3DShaders.VertexProfile)
@@ -116,6 +118,7 @@ Namespace Scene3D
             m_pointVertex = CreateVertexShader(pointVertexCode)
             m_pointPixel = CreatePixelShader(pointPixelCode)
             m_cubeVertex = CreateVertexShader(cubeVertexCode)
+            m_cubePixel = CreatePixelShader(cubePixelCode)
             m_lineVertex = CreateVertexShader(lineVertexCode)
             m_linePixel = CreatePixelShader(linePixelCode)
             m_blitVertex = CreateVertexShader(blitVertexCode)
@@ -471,7 +474,7 @@ Namespace Scene3D
             Call context.IASetPrimitiveTopology(CInt(D3D11_PRIMITIVE_TOPOLOGY.TRIANGLELIST))
             Call context.IASetInputLayout(m_cubeLayout)
             Call context.VSSetShader(m_cubeVertex, IntPtr.Zero, 0UI)
-            Call context.PSSetShader(m_surfacePixel, IntPtr.Zero, 0UI)
+            Call context.PSSetShader(m_cubePixel, IntPtr.Zero, 0UI)
             Call context.RSSetState(m_rasterSolid)
 
             ' the depth buffer is what turns the point cloud into a solid volume:
@@ -1034,6 +1037,7 @@ Namespace Scene3D
             Call ReleaseHandle(m_pointPixel)
             Call ReleaseHandle(m_pointVertex)
             Call ReleaseHandle(m_cubeVertex)
+            Call ReleaseHandle(m_cubePixel)
             Call ReleaseHandle(m_unlitPixel)
             Call ReleaseHandle(m_positionVertex)
             Call ReleaseHandle(m_surfacePixel)

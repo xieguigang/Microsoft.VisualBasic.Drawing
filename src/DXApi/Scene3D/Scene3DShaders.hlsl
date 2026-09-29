@@ -108,6 +108,33 @@ float4 PS_Surface(SurfaceOutput input) : SV_TARGET
     return float4(lerp(input.color.rgb, lightColor.rgb, factor), input.color.a);
 }
 
+// The pixel shader of the voxel cubes of the cube point shape: the lambert
+// term only scales the brightness of the base color, so the heat map color
+// keeps its full saturation on the faces that point towards the light source.
+// (The lerp of PS_Surface pulls every base color towards the light color,
+// which washes a heat mapped voxel model out into a flat gray look.)
+float4 PS_VoxelCube(SurfaceOutput input) : SV_TARGET
+{
+    float3 n = input.normal;
+
+    if (dot(n, n) < 1e-8f)
+    {
+        return input.color;
+    }
+
+    float3 lit = mul(worldRotation, float4(n, 0)).xyz;
+
+    if (lit.z < 0)
+    {
+        lit = -lit;
+    }
+
+    float diffuse = max(0, dot(normalize(lit), normalize(lightDirection.xyz)));
+    float factor = lightColor.a + (1 - lightColor.a) * diffuse;
+
+    return float4(input.color.rgb * factor, input.color.a);
+}
+
 float4 VS_Position(PositionInput input) : SV_POSITION
 {
     return mul(worldViewProj, float4(input.position, 1));

@@ -82,6 +82,8 @@ Namespace Scene3D
         Friend Const EntryPointPixel As String = "PS_Point"
         ''' <summary>the vertex shader that expands one point instance into a world space voxel cube</summary>
         Friend Const EntryPointCubeVertex As String = "VS_PointCube"
+        ''' <summary>the pixel shader of the voxel cubes (multiplicative lambert shading)</summary>
+        Friend Const EntryVoxelCubePixel As String = "PS_VoxelCube"
         ''' <summary>the vertex shader of the connection lines (position + per vertex color)</summary>
         Friend Const EntryLineVertex As String = "VS_Line"
         ''' <summary>the pixel shader of the connection lines (returns the interpolated vertex color)</summary>
