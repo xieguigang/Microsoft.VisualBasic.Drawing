@@ -640,7 +640,7 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
         Set(value As Single)
             value = std.Max(0.0F, std.Min(1.0F, value))
 
-            If Math.Abs(m_options.PointOpacity - value) < 0.001F Then
+            If std.Abs(m_options.PointOpacity - value) < 0.001F Then
                 Return
             End If
 
