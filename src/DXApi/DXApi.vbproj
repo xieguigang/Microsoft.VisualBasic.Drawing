@@ -26,8 +26,8 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.VisualBasic.Drawing.DirectX</AssemblyName>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Version>1.0.9775.28485</Version>
-    <AssemblyVersion>1.0.9775.28485</AssemblyVersion>
+    <Version>10.5.9777.32612</Version>
+    <AssemblyVersion>1.0.9777.32612</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='nuget_release|x64'">
