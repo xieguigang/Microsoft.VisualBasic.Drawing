@@ -79,7 +79,33 @@ Partial Public Class DxCanvas
 
         Call SetStyle(ControlStyles.OptimizedDoubleBuffer, False)
         Call SetStyle(ControlStyles.ResizeRedraw, True)
+
+        ' the canvas is a plain control by default, so it can neither take the
+        ' keyboard focus nor receive the navigation keys: both of them are
+        ' required by a user interface that draws its own text input controls
+        Call SetStyle(ControlStyles.Selectable Or ControlStyles.UserMouse, True)
     End Sub
+
+    ''' <summary>
+    ''' the navigation keys and the editing keys are input keys of this canvas
+    ''' </summary>
+    ''' <param name="keyData"></param>
+    ''' <returns></returns>
+    ''' <remarks>
+    ''' without this override the arrow keys, the home and the end key are
+    ''' consumed by the parent form as a navigation between its child controls
+    ''' and they never reach the <c>KeyDown</c> event of this canvas.
+    ''' </remarks>
+    Protected Overrides Function IsInputKey(keyData As Keys) As Boolean
+        Select Case keyData And Keys.KeyCode
+            Case Keys.Left, Keys.Right, Keys.Up, Keys.Down,
+                 Keys.Home, Keys.End, Keys.Delete, Keys.Back,
+                 Keys.Tab, Keys.Enter, Keys.Escape
+                Return True
+            Case Else
+                Return MyBase.IsInputKey(keyData)
+        End Select
+    End Function
 
     ''' <summary>
     ''' raised when the control needs to redraw its content
