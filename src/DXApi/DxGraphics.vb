@@ -1084,6 +1084,72 @@ Public Class DxGraphics : Inherits IGraphics
     End Sub
 
     ' /********************************************************************************/
+    '  rounded rectangle
+    '
+    '  the direct2d render target already implements the rounded rectangle, but
+    '  the cross platform IGraphics interface does not declare it, so these
+    '  overloads are only available on this concrete directx canvas type.
+    ' /********************************************************************************/
+
+    ''' <summary>
+    ''' Paints the interior of a rectangle with rounded corners.
+    ''' </summary>
+    ''' <param name="brush">the fill color of the rectangle.</param>
+    ''' <param name="rect">the bounding box of the rectangle.</param>
+    ''' <param name="radius">the corner radius in both of the x and the y axis.</param>
+    Public Sub FillRoundedRectangle(brush As Brush, rect As System.Drawing.RectangleF, radius As Single)
+        Call FillRoundedRectangle(brush, rect, radius, radius)
+    End Sub
+
+    ''' <summary>
+    ''' Paints the interior of a rectangle with rounded corners.
+    ''' </summary>
+    ''' <param name="brush">the fill color of the rectangle.</param>
+    ''' <param name="rect">the bounding box of the rectangle.</param>
+    ''' <param name="radiusX">the corner radius in the x axis.</param>
+    ''' <param name="radiusY">the corner radius in the y axis.</param>
+    Public Sub FillRoundedRectangle(brush As Brush, rect As System.Drawing.RectangleF, radiusX As Single, radiusY As Single)
+        Call EndBatch()
+        Call renderTarget.Target.FillRoundedRectangle(ToRoundedRectF(rect, radiusX, radiusY), brushes.GetBrush(brush))
+    End Sub
+
+    ''' <summary>
+    ''' Draws the outline of a rectangle with rounded corners.
+    ''' </summary>
+    ''' <param name="pen">the stroke of the outline.</param>
+    ''' <param name="rect">the bounding box of the rectangle.</param>
+    ''' <param name="radius">the corner radius in both of the x and the y axis.</param>
+    Public Sub DrawRoundedRectangle(pen As Pen, rect As System.Drawing.RectangleF, radius As Single)
+        Call DrawRoundedRectangle(pen, rect, radius, radius)
+    End Sub
+
+    ''' <summary>
+    ''' Draws the outline of a rectangle with rounded corners.
+    ''' </summary>
+    ''' <param name="pen">the stroke of the outline.</param>
+    ''' <param name="rect">the bounding box of the rectangle.</param>
+    ''' <param name="radiusX">the corner radius in the x axis.</param>
+    ''' <param name="radiusY">the corner radius in the y axis.</param>
+    Public Sub DrawRoundedRectangle(pen As Pen, rect As System.Drawing.RectangleF, radiusX As Single, radiusY As Single)
+        Call EndBatch()
+        Call renderTarget.Target.DrawRoundedRectangle(
+            ToRoundedRectF(rect, radiusX, radiusY),
+            brushes.GetBrush(pen.Color),
+            pen.Width,
+            brushes.GetStrokeStyle(pen)
+        )
+    End Sub
+
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Private Shared Function ToRoundedRectF(rect As System.Drawing.RectangleF, radiusX As Single, radiusY As Single) As D2D1_ROUNDED_RECT
+        Return New D2D1_ROUNDED_RECT With {
+            .rect = ToRectF(rect),
+            .radiusX = If(radiusX < 0F, 0F, radiusX),
+            .radiusY = If(radiusY < 0F, 0F, radiusY)
+        }
+    End Function
+
+    ' /********************************************************************************/
     '  text
     ' /********************************************************************************/
 
