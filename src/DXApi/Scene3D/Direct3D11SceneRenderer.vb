@@ -287,7 +287,14 @@ Namespace Scene3D
             End If
 
             If m_cloudBuffer = IntPtr.Zero Then
-                m_cloudBuffer = m_pipeline.CreateBuffer(m_cloudBytes, D3D11_BIND_FLAG.VERTEX_BUFFER)
+                ' the cloud is rewritten every frame: the dynamic usage lets the
+                ' driver hand out a fresh block on the map instead of copying
+                ' the data into a staging buffer of its own
+                m_cloudBuffer = m_pipeline.CreateBuffer(
+                    m_cloudBytes,
+                    D3D11_BIND_FLAG.VERTEX_BUFFER,
+                    D3D11_USAGE.DYNAMIC,
+                    D3D11_CPU_ACCESS_FLAG.WRITE)
             End If
 
             If m_cloudBuffer = IntPtr.Zero Then
@@ -297,7 +304,7 @@ Namespace Scene3D
 
             Dim clock As Stopwatch = Stopwatch.StartNew()
 
-            Call m_pipeline.FillBuffer(m_cloudBuffer, m_pendingCloud)
+            Call m_pipeline.FillDynamicBuffer(m_cloudBuffer, m_pendingCloud)
 
             clock.Stop()
             m_uploadMs = clock.Elapsed.TotalMilliseconds
