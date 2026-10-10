@@ -1,3 +1,4 @@
+Imports System.Diagnostics
 Imports System.Drawing
 Imports System.Numerics
 Imports System.Runtime.InteropServices
@@ -252,6 +253,18 @@ Namespace Scene3D
         End Property
 
         ''' <summary>
+        ''' the wall clock time of the last upload of the external point cloud
+        ''' in milliseconds
+        ''' </summary>
+        Public ReadOnly Property LastUploadMs As Double
+            Get
+                Return m_uploadMs
+            End Get
+        End Property
+
+        Private m_uploadMs As Double = 0
+
+        ''' <summary>
         ''' upload the pending instance data of the external point cloud, the
         ''' gpu device of the canvas is only known inside of a frame so the
         ''' buffer is created here
@@ -282,7 +295,12 @@ Namespace Scene3D
                 Return
             End If
 
+            Dim clock As Stopwatch = Stopwatch.StartNew()
+
             Call m_pipeline.FillBuffer(m_cloudBuffer, m_pendingCloud)
+
+            clock.Stop()
+            m_uploadMs = clock.Elapsed.TotalMilliseconds
 
             m_cloudCount = m_pendingCount
             m_pendingCloud = Nothing
