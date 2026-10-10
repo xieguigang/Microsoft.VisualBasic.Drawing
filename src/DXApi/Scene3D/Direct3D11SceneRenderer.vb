@@ -257,7 +257,7 @@ Namespace Scene3D
         ''' buffer is created here
         ''' </summary>
         Private Sub SyncExternalCloud()
-            Dim wanted As Integer = std.Max(m_cloudCapacity, m_pendingCount)
+            Dim wanted As Integer = Global.System.Math.Max(m_cloudCapacity, m_pendingCount)
             Dim stride As Integer = CInt(Scene3DInputLayout.PointInstanceStride)
             Dim bytes As Integer = wanted * stride
 
