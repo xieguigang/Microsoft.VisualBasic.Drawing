@@ -478,16 +478,27 @@ Namespace Scene3D
         ''' <see cref="FillBuffer"/>, the buffer is not part of the cached
         ''' geometry of a scene and is released by the caller
         ''' </summary>
-        Friend Function CreateBuffer(bytes As Integer, bind As D3D11_BIND_FLAG) As IntPtr
+        ''' <param name="usage">
+        ''' <see cref="D3D11_USAGE.DEFAULT"/> by default, which the cpu fills
+        ''' through <c>UpdateSubresource</c>. A buffer that is rewritten every
+        ''' frame should be created with <see cref="D3D11_USAGE.DYNAMIC"/> and
+        ''' <see cref="D3D11_CPU_ACCESS_FLAG.WRITE"/> instead: it is then filled
+        ''' through <c>Map</c> with <see cref="D3D11_MAP.WRITE_DISCARD"/>, which
+        ''' writes straight into the memory the driver hands out and saves the
+        ''' staging copy of <c>UpdateSubresource</c>.
+        ''' </param>
+        Friend Function CreateBuffer(bytes As Integer, bind As D3D11_BIND_FLAG,
+                                     Optional usage As D3D11_USAGE = D3D11_USAGE.DEFAULT,
+                                     Optional cpuAccess As D3D11_CPU_ACCESS_FLAG = D3D11_CPU_ACCESS_FLAG.NONE) As IntPtr
             If bytes <= 0 Then
                 Return IntPtr.Zero
             End If
 
             Dim desc As New D3D11_BUFFER_DESC With {
                 .ByteWidth = CUInt(bytes),
-                .Usage = CInt(D3D11_USAGE.DEFAULT),
+                .Usage = CInt(usage),
                 .BindFlags = CUInt(bind),
-                .CPUAccessFlags = 0,
+                .CPUAccessFlags = CUInt(cpuAccess),
                 .MiscFlags = 0,
                 .StructureByteStride = 0
             }
@@ -513,9 +524,20 @@ Namespace Scene3D
         ''' the whole buffer is replaced, so <paramref name="items"/> has to hold
         ''' at least as many bytes as the buffer was created with
         ''' </remarks>
-        Friend Sub FillBuffer(Of T As Structure)(buffer As IntPtr, items As T())
+        ''' <param name="dynamic">
+        ''' true when the buffer was created with
+        ''' <see cref="D3D11_USAGE.DYNAMIC"/>: the whole buffer is then rewritten
+        ''' through <see cref="FillDynamicBuffer"/> instead
+        ''' </param>
+        Friend Sub FillBuffer(Of T As Structure)(buffer As IntPtr, items As T(),
+                                                 Optional dynamic As Boolean = False)
             If buffer = IntPtr.Zero OrElse items Is Nothing OrElse items.Length = 0 Then
                 Return
+            End If
+
+            If dynamic Then
+                Throw New InvalidOperationException(
+                    "a dynamic buffer has to be filled through FillDynamicBuffer")
             End If
 
             Dim pinned As GCHandle = GCHandle.Alloc(items, GCHandleType.Pinned)
@@ -527,6 +549,48 @@ Namespace Scene3D
                 pinned.Free()
             End Try
         End Sub
+
+        ''' <summary>
+        ''' overwrite a buffer that was created with
+        ''' <see cref="D3D11_USAGE.DYNAMIC"/> and
+        ''' <see cref="D3D11_CPU_ACCESS_FLAG.WRITE"/>
+        ''' </summary>
+        ''' <remarks>
+        ''' The map discards the previous contents, so the driver hands out a
+        ''' block of memory that the gpu is not reading any more: the data is
+        ''' written once, while <c>UpdateSubresource</c> would copy it into an
+        ''' intermediate staging buffer first.
+        ''' </remarks>
+        Friend Sub FillDynamicBuffer(buffer As IntPtr, items As Single())
+            If buffer = IntPtr.Zero OrElse items Is Nothing OrElse items.Length = 0 Then
+                Return
+            End If
+
+            Dim context As ID3D11DeviceContextBuffer = m_bufferContext
+
+            If context Is Nothing Then
+                context = DirectCast(m_device.Context, ID3D11DeviceContextBuffer)
+                m_bufferContext = context
+            End If
+
+            Dim mapped As New D3D11_MAPPED_SUBRESOURCE
+
+            Call ThrowIfFailed(
+                context.Map(buffer, 0UI, CUInt(D3D11_MAP.WRITE_DISCARD), 0UI, mapped),
+                "ID3D11DeviceContext::Map")
+
+            Try
+                Call Marshal.Copy(items, 0, mapped.pData, items.Length)
+            Finally
+                Call context.Unmap(buffer, 0UI)
+            End Try
+        End Sub
+
+        ''' <summary>
+        ''' the second view of the device context that is able to map a buffer,
+        ''' see <c>ID3D11DeviceContextBuffer</c>
+        ''' </summary>
+        Private m_bufferContext As ID3D11DeviceContextBuffer = Nothing
 
         ''' <summary>
         ''' release a buffer that was created by <see cref="CreateBuffer"/>

@@ -545,6 +545,55 @@ Friend Module D3D11
     ''' ID3D11DeviceContext, the pixel read back is implemented via
     ''' CopyResource (vtable slot 47) + Map/Unmap (vtable slot 14/15)
     ''' </summary>
+    ''' <summary>
+    ''' the very same device context as <see cref="ID3D11DeviceContext"/>, but
+    ''' with the map and the unmap slot declared for an arbitrary resource.
+    ''' </summary>
+    ''' <remarks>
+    ''' <see cref="ID3D11DeviceContext"/> declares <c>Map</c> and <c>Unmap</c>
+    ''' with an <c>ID3D11Texture2D</c> parameter, because it only ever maps the
+    ''' shared texture of the canvas. A host that animates a very large point
+    ''' cloud has to map a vertex buffer instead, which the com signature of
+    ''' that interface can not express.
+    '''
+    ''' The interface is a second view of the identical com object: the guid is
+    ''' the same, so casting between the two performs a
+    ''' <c>QueryInterface</c> that always succeeds, and the slot order of 3 .. 15
+    ''' is copied one by one from <see cref="ID3D11DeviceContext"/> so that the
+    ''' vtable of the runtime callable wrapper stays correct.
+    ''' </remarks>
+    <ComImport>
+    <Guid("c0bfa96c-e089-44fb-8eaf-26f8796190da")>
+    <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
+    Friend Interface ID3D11DeviceContextBuffer
+
+        ' slot 3 .. slot 6, ID3D11DeviceChild
+        <PreserveSig> Function GetDevice(<Out> ByRef device As IntPtr) As Integer
+        <PreserveSig> Function GetPrivateData(ByRef guid As Guid, ByRef size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateData(ByRef guid As Guid, size As UInteger, data As IntPtr) As Integer
+        <PreserveSig> Function SetPrivateDataInterface(ByRef guid As Guid, data As IntPtr) As Integer
+        ' slot 7
+        <PreserveSig> Sub VSSetConstantBuffers(startSlot As UInteger, numBuffers As UInteger, buffers As IntPtr)
+        ' slot 8
+        <PreserveSig> Sub PSSetShaderResources(startSlot As UInteger, numViews As UInteger, views As IntPtr)
+        ' slot 9
+        <PreserveSig> Sub PSSetShader(shader As IntPtr, classInstances As IntPtr, numClassInstances As UInteger)
+        ' slot 10
+        <PreserveSig> Sub PSSetSamplers(startSlot As UInteger, numSamplers As UInteger, samplers As IntPtr)
+        ' slot 11
+        <PreserveSig> Sub VSSetShader(shader As IntPtr, classInstances As IntPtr, numClassInstances As UInteger)
+        ' slot 12
+        <PreserveSig> Sub DrawIndexed(indexCount As UInteger, startIndexLocation As UInteger, baseVertexLocation As Integer)
+        ' slot 13
+        <PreserveSig> Sub Draw(vertexCount As UInteger, startVertexLocation As UInteger)
+
+        ' slot 14, any resource and not only a texture2d
+        <PreserveSig> Function Map(resource As IntPtr, subresource As UInteger, mapType As UInteger,
+                                    mapFlags As UInteger, ByRef mapped As D3D11_MAPPED_SUBRESOURCE) As Integer
+        ' slot 15
+        <PreserveSig> Sub Unmap(resource As IntPtr, subresource As UInteger)
+    End Interface
+
     <ComImport>
     <Guid("c0bfa96c-e089-44fb-8eaf-26f8796190da")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
