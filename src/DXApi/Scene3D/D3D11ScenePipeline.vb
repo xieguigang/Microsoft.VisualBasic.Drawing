@@ -561,10 +561,20 @@ Namespace Scene3D
         ''' written once, while <c>UpdateSubresource</c> would copy it into an
         ''' intermediate staging buffer first.
         ''' </remarks>
-        Friend Sub FillDynamicBuffer(buffer As IntPtr, items As Single())
-            If buffer = IntPtr.Zero OrElse items Is Nothing OrElse items.Length = 0 Then
+        ''' <param name="maxItems">
+        ''' how many items the buffer can hold: the copy is clamped to it,
+        ''' because the buffer may have been reserved for a larger cloud than
+        ''' the one that is uploaded now. Writing past it is an access
+        ''' violation and not an exception.
+        ''' </param>
+        Friend Sub FillDynamicBuffer(buffer As IntPtr, items As Single(), maxItems As Integer)
+            If buffer = IntPtr.Zero OrElse items Is Nothing OrElse items.Length = 0 OrElse maxItems <= 0 Then
                 Return
             End If
+
+            Dim count As Integer = items.Length
+
+            If count > maxItems Then count = maxItems
 
             Dim context As ID3D11DeviceContextBuffer = m_bufferContext
 
@@ -580,7 +590,7 @@ Namespace Scene3D
                 "ID3D11DeviceContext::Map")
 
             Try
-                Call Marshal.Copy(items, 0, mapped.pData, items.Length)
+                Call Marshal.Copy(items, 0, mapped.pData, count)
             Finally
                 Call context.Unmap(buffer, 0UI)
             End Try

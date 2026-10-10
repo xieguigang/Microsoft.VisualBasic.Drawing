@@ -252,7 +252,20 @@ Namespace Scene3D
             End Get
         End Property
 
-        Private Const UseDynamicCloud As Boolean = False
+        ''' <summary>
+        ''' fill the instance buffer of the external point cloud through
+        ''' <c>Map(WRITE_DISCARD)</c> instead of <c>UpdateSubresource</c>
+        ''' </summary>
+        ''' <remarks>
+        ''' The map avoids the staging copy that
+        ''' <see cref="D3D11ScenePipeline.FillBuffer"/> pays for, but the
+        ''' <c>Unmap</c> has to wait for the frame that still reads the buffer,
+        ''' which serializes the cpu with the gpu. Measured on a cloud of half a
+        ''' million points the update through <c>UpdateSubresource</c> was
+        ''' faster overall, so it stays the default and this switch is there for
+        ''' a comparison on other hardware.
+        ''' </remarks>
+        Public Shared Property UseDynamicCloud As Boolean = False
 
         ''' <summary>
         ''' the wall clock time of the last upload of the external point cloud
@@ -312,7 +325,7 @@ Namespace Scene3D
             Dim clock As Stopwatch = Stopwatch.StartNew()
 
             If UseDynamicCloud Then
-                Call m_pipeline.FillDynamicBuffer(m_cloudBuffer, m_pendingCloud)
+                Call m_pipeline.FillDynamicBuffer(m_cloudBuffer, m_pendingCloud, m_cloudBytes \ 4)
             Else
                 Call m_pipeline.FillBuffer(m_cloudBuffer, m_pendingCloud)
             End If
