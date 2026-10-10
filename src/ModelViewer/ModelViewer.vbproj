@@ -9,6 +9,24 @@
     <UseWPF>True</UseWPF>
     <ApplicationIcon>3mf.ico</ApplicationIcon>
     <Platforms>AnyCPU;x64</Platforms>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>G:\Microsoft.VisualBasic.Drawing\tools\output</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutputPath>G:\Microsoft.VisualBasic.Drawing\tools\output</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>G:\Microsoft.VisualBasic.Drawing\tools\output</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutputPath>G:\Microsoft.VisualBasic.Drawing\tools\output</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

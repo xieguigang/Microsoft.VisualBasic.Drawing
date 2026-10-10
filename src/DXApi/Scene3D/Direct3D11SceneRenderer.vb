@@ -65,6 +65,15 @@ Namespace Scene3D
         Private m_lastErrorDetail As String = ""
         Private m_disposed As Boolean = False
 
+        ' the instance buffer of a point cloud that lives outside of the scene,
+        ' see UploadInstances
+        Private m_cloudBuffer As IntPtr = IntPtr.Zero
+        Private m_cloudBytes As Integer = 0
+        Private m_cloudCapacity As Integer = 0
+        Private m_cloudCount As Integer = 0
+        Private m_pendingCloud As Single() = Nothing
+        Private m_pendingCount As Integer = 0
+
         Public ReadOnly Property Name As String Implements ISceneRenderBackend.Name
             Get
                 Return "Direct3D 11"
@@ -154,6 +163,132 @@ Namespace Scene3D
             m_lastError = ""
         End Sub
 
+        ''' <summary>
+        ''' reserve the per instance buffer of an animated point cloud that lives
+        ''' outside of <see cref="Scene"/>
+        ''' </summary>
+        ''' <param name="pointCount">
+        ''' the largest number of points that <see cref="UploadInstances"/> is
+        ''' going to submit
+        ''' </param>
+        ''' <remarks>
+        ''' A host that animates a point cloud of millions of points can not go
+        ''' through <see cref="Scene.LoadPointCloud"/>: every call raises
+        ''' <see cref="Scene.Version"/> and therefore drops the cached
+        ''' <see cref="GpuSceneGeometry"/> of this back end, which rebuilds the
+        ''' whole immutable instance buffer of the cloud on every single frame.
+        '''
+        ''' The three members <see cref="EnsureInstanceCapacity"/>,
+        ''' <see cref="UploadInstances"/> and <see cref="ClearInstances"/> keep
+        ''' the cloud outside of the scene instead: the scene then only carries
+        ''' the static geometry of the frame (for example the wire frame of a
+        ''' container) while the moving points are uploaded into one buffer that
+        ''' is refilled by the host once per frame. As long as these members are
+        ''' never called the behaviour of this back end does not change at all.
+        ''' </remarks>
+        Public Sub EnsureInstanceCapacity(pointCount As Integer)
+            If pointCount < 0 Then
+                pointCount = 0
+            End If
+
+            m_cloudCapacity = pointCount
+        End Sub
+
+        ''' <summary>
+        ''' hand the instance data of the next frame over to this back end
+        ''' </summary>
+        ''' <param name="data">
+        ''' eight <see cref="Single"/> per point, the layout of one instance:
+        ''' the position x/y/z, the normal x/y/z (the x component is the per
+        ''' point size factor of the palette mode), the heat value of the point
+        ''' in [0,1] and one unused padding word. The eight words are the 32
+        ''' bytes of <c>Scene3DInputLayout.PointInstanceStride</c>.
+        ''' </param>
+        ''' <param name="pointCount">how many points of <paramref name="data"/> are valid</param>
+        ''' <remarks>
+        ''' The array is uploaded by the next <see cref="Render"/> and must stay
+        ''' untouched until that frame has been drawn.
+        ''' </remarks>
+        Public Sub UploadInstances(data As Single(), pointCount As Integer)
+            If data Is Nothing OrElse pointCount <= 0 Then
+                Call ClearInstances()
+                Return
+            End If
+
+            If pointCount * 8 > data.Length Then
+                pointCount = data.Length \ 8
+            End If
+
+            m_pendingCloud = data
+            m_pendingCount = pointCount
+        End Sub
+
+        ''' <summary>
+        ''' drop the point cloud that was handed over by
+        ''' <see cref="UploadInstances"/>, the scene keeps its own point cloud
+        ''' </summary>
+        Public Sub ClearInstances()
+            m_pendingCloud = Nothing
+            m_pendingCount = 0
+            m_cloudCount = 0
+        End Sub
+
+        ''' <summary>
+        ''' how many points the external instance buffer can hold
+        ''' </summary>
+        Public ReadOnly Property ExternalInstanceCapacity As Integer
+            Get
+                Return m_cloudCapacity
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' how many external points the last frame has drawn
+        ''' </summary>
+        Public ReadOnly Property ExternalInstanceCount As Integer
+            Get
+                Return m_cloudCount
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' upload the pending instance data of the external point cloud, the
+        ''' gpu device of the canvas is only known inside of a frame so the
+        ''' buffer is created here
+        ''' </summary>
+        Private Sub SyncExternalCloud()
+            Dim wanted As Integer = std.Max(m_cloudCapacity, m_pendingCount)
+            Dim stride As Integer = CInt(Scene3DInputLayout.PointInstanceStride)
+            Dim bytes As Integer = wanted * stride
+
+            If bytes <> m_cloudBytes Then
+                If m_cloudBuffer <> IntPtr.Zero Then
+                    Call m_pipeline.ReleaseBuffer(m_cloudBuffer)
+                End If
+
+                m_cloudBytes = bytes
+            End If
+
+            If m_pendingCloud Is Nothing OrElse m_pendingCount <= 0 Then
+                Return
+            End If
+
+            If m_cloudBuffer = IntPtr.Zero Then
+                m_cloudBuffer = m_pipeline.CreateBuffer(m_cloudBytes, D3D11_BIND_FLAG.VERTEX_BUFFER)
+            End If
+
+            If m_cloudBuffer = IntPtr.Zero Then
+                m_cloudCount = 0
+                Return
+            End If
+
+            Call m_pipeline.FillBuffer(m_cloudBuffer, m_pendingCloud)
+
+            m_cloudCount = m_pendingCount
+            m_pendingCloud = Nothing
+            m_pendingCount = 0
+        End Sub
+
         Public Sub Render(canvas As IGraphics,
                           scene As Scene,
                           camera As Camera,
@@ -217,6 +352,7 @@ Namespace Scene3D
 
             Call EnsurePipeline(surface.Device)
             Call EnsureTarget(size, options)
+            Call SyncExternalCloud()
 
             Dim transform As SceneTransform = SceneTransform.Create(camera, scene, size)
             Dim geometry As GpuSceneGeometry = m_pipeline.GeometryOf(scene, options)
@@ -279,7 +415,7 @@ Namespace Scene3D
                     Case Else
                         Call m_pipeline.DrawSurfaces(geometry, options)
                 End Select
-            ElseIf scene.PointCount > 0 Then
+            ElseIf scene.PointCount > 0 OrElse m_cloudCount > 0 Then
                 If options.ShowGround Then
                     Call m_pipeline.DrawGround(geometry, options.GroundColor)
                 End If
@@ -302,6 +438,18 @@ Namespace Scene3D
         ''' cubes that occlude each other through the depth buffer
         ''' </summary>
         Private Sub DrawPointCloud(scene As Scene, geometry As GpuSceneGeometry, options As SceneRenderOptions)
+            ' a cloud that the host uploaded through UploadInstances wins over
+            ' the point cloud of the scene
+            If m_cloudCount > 0 AndAlso m_cloudBuffer <> IntPtr.Zero Then
+                If options.PointShape = ScenePointShape.Cube AndAlso geometry.CubeBuffer <> IntPtr.Zero Then
+                    Call m_pipeline.DrawPointsCubes(scene, geometry, options)
+                Else
+                    Call m_pipeline.DrawPointInstances(geometry, options, m_cloudBuffer, m_cloudCount)
+                End If
+
+                Return
+            End If
+
             If options.PointShape = ScenePointShape.Cube AndAlso geometry.CubeBuffer <> IntPtr.Zero Then
                 Call m_pipeline.DrawPointsCubes(scene, geometry, options)
             Else
@@ -315,6 +463,9 @@ Namespace Scene3D
             End If
 
             Dim stale As D3D11ScenePipeline = m_pipeline
+
+            ' the external cloud belongs to the device of the old pipeline
+            Call ReleaseExternalCloud()
 
             m_pipeline = New D3D11ScenePipeline(device)
 
@@ -391,8 +542,24 @@ Namespace Scene3D
             m_canvasViewSource = IntPtr.Zero
         End Sub
 
+        Private Sub ReleaseExternalCloud()
+            If m_cloudBuffer <> IntPtr.Zero Then
+                If m_pipeline IsNot Nothing Then
+                    Call m_pipeline.ReleaseBuffer(m_cloudBuffer)
+                Else
+                    Call Marshal.Release(m_cloudBuffer)
+                    m_cloudBuffer = IntPtr.Zero
+                End If
+            End If
+
+            m_cloudBuffer = IntPtr.Zero
+            m_cloudBytes = 0
+            m_cloudCount = 0
+        End Sub
+
         Private Sub ReleaseGpu()
             Call ReleaseCanvasTarget()
+            Call ReleaseExternalCloud()
 
             If m_target IsNot Nothing Then
                 m_target.Dispose()

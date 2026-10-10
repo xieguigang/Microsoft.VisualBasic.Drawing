@@ -425,6 +425,26 @@ Namespace Scene3D
                 Return
             End If
 
+            Call DrawPointInstances(geometry, options, instances, geometry.InstanceCount)
+        End Sub
+
+        ''' <summary>
+        ''' draw a per instance buffer that does not belong to the scene
+        ''' </summary>
+        ''' <remarks>
+        ''' The host of a very large animated point cloud keeps the instance data
+        ''' of the cloud outside of <see cref="Scene"/> (see
+        ''' <c>Direct3D11SceneRenderer.UploadInstances</c>) so that the frames of
+        ''' the animation do not drop the cached geometry of the pipeline. This
+        ''' overload draws such a buffer with the very same state as the point
+        ''' cloud of the scene.
+        ''' </remarks>
+        Friend Sub DrawPointInstances(geometry As GpuSceneGeometry, options As SceneRenderOptions,
+                                      instances As IntPtr, instanceCount As Integer)
+            If instances = IntPtr.Zero OrElse instanceCount <= 0 Then
+                Return
+            End If
+
             Dim context As ID3D11DeviceContext = m_device.Context
             Dim palette As IntPtr = geometry.PaletteView
 
@@ -448,9 +468,74 @@ Namespace Scene3D
 
             Call BindVertexBuffers(geometry.QuadBuffer, Scene3DInputLayout.PointQuadStride,
                                    instances, Scene3DInputLayout.PointInstanceStride)
-            Call context.DrawInstanced(6UI, CUInt(geometry.InstanceCount), 0UI, 0UI)
+            Call context.DrawInstanced(6UI, CUInt(instanceCount), 0UI, 0UI)
 
             Call UnbindShaderResource()
+        End Sub
+
+        ''' <summary>
+        ''' create a vertex buffer of the given size that the cpu fills through
+        ''' <see cref="FillBuffer"/>, the buffer is not part of the cached
+        ''' geometry of a scene and is released by the caller
+        ''' </summary>
+        Friend Function CreateBuffer(bytes As Integer, bind As D3D11_BIND_FLAG) As IntPtr
+            If bytes <= 0 Then
+                Return IntPtr.Zero
+            End If
+
+            Dim desc As New D3D11_BUFFER_DESC With {
+                .ByteWidth = CUInt(bytes),
+                .Usage = CInt(D3D11_USAGE.DEFAULT),
+                .BindFlags = CUInt(bind),
+                .CPUAccessFlags = 0,
+                .MiscFlags = 0,
+                .StructureByteStride = 0
+            }
+            Dim pinnedDesc As GCHandle = GCHandle.Alloc(desc, GCHandleType.Pinned)
+            Dim buffer As IntPtr = IntPtr.Zero
+
+            Try
+                Call ThrowIfFailed(
+                    m_device.Device.CreateBuffer(pinnedDesc.AddrOfPinnedObject(), IntPtr.Zero, buffer),
+                    "ID3D11Device::CreateBuffer")
+            Finally
+                pinnedDesc.Free()
+            End Try
+
+            Return buffer
+        End Function
+
+        ''' <summary>
+        ''' overwrite a buffer that was created by <see cref="CreateBuffer"/>
+        ''' with the content of a managed array
+        ''' </summary>
+        ''' <remarks>
+        ''' the whole buffer is replaced, so <paramref name="items"/> has to hold
+        ''' at least as many bytes as the buffer was created with
+        ''' </remarks>
+        Friend Sub FillBuffer(Of T As Structure)(buffer As IntPtr, items As T())
+            If buffer = IntPtr.Zero OrElse items Is Nothing OrElse items.Length = 0 Then
+                Return
+            End If
+
+            Dim pinned As GCHandle = GCHandle.Alloc(items, GCHandleType.Pinned)
+
+            Try
+                Call m_device.Context.UpdateSubresource(
+                    buffer, 0UI, IntPtr.Zero, pinned.AddrOfPinnedObject(), 0UI, 0UI)
+            Finally
+                pinned.Free()
+            End Try
+        End Sub
+
+        ''' <summary>
+        ''' release a buffer that was created by <see cref="CreateBuffer"/>
+        ''' </summary>
+        Friend Sub ReleaseBuffer(ByRef buffer As IntPtr)
+            If buffer <> IntPtr.Zero Then
+                Call Marshal.Release(buffer)
+                buffer = IntPtr.Zero
+            End If
         End Sub
 
         ''' <summary>
