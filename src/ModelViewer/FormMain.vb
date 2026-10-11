@@ -252,11 +252,13 @@ Public Class FormMain
         Select Case Me.cboMode.SelectedIndex
             Case 1
                 Me.canvas.RenderMode = SceneRenderMode.Mesh
+                Me.numPointSize.Enabled = False
             Case 2
                 Me.canvas.RenderMode = SceneRenderMode.PointCloud
                 Me.numPointSize.Enabled = True
             Case Else
                 Me.canvas.RenderMode = SceneRenderMode.Surface
+                Me.numPointSize.Enabled = False
         End Select
 
         Call UpdateStatus()
@@ -566,14 +568,14 @@ Public Class FormMain
     Private Sub UpdateStatus()
         Dim mode As String = Nothing
 
-        numPointSize.Enabled = False
+        ' numPointSize.Enabled = False
 
         Select Case Me.canvas.RenderMode
             Case SceneRenderMode.Mesh
                 mode = "三角形网格"
             Case SceneRenderMode.PointCloud
                 mode = "点云"
-                numPointSize.Enabled = True
+                ' numPointSize.Enabled = True
             Case Else
                 mode = "表面渲染"
         End Select
