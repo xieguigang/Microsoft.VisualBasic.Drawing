@@ -1,6 +1,7 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.Drawing.DirectX
 Imports Microsoft.VisualBasic.Drawing.DirectX.Scene3D
+Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports ImageFormats = Microsoft.VisualBasic.Imaging.ImageFormats
 
@@ -14,12 +15,6 @@ Imports ImageFormats = Microsoft.VisualBasic.Imaging.ImageFormats
 ''' user interface with the state of that control.
 ''' </remarks>
 Public Class FormMain
-
-    ''' <summary>the heat map color schemes of the point presentation modes</summary>
-    Private ReadOnly schemes As String() = {
-        "viridis", "magma", "inferno", "plasma", "turbo", "jet",
-        "rainbow", "cividis", "mako", "rocket", "viridis:rocket"
-    }
 
     ''' <summary>the selectable edge length of a point cloud point</summary>
     Private ReadOnly pointSizes As String() = {"1", "2", "3", "4", "5", "6", "8", "10", "12"}
@@ -87,7 +82,7 @@ Public Class FormMain
 
     Private Sub SetupToolbar()
         Me.cboMode.Items.AddRange(New Object() {"表面渲染", "三角形网格", "点云 (PLY)"})
-        Me.cboScheme.Items.AddRange(schemes)
+        Me.cboScheme.Items.AddRange(Enums(Of ScalerPalette))
         Me.numPointSize.Items.AddRange(pointSizes)
         Me.cboPipeline.Items.AddRange(New Object() {
             "D3D11 抗锯齿",
@@ -285,7 +280,7 @@ Public Class FormMain
             Return
         End If
 
-        Me.canvas.ColorScheme = Me.cboScheme.Text
+        Me.canvas.ColorScheme = DirectCast(Me.cboScheme.SelectedItem, ScalerPalette)
     End Sub
 
     Private Sub PointSizeChanged(sender As Object, e As EventArgs) Handles numPointSize.SelectedIndexChanged
