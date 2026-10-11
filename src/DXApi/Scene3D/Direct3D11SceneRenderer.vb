@@ -482,14 +482,32 @@ Namespace Scene3D
         End Sub
 
         ''' <summary>
+        ''' draw the external instance cloud on top of the point cloud of the
+        ''' scene instead of replacing it
+        ''' </summary>
+        ''' <remarks>
+        ''' By default (false) an external cloud wins over the scene cloud: a
+        ''' host that animates the whole display hands its full cloud in and the
+        ''' scene points would double-draw it. With this flag on, the scene cloud
+        ''' is drawn first and the external cloud is drawn on top of it as
+        ''' screen space billboards (palette colored): the host keeps the static
+        ''' geometry in the scene and only the moving overlay points outside of
+        ''' it, so an animated overlay does not touch <see cref="Scene.Version"/>.
+        ''' </remarks>
+        Public Property ExternalCloudOverlay As Boolean = False
+
+        ''' <summary>
         ''' draw the point cloud in the point shape that the options request:
         ''' screen aligned squares (the classic billboard) or world space voxel
         ''' cubes that occlude each other through the depth buffer
         ''' </summary>
         Private Sub DrawPointCloud(scene As Scene, geometry As GpuSceneGeometry, options As SceneRenderOptions)
             ' a cloud that the host uploaded through UploadInstances wins over
-            ' the point cloud of the scene
-            If m_cloudCount > 0 AndAlso m_cloudBuffer <> IntPtr.Zero Then
+            ' the point cloud of the scene, unless the host asked for the
+            ' overlay mode (scene cloud first, external cloud on top)
+            Dim external As Boolean = m_cloudCount > 0 AndAlso m_cloudBuffer <> IntPtr.Zero
+
+            If external AndAlso Not ExternalCloudOverlay Then
                 If options.PointShape = ScenePointShape.Cube AndAlso geometry.CubeBuffer <> IntPtr.Zero Then
                     Call m_pipeline.DrawPointsCubes(scene, geometry, options)
                 Else
@@ -503,6 +521,12 @@ Namespace Scene3D
                 Call m_pipeline.DrawPointsCubes(scene, geometry, options)
             Else
                 Call m_pipeline.DrawPoints(scene, geometry, options)
+            End If
+
+            If ExternalCloudOverlay AndAlso external Then
+                ' the animated overlay points: screen space billboards above the
+                ' static scene cloud (palette colored through the heat value)
+                Call m_pipeline.DrawPointInstances(geometry, options, m_cloudBuffer, m_cloudCount)
             End If
         End Sub
 
