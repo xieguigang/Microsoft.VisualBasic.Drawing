@@ -254,6 +254,7 @@ Public Class FormMain
                 Me.canvas.RenderMode = SceneRenderMode.Mesh
             Case 2
                 Me.canvas.RenderMode = SceneRenderMode.PointCloud
+                Me.numPointSize.Enabled = True
             Case Else
                 Me.canvas.RenderMode = SceneRenderMode.Surface
         End Select
@@ -565,11 +566,14 @@ Public Class FormMain
     Private Sub UpdateStatus()
         Dim mode As String = Nothing
 
+        numPointSize.Enabled = False
+
         Select Case Me.canvas.RenderMode
             Case SceneRenderMode.Mesh
                 mode = "三角形网格"
             Case SceneRenderMode.PointCloud
                 mode = "点云"
+                numPointSize.Enabled = True
             Case Else
                 mode = "表面渲染"
         End Select
