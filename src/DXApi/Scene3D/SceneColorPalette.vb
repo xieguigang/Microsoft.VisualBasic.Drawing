@@ -26,7 +26,7 @@ Namespace Scene3D
         Private ReadOnly embedded As New Dictionary(Of String, Brush)()
         Private m_table As Color()
         Private m_brushes As Brush()
-        Private m_scheme As String = Nothing
+        Private m_scheme As ScalerPalette = Nothing
         Private m_alpha As Integer = -1
 
         ''' <summary>
@@ -34,13 +34,13 @@ Namespace Scene3D
         ''' </summary>
         ''' <param name="scheme">the scheme name that the color designer understands</param>
         ''' <param name="alpha">the alpha channel of the generated colors</param>
-        Public Function GetTable(scheme As String, alpha As Integer) As Color()
+        Public Function GetTable(scheme As ScalerPalette, alpha As Integer) As Color()
             If m_table Is Nothing OrElse m_scheme <> scheme OrElse m_alpha <> alpha Then
                 m_scheme = scheme
                 m_alpha = alpha
 
                 Try
-                    m_table = Designer.GetColors(scheme, Levels, alpha)
+                    m_table = Designer.GetColors(scheme.Description, Levels, alpha)
                 Catch ex As Exception
                     ' an unknown scheme must not break the rendering frame
                     m_table = Nothing
@@ -62,7 +62,7 @@ Namespace Scene3D
         ''' get the point brushes of the given heat map scheme, index zero is the
         ''' coldest color and the last index is the hottest color
         ''' </summary>
-        Public Function GetBrushes(scheme As String, alpha As Integer) As Brush()
+        Public Function GetBrushes(scheme As ScalerPalette, alpha As Integer) As Brush()
             Call GetTable(scheme, alpha)
             Return m_brushes
         End Function
@@ -70,7 +70,7 @@ Namespace Scene3D
         ''' <summary>
         ''' map a normalized value in [0, 1] onto the heat map of the given scheme
         ''' </summary>
-        Public Function GetHeatBrush(t As Double, scheme As String, alpha As Integer) As Brush
+        Public Function GetHeatBrush(t As Double, scheme As ScalerPalette, alpha As Integer) As Brush
             Dim table As Brush() = GetBrushes(scheme, alpha)
             Dim n As Integer = table.Length
 

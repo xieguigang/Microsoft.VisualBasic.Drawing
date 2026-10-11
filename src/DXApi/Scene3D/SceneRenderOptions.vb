@@ -1,5 +1,6 @@
 Imports System.Drawing
 Imports System.Numerics
+Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
 
 Namespace Scene3D
 
@@ -42,7 +43,7 @@ Namespace Scene3D
         ''' the heat map color scheme name that is passed to the color designer,
         ''' for example ``viridis`` or ``magma``
         ''' </summary>
-        Public Property ColorScheme As String = "viridis"
+        Public Property ColorScheme As ScalerPalette = ScalerPalette.viridis
 
         ''' <summary>
         ''' the edge length in pixels of a point cloud point

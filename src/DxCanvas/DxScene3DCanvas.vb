@@ -3,6 +3,7 @@ Imports System.Drawing
 Imports System.Windows.Forms
 Imports Microsoft.VisualBasic.Drawing.DirectX.Scene3D
 Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
 Imports Microsoft.VisualBasic.Imaging.Drawing3D
 Imports Bitmap = Microsoft.VisualBasic.Imaging.Bitmap
 Imports Brush = Microsoft.VisualBasic.Imaging.Brush
@@ -448,19 +449,17 @@ Public Class DxScene3DCanvas : Inherits DxCanvas
     <Category("DirectX")>
     <DefaultValue("viridis")>
     <Description("the heat map color scheme of the point presentation modes")>
-    Public Property ColorScheme As String
+    Public Property ColorScheme As ScalerPalette
         Get
             Return m_options.ColorScheme
         End Get
-        Set(value As String)
-            Dim scheme As String = If(String.IsNullOrEmpty(value), "viridis", value)
+        Set
+            If m_options.ColorScheme <> Value Then
+                m_options.ColorScheme = Value
 
-            If m_options.ColorScheme = scheme Then
-                Return
+                ' update direct-x render
+                Call Invalidate()
             End If
-
-            m_options.ColorScheme = scheme
-            Call Invalidate()
         End Set
     End Property
 
