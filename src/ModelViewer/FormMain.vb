@@ -1,10 +1,8 @@
-﻿Imports System.Diagnostics
-Imports System.IO
+﻿Imports System.IO
 Imports Microsoft.VisualBasic.Drawing.DirectX
 Imports Microsoft.VisualBasic.Drawing.DirectX.Scene3D
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports ImageFormats = Microsoft.VisualBasic.Imaging.ImageFormats
-Imports std = System.Math
 
 ''' <summary>
 ''' The main window of the directx accelerated 3d model viewer.
