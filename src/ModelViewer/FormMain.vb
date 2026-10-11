@@ -82,13 +82,16 @@ Public Class FormMain
 
     Private Sub SetupToolbar()
         Me.cboMode.Items.AddRange(New Object() {"表面渲染", "三角形网格", "点云 (PLY)"})
-        Me.cboScheme.Items.AddRange(Enums(Of ScalerPalette))
         Me.numPointSize.Items.AddRange(pointSizes)
         Me.cboPipeline.Items.AddRange(New Object() {
             "D3D11 抗锯齿",
             "D3D11 直连",
             "Direct2D 逐面"
         })
+
+        For Each map As ScalerPalette In Enums(Of ScalerPalette)()
+            Call Me.cboScheme.Items.Add(map)
+        Next
 
         Me.cboMode.SelectedIndex = 0
         Me.cboScheme.SelectedIndex = 0
@@ -103,7 +106,7 @@ Public Class FormMain
             .AutoClear = False
             .BackgroundColor = Color.White
             .RenderMode = SceneRenderMode.Surface
-            .ColorScheme = "viridis"
+            .ColorScheme = ScalerPalette.viridis
             .PointSize = 2
             .PointAlpha = 255
             .UseEmbeddedColor = False
