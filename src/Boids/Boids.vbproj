@@ -8,8 +8,6 @@
     <MyType>WindowsForms</MyType>
     <Platforms>AnyCPU;x64</Platforms>
     <UseWPF>True</UseWPF>
-    <!-- the direct pixel renderer writes into the locked bitmap buffer -->
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- the 80k boids flocking demo is a performance test: make sure the release
