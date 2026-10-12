@@ -249,7 +249,10 @@ Public Module SDRender
     End Sub
 
     ''' <summary>
-    ''' Scanline filled triangle (same vertex order as the legacy head).
+    ''' Scanline filled triangle (same vertex order as the legacy head). Uses 
+    ''' incremental edge interpolation: the long edge and the active short edge 
+    ''' advance by constant slopes per row, so a whole head costs 3 divisions 
+    ''' instead of one division per edge per row.
     ''' </summary>
     Private Sub FillTriangle(ByVal buf As Integer*, ByVal strideInts As Integer,
                              w As Integer, h As Integer,
@@ -257,26 +260,68 @@ Public Module SDRender
                              bx As Double, by As Double,
                              cx As Double, cy As Double,
                              c As Integer)
-        Dim minY As Integer = CInt(std.Floor(std.Min(ay, std.Min(by, cy))))
-        Dim maxY As Integer = CInt(std.Ceiling(std.Max(ay, std.Max(by, cy)))) - 1
+        ' sort the three vertices by y (3-exchange network)
+        If ay > by Then
+            Dim tx = ax, ty = ay
+            ax = bx : ay = by
+            bx = tx : by = ty
+        End If
+        If by > cy Then
+            Dim tx = bx, ty = by
+            bx = cx : by = cy
+            cx = tx : cy = ty
+        End If
+        If ay > by Then
+            Dim tx = ax, ty = ay
+            ax = bx : ay = by
+            bx = tx : by = ty
+        End If
+
+        If cy <= ay Then Return   ' degenerate (zero height)
+
+        Dim minY As Integer = CInt(std.Floor(ay))
+        Dim maxY As Integer = CInt(std.Ceiling(cy)) - 1
 
         If minY < 0 Then minY = 0
         If maxY >= h Then maxY = h - 1
         If minY > maxY Then Return
 
+        ' long edge v0(ax,ay) -> v2(cx,cy)
+        Dim longDx As Double = (cx - ax) / (cy - ay)
+        ' short edge of the upper band: v0 -> v1 (skipped on a flat top)
+        Dim upDx As Double = If(by > ay, (bx - ax) / (by - ay), 0.0)
+        ' short edge of the lower band: v1 -> v2 (skipped on a flat bottom)
+        Dim loDx As Double = If(cy > by, (cx - bx) / (cy - by), 0.0)
+
+        Dim yc As Double = minY + 0.5
+        Dim xLong As Double = ax + (yc - ay) * longDx
+        Dim xShort As Double
+        Dim shortDx As Double
+
+        If (by > ay) AndAlso (yc <= by) Then
+            xShort = ax + (yc - ay) * upDx
+            shortDx = upDx
+        Else
+            xShort = bx + (yc - by) * loDx
+            shortDx = loDx
+        End If
+
         For yi As Integer = minY To maxY
-            Dim yc As Double = yi + 0.5
+            If (by > ay) AndAlso (cy > by) AndAlso (yi + 0.5 > by) AndAlso (shortDx <> loDx) Then
+                ' crossed into the lower band: recompute the short edge exactly
+                yc = yi + 0.5
+                xShort = bx + (yc - by) * loDx
+                shortDx = loDx
+            End If
 
-            ' horizontal span of the triangle at this scanline
-            Dim x0 As Double = Double.MaxValue
-            Dim x1 As Double = Double.MinValue
-            Dim found As Integer = 0
+            Dim x0 As Double = xLong
+            Dim x1 As Double = xShort
 
-            found += ScanEdge(ax, ay, bx, by, yc, x0, x1)
-            found += ScanEdge(bx, by, cx, cy, yc, x0, x1)
-            found += ScanEdge(cx, cy, ax, ay, yc, x0, x1)
-
-            If found < 2 Then Continue For
+            If x0 > x1 Then
+                Dim tmp = x0
+                x0 = x1
+                x1 = tmp
+            End If
 
             Dim fromX As Integer = CInt(std.Ceiling(x0 - 0.5))
             Dim toX As Integer = CInt(std.Floor(x1 - 0.5))
@@ -284,31 +329,18 @@ Public Module SDRender
             If fromX < 0 Then fromX = 0
             If toX >= w Then toX = w - 1
 
-            For xi As Integer = fromX To toX
-                buf(yi * strideInts + xi) = c
-            Next
+            If fromX <= toX Then
+                Dim rowOffset As Integer = yi * strideInts
+
+                For xi As Integer = fromX To toX
+                    buf(rowOffset + xi) = c
+                Next
+            End If
+
+            xLong += longDx
+            xShort += shortDx
         Next
     End Sub
-
-    ''' <summary>
-    ''' Tests one triangle edge against the horizontal scanline and merges the 
-    ''' crossing x into the [x0, x1] span. Returns 1 when the edge crosses.
-    ''' </summary>
-    <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Private Function ScanEdge(ax As Double, ay As Double, bx As Double, by As Double,
-                              yc As Double, ByRef x0 As Double, ByRef x1 As Double) As Integer
-        If (ay <= yc AndAlso by > yc) OrElse (by <= yc AndAlso ay > yc) Then
-            Dim t As Double = (yc - ay) / (by - ay)
-            Dim x As Double = ax + t * (bx - ax)
-
-            If x < x0 Then x0 = x
-            If x > x1 Then x1 = x
-
-            Return 1
-        End If
-
-        Return 0
-    End Function
 
     ''' <summary>
     ''' Writes one pixel with bounds clipping.
