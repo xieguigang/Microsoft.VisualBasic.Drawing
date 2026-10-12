@@ -67,6 +67,13 @@ Partial Public Class FormRender
     Private field As Field
     Public Sub New()
         InitializeComponent()
+
+        ' the parallel physics solve (VectorTask, n_threads = CPU core count) 
+        ' runs on the .NET thread pool; without raising the pool's minimum the 
+        ' pool only injects threads lazily and the 24-way solve would run on 
+        ' ~13 threads, roughly halving the physics throughput
+        Call System.Threading.ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount)
+
         Reset()
 
         Size = New Size(2000, 1200)
@@ -79,7 +86,7 @@ Partial Public Class FormRender
         Reset()
     End Sub
     Private Sub Reset()
-        VectorTask.n_threads = 12
+        VectorTask.n_threads = App.CPUCoreNumbers
         pictureBox1.BackColor = Color.Black
         field = New Field(pictureBox1.Width, pictureBox1.Height, 120000)
 
