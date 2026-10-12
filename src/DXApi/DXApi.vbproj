@@ -26,8 +26,8 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.VisualBasic.Drawing.DirectX</AssemblyName>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Version>10.5.9777.32612</Version>
-    <AssemblyVersion>1.0.9777.32612</AssemblyVersion>
+    <Version>10.6.9781.24297</Version>
+    <AssemblyVersion>1.0.9781.24297</AssemblyVersion>
     <OptionStrict>Off</OptionStrict>
   </PropertyGroup>
 
