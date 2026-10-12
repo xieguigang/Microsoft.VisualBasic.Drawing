@@ -69,6 +69,7 @@ Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
 Imports Microsoft.VisualBasic.Imaging.Physics.Boids
 Imports Bitmap = System.Drawing.Bitmap
 Imports std = System.Math
+Imports PixelFormat = System.Drawing.Imaging.PixelFormat
 
 Public Module SDRender
 
