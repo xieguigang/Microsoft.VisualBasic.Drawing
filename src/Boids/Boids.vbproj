@@ -8,6 +8,18 @@
     <MyType>WindowsForms</MyType>
     <Platforms>AnyCPU;x64</Platforms>
     <UseWPF>True</UseWPF>
+    <!-- the direct pixel renderer writes into the locked bitmap buffer -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- the 80k boids flocking demo is a performance test: make sure the release
+       build is fully optimized (the SDK default for Release already enables
+       the optimizer, the explicit switches below only remove the VB integer
+       overflow checks and keep the release configuration self documenting) -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+    <RemoveIntegerChecks>true</RemoveIntegerChecks>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

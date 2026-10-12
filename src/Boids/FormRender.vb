@@ -80,7 +80,14 @@ Partial Public Class FormRender
     End Sub
     Private Sub Reset()
         VectorTask.n_threads = 12
+        pictureBox1.BackColor = Color.Black
         field = New Field(pictureBox1.Width, pictureBox1.Height, 80000)
+
+        ' warm up the JIT and the thread pool so that the first timed frame is
+        ' not dominated by one-off compilation costs
+        For i As Integer = 1 To 5
+            field.Advance()
+        Next
     End Sub
 
     Dim counter As New PerformanceCounter
@@ -90,7 +97,7 @@ Partial Public Class FormRender
         field.Advance()
         counter.Mark("physics simulation")
         ' pictureBox1.Image?.Dispose()
-        pictureBox1.Image = RenderField(field)
+        SDRender.RenderTo(field, pictureBox1)
         counter.Mark("gdi+ rendering")
         Text = counter.TaskSequentialCounterReport
     End Sub
