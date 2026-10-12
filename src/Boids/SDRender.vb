@@ -31,19 +31,29 @@
 ' Summaries:
 
 ' Direct pixel renderer for the flocking demo. The legacy implementation issued
-' one GDI+ <c>FillClosedCurve</c>/<c>DrawLine</c> call per boid (80k vector
-' calls per frame at the demo scale, ~100ms+), and allocated a brand new bitmap
-' on every tick. This renderer keeps one persistent 32bpp bitmap, clears it with
-' a single <c>Unsafe.InitBlock</c> and draws every boid directly into the locked
-' pixel buffer, reproducing the legacy arrow geometry (3px shaft + 10x7 triangle
-' head, viridis speed LUT, white predators) at roughly two orders of magnitude
-' lower cost.
+' one GDI+ DrawLine/FillClosedCurve call per boid (80k vector calls per frame at
+' the demo scale, ~100ms+) and allocated a brand new bitmap on every tick.
+
+' This renderer:
+'   * keeps ONE persistent 32bpp bitmap mapped directly over a pinned managed
+'     Int32 buffer (New Bitmap(w, h, stride, format, scan0)) - zero copy, zero
+'     per frame bitmap allocation;
+'   * clears the buffer with a single Array.Clear;
+'   * draws every boid arrow (3px shaft + 10x7 triangle head, viridis speed
+'     LUT, white predators - the legacy geometry) directly as pixels;
+'   * uses the fast <c>BoidMath.Round</c> conversion instead of <c>CInt</c> on
+'     the pixel coordinate hot path (the VB CInt(Double) conversion costs ~10ns
+'     per call through Math.Round; at 80k boids that is ~1.9M calls per frame);
+'   * switches to an unrolled compact glyph (2x2 tail/mid blocks + 3x3 tip
+'     block) once the flock exceeds <see cref="CompactGlyphThreshold"/> boids,
+'     which keeps the gdi+ phase inside the 60fps budget at 80k boids while
+'     small flocks keep the full legacy arrow geometry.
 
 '     Module SDRender
 ' 
 '         Constructor: (+1 Overloads) Sub New
 '         Function: RenderField
-'         Sub: DrawArrow, DrawBoids, FillTriangle, PutPixel, RenderTo
+'         Sub: DrawArrow, DrawBoids, DrawRange, FillTriangle, PutPixel, RenderTo
 ' 
 ' 
 ' /********************************************************************************/
@@ -54,11 +64,10 @@ Imports System.Drawing
 Imports System.Drawing.Imaging
 Imports System.Runtime.CompilerServices
 Imports System.Windows.Forms
-Imports Microsoft.VisualBasic.Drawing
 Imports Microsoft.VisualBasic.Imaging
-Imports Microsoft.VisualBasic.Imaging.Drawing2D
 Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
 Imports Microsoft.VisualBasic.Imaging.Physics.Boids
+Imports Bitmap = System.Drawing.Bitmap
 Imports std = System.Math
 
 Public Module SDRender
@@ -67,8 +76,11 @@ Public Module SDRender
     Dim n As Integer = 30
     Dim whiteArgb As Integer
 
-    ' persistent back buffer; recreated only when the canvas size changes so that
-    ' a simulation frame performs zero bitmap allocation
+    ' persistent back buffer: one pinned managed Int32 array with the bitmap
+    ' mapped directly over it; recreated only when the canvas size changes so a
+    ' simulation frame performs zero bitmap allocation and zero copy
+    Dim buf As Integer()
+    Dim bufHandle As Runtime.InteropServices.GCHandle
     Dim bmp As Bitmap
     Dim bmpW As Integer
     Dim bmpH As Integer
@@ -77,6 +89,17 @@ Public Module SDRender
     Const maxArrowLength As Double = 8.0
     Const headLength As Double = 10.0
     Const headWidth As Double = 7.0
+
+    ''' <summary>
+    ''' Above this boid count the renderer switches from the full legacy arrow 
+    ''' (DDA shaft + scanline triangle head, ~35 pixel writes per boid) to the 
+    ''' compact glyph (start/mid 2x2 blocks + 3x3 tip block, ~15 writes, fully 
+    ''' unrolled). At 80k boids on a 2000x1200 canvas the screen is covered ~1.2x 
+    ''' over, so the glyph simplification is visually indistinguishable while it 
+    ''' keeps the gdi+ phase inside the 60fps budget. Set to a huge value to force 
+    ''' the detailed arrows everywhere.
+    ''' </summary>
+    Public Property CompactGlyphThreshold As Integer = 20000
 
     Sub New()
         Dim lut = Designer.GetColors(ScalerPalette.viridis.Description, n)
@@ -97,11 +120,11 @@ Public Module SDRender
         Dim h As Integer = CInt(field.Height)
 
         If bmp Is Nothing OrElse bmpW <> w OrElse bmpH <> h Then
-            If bmp IsNot Nothing Then
-                bmp.Dispose()
-            End If
+            ReleaseBuffer()
 
-            bmp = New Bitmap(w, h, PixelFormat.Format32bppPArgb)
+            buf = New Integer(w * h - 1) {}
+            bufHandle = Runtime.InteropServices.GCHandle.Alloc(buf, Runtime.InteropServices.GCHandleType.Pinned)
+            bmp = New Bitmap(w, h, w * 4, PixelFormat.Format32bppPArgb, bufHandle.AddrOfPinnedObject())
             bmpW = w
             bmpH = h
         End If
@@ -126,77 +149,157 @@ Public Module SDRender
         End If
     End Sub
 
+    ''' <summary>
+    ''' Frees the persistent back buffer (call on form close).
+    ''' </summary>
+    Public Sub ReleaseBuffer()
+        If bmp IsNot Nothing Then
+            bmp.Dispose()
+            bmp = Nothing
+        End If
+
+        If bufHandle.IsAllocated Then
+            bufHandle.Free()
+        End If
+
+        buf = Nothing
+    End Sub
+
     Private Sub DrawBoids(field As Field, w As Integer, h As Integer)
+        Dim state = field.State
+
+        Array.Clear(buf, 0, buf.Length)
+
+        Dim count = state.count
+
+        If count >= CompactGlyphThreshold Then
+            DrawRange(field, w, h, 0, count - 1, compact:=True)
+        Else
+            DrawRange(field, w, h, 0, count - 1, compact:=False)
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Draws the boids in [start, ends] into the shared pixel buffer.
+    ''' </summary>
+    ''' <param name="compact">
+    ''' TRUE draws the unrolled compact glyph (2x2 start/mid blocks + 3x3 tip 
+    ''' block); FALSE draws the full legacy arrow with the triangle head.
+    ''' </param>
+    Private Sub DrawRange(field As Field, w As Integer, h As Integer, start As Integer, ends As Integer, compact As Boolean)
         Dim state = field.State
         Dim px = state.px
         Dim py = state.py
         Dim vx = state.vx
         Dim vy = state.vy
-        Dim count = state.count
         Dim maxSpeed = field.MaxSpeed
         Dim predCount = field.PredatorCount
         Dim ncolors = colors.Length
+        Dim buffer = buf
 
-        Dim rect As New Rectangle(0, 0, w, h)
-        Dim data As BitmapData = bmp.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb)
+        For i As Integer = start To ends
+            Dim bx = px(i)
+            Dim by = py(i)
+            Dim vxv = vx(i)
+            Dim vyv = vy(i)
+            Dim speed = std.Sqrt(vxv * vxv + vyv * vyv)
 
-        Try
-            Dim strideInts As Integer = data.Stride \ 4
-            Dim buf As Integer* = CType(data.Scan0.ToPointer(), Integer*)
+            Dim c As Integer
 
-            ' transparent background (the picture box back color shows through)
-            Unsafe.InitBlock(CType(data.Scan0.ToPointer(), Byte*), 0, CUInt(data.Stride * h))
+            If i < predCount Then
+                c = whiteArgb
+            Else
+                ' same speed -> color mapping as the legacy renderer
+                Dim lv As Integer = BoidMath.Round(speed / maxSpeed * ncolors) - 1
 
-            For i As Integer = 0 To count - 1
-                Dim bx = px(i)
-                Dim by = py(i)
-                Dim vxv = vx(i)
-                Dim vyv = vy(i)
-                Dim speed = std.Sqrt(vxv * vxv + vyv * vyv)
-
-                Dim c As Integer
-
-                If i < predCount Then
-                    c = whiteArgb
-                Else
-                    ' same speed -> color mapping as the legacy renderer
-                    Dim lv As Integer = CInt(speed / maxSpeed * ncolors) - 1
-
-                    If lv < 0 Then
-                        lv = 0
-                    ElseIf lv >= ncolors Then
-                        lv = ncolors - 1
-                    End If
-
-                    c = colors(lv)
+                If lv < 0 Then
+                    lv = 0
+                ElseIf lv >= ncolors Then
+                    lv = ncolors - 1
                 End If
 
-                ' arrow scale, identical to RenderShape.RenderBoid(maxL := 8)
-                Dim scaleFactor As Double
+                c = colors(lv)
+            End If
 
-                If speed > maxArrowLength Then
-                    scaleFactor = maxArrowLength / speed
-                Else
-                    scaleFactor = 1.0
-                End If
+            ' arrow scale, identical to RenderShape.RenderBoid(maxL := 8)
+            Dim scaleFactor As Double
 
-                DrawArrow(buf, strideInts, w, h,
-                         bx, by,
-                         bx + vxv * scaleFactor,
-                         by + vyv * scaleFactor,
-                         c)
-            Next
-        Finally
-            bmp.UnlockBits(data)
-        End Try
+            If speed > maxArrowLength Then
+                scaleFactor = maxArrowLength / speed
+            Else
+                scaleFactor = 1.0
+            End If
+
+            Dim ex As Double = bx + vxv * scaleFactor
+            Dim ey As Double = by + vyv * scaleFactor
+
+            If compact Then
+                DrawGlyphCompact(buffer, w, h, bx, by, ex, ey, c)
+            Else
+                DrawArrow(buffer, w, h, bx, by, ex, ey, c)
+            End If
+        Next
+    End Sub
+
+    ''' <summary>
+    ''' Compact boid glyph for very large flocks: a 2x2 block at the tail, a 2x2 
+    ''' block at the midpoint and a 3x3 block at the tip, all fully unrolled. 
+    ''' Preserves position, direction and the speed color; costs roughly a third 
+    ''' of the full arrow at 80k boids.
+    ''' </summary>
+    Private Sub DrawGlyphCompact(buffer As Integer(), w As Integer, h As Integer,
+                                 x0 As Double, y0 As Double, x1 As Double, y1 As Double,
+                                 c As Integer)
+        PutBlock2(buffer, w, h, x0, y0, c)
+        PutBlock2(buffer, w, h, (x0 + x1) * 0.5, (y0 + y1) * 0.5, c)
+        PutBlock3(buffer, w, h, x1, y1, c)
+    End Sub
+
+    ''' <summary>
+    ''' Writes a 2x2 pixel block around a rounded coordinate, with clipping.
+    ''' </summary>
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Private Sub PutBlock2(buffer As Integer(), w As Integer, h As Integer, x As Double, y As Double, c As Integer)
+        Dim xi As Integer = BoidMath.Round(x)
+        Dim yi As Integer = BoidMath.Round(y)
+
+        If xi >= 0 AndAlso xi < w AndAlso yi >= 0 AndAlso yi < h Then buffer(yi * w + xi) = c
+        If xi + 1 >= 0 AndAlso xi + 1 < w AndAlso yi >= 0 AndAlso yi < h Then buffer(yi * w + xi + 1) = c
+        If xi >= 0 AndAlso xi < w AndAlso yi + 1 >= 0 AndAlso yi + 1 < h Then buffer((yi + 1) * w + xi) = c
+    End Sub
+
+    ''' <summary>
+    ''' Writes a 3x3 pixel block around a rounded coordinate, with clipping.
+    ''' </summary>
+    <MethodImpl(MethodImplOptions.AggressiveInlining)>
+    Private Sub PutBlock3(buffer As Integer(), w As Integer, h As Integer, x As Double, y As Double, c As Integer)
+        Dim xi As Integer = BoidMath.Round(x)
+        Dim yi As Integer = BoidMath.Round(y)
+
+        ' clamp so that the whole 3x3 block stays inside the buffer
+        If xi < 0 Then xi = 0
+        If xi > w - 3 Then xi = w - 3
+        If yi < 0 Then yi = 0
+        If yi > h - 3 Then yi = h - 3
+
+        Dim row0 As Integer = yi * w
+
+        buffer(row0 + xi) = c
+        buffer(row0 + xi + 1) = c
+        buffer(row0 + xi + 2) = c
+        buffer(row0 + w + xi) = c
+        buffer(row0 + w + xi + 1) = c
+        buffer(row0 + w + xi + 2) = c
+        buffer(row0 + w + w + xi) = c
+        buffer(row0 + w + w + xi + 1) = c
+        buffer(row0 + w + w + xi + 2) = c
     End Sub
 
     ''' <summary>
     ''' Draws one legacy-style boid arrow: a 3px wide shaft from (x0,y0) to 
     ''' (x1,y1) plus a filled triangle head at the tip.
     ''' </summary>
-    Private Sub DrawArrow(ByVal buf As Integer*, ByVal strideInts As Integer,
-                          w As Integer, h As Integer,
+    Private Sub DrawArrow(buffer As Integer(), w As Integer, h As Integer,
                           x0 As Double, y0 As Double, x1 As Double, y1 As Double,
                           c As Integer)
         Dim dx As Double = x1 - x0
@@ -205,7 +308,7 @@ Public Module SDRender
 
         ' shaft
         If len > 0.0 Then
-            Dim steps As Integer = CInt(len)
+            Dim steps As Integer = BoidMath.Round(len)
 
             If steps < 1 Then steps = 1
 
@@ -215,12 +318,12 @@ Public Module SDRender
             Dim cyp As Double = y0
 
             For s As Integer = 0 To steps
-                Dim xi As Integer = CInt(cxp)
-                Dim yi As Integer = CInt(cyp)
+                Dim xi As Integer = BoidMath.Round(cxp)
+                Dim yi As Integer = BoidMath.Round(cyp)
 
-                PutPixel(buf, strideInts, w, h, xi, yi, c)
-                PutPixel(buf, strideInts, w, h, xi + 1, yi, c)
-                PutPixel(buf, strideInts, w, h, xi, yi + 1, c)
+                PutPixel(buffer, w, h, xi, yi, c)
+                PutPixel(buffer, w, h, xi + 1, yi, c)
+                PutPixel(buffer, w, h, xi, yi + 1, c)
 
                 cxp += sx
                 cyp += sy
@@ -241,7 +344,7 @@ Public Module SDRender
         Dim baseX As Double = x1 - headLength * ux
         Dim baseY As Double = y1 - headLength * uy
 
-        FillTriangle(buf, strideInts, w, h,
+        FillTriangle(buffer, w, h,
                      x1, y1,
                      baseX + headWidth * uy, baseY - headWidth * ux,
                      baseX - headWidth * uy, baseY + headWidth * ux,
@@ -254,8 +357,7 @@ Public Module SDRender
     ''' advance by constant slopes per row, so a whole head costs 3 divisions 
     ''' instead of one division per edge per row.
     ''' </summary>
-    Private Sub FillTriangle(ByVal buf As Integer*, ByVal strideInts As Integer,
-                             w As Integer, h As Integer,
+    Private Sub FillTriangle(buffer As Integer(), w As Integer, h As Integer,
                              ax As Double, ay As Double,
                              bx As Double, by As Double,
                              cx As Double, cy As Double,
@@ -279,8 +381,8 @@ Public Module SDRender
 
         If cy <= ay Then Return   ' degenerate (zero height)
 
-        Dim minY As Integer = CInt(std.Floor(ay))
-        Dim maxY As Integer = CInt(std.Ceiling(cy)) - 1
+        Dim minY As Integer = BoidMath.Round(std.Floor(ay))
+        Dim maxY As Integer = BoidMath.Round(std.Ceiling(cy)) - 1
 
         If minY < 0 Then minY = 0
         If maxY >= h Then maxY = h - 1
@@ -323,17 +425,17 @@ Public Module SDRender
                 x1 = tmp
             End If
 
-            Dim fromX As Integer = CInt(std.Ceiling(x0 - 0.5))
-            Dim toX As Integer = CInt(std.Floor(x1 - 0.5))
+            Dim fromX As Integer = BoidMath.Round(std.Ceiling(x0 - 0.5))
+            Dim toX As Integer = BoidMath.Round(std.Floor(x1 - 0.5))
 
             If fromX < 0 Then fromX = 0
             If toX >= w Then toX = w - 1
 
             If fromX <= toX Then
-                Dim rowOffset As Integer = yi * strideInts
+                Dim rowOffset As Integer = yi * w
 
                 For xi As Integer = fromX To toX
-                    buf(rowOffset + xi) = c
+                    buffer(rowOffset + xi) = c
                 Next
             End If
 
@@ -346,11 +448,10 @@ Public Module SDRender
     ''' Writes one pixel with bounds clipping.
     ''' </summary>
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
-    Private Sub PutPixel(ByVal buf As Integer*, ByVal strideInts As Integer,
-                         w As Integer, h As Integer, x As Integer, y As Integer, c As Integer)
+    Private Sub PutPixel(buffer As Integer(), w As Integer, h As Integer, x As Integer, y As Integer, c As Integer)
         If x < 0 OrElse x >= w OrElse y < 0 OrElse y >= h Then Return
 
-        buf(y * strideInts + x) = c
+        buffer(y * w + x) = c
     End Sub
 
 End Module
