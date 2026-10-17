@@ -46,8 +46,18 @@ Partial Public Class FormRender3D
     Private m_fps As Double = 0
     Private m_settings As BoidsOptions
 
+    ''' <summary>
+    ''' the right click menu that selects the color scale of the arrows
+    ''' </summary>
+    Private ReadOnly m_palettes As PaletteMenu
+
     Public Sub New()
         Call InitializeComponent()
+
+        ' the menu is created by the designer, this helper fills it with the
+        ' color scales and forwards the selection onto the scene renderer
+        m_palettes = New PaletteMenu(Me.m_paletteMenu)
+        AddHandler m_palettes.SelectionChanged, AddressOf Palette_SelectionChanged
 
         ' the parallel physics solve runs on the .NET thread pool; without
         ' raising the pool's minimum the pool only injects threads lazily and the
@@ -128,6 +138,10 @@ Partial Public Class FormRender3D
         Else
             Call m_renderer.Configure(Me.Settings.ArrowLength)
         End If
+
+        ' a reset recreates the box but it has to keep the color scale that was
+        ' picked in the context menu
+        m_renderer.Palette = m_palettes.SelectedPalette
 
         Call m_renderer.EnsureCapacity(count)
 
@@ -231,6 +245,16 @@ Partial Public Class FormRender3D
             $"packing   : {PhaseMs("arrow packing"):F2} ms" & Environment.NewLine &
             $"upload    : {m_renderer.UploadMs:F2} ms" & Environment.NewLine &
             $"pipeline  : {pipeline}"
+    End Sub
+
+    ''' <summary>
+    ''' another color scale was picked in the context menu of the canvas, the
+    ''' arrows of the next packed frame use it
+    ''' </summary>
+    Private Sub Palette_SelectionChanged(sender As Object, e As EventArgs)
+        If m_renderer IsNot Nothing Then
+            m_renderer.Palette = m_palettes.SelectedPalette
+        End If
     End Sub
 
     ''' <summary>
