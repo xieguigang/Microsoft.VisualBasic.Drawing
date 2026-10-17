@@ -29,15 +29,24 @@ Partial Class FormRender3D
         Me.components = New System.ComponentModel.Container()
         Me.m_canvas = New Microsoft.VisualBasic.Drawing.DirectX.DxScene3DCanvas()
         Me.timer1 = New System.Windows.Forms.Timer(Me.components)
+        Me.m_paletteMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.SuspendLayout()
         '
         'm_canvas
         '
+        Me.m_canvas.ContextMenuStrip = Me.m_paletteMenu
         Me.m_canvas.Dock = System.Windows.Forms.DockStyle.Fill
         Me.m_canvas.Location = New System.Drawing.Point(0, 0)
         Me.m_canvas.Name = "m_canvas"
         Me.m_canvas.Size = New System.Drawing.Size(1107, 665)
         Me.m_canvas.TabIndex = 0
+        '
+        'm_paletteMenu
+        '
+        ' the right click menu of the canvas; the color scale entries are added at
+        ' run time by PaletteMenu, see the constructor of the form
+        Me.m_paletteMenu.Name = "m_paletteMenu"
+        Me.m_paletteMenu.Size = New System.Drawing.Size(180, 26)
         '
         'timer1
         '
@@ -62,4 +71,10 @@ Partial Class FormRender3D
 
     Friend WithEvents m_canvas As Microsoft.VisualBasic.Drawing.DirectX.DxScene3DCanvas
     Friend WithEvents timer1 As System.Windows.Forms.Timer
+
+    ''' <summary>
+    ''' the right click menu that selects the color scale of the flock, its items
+    ''' are filled in by <see cref="PaletteMenu"/>
+    ''' </summary>
+    Friend m_paletteMenu As System.Windows.Forms.ContextMenuStrip
 End Class

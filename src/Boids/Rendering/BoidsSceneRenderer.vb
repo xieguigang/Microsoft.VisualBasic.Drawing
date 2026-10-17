@@ -7,7 +7,6 @@ Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
 Imports Microsoft.VisualBasic.Imaging.Drawing3D
 Imports Point3D = Microsoft.VisualBasic.Imaging.Drawing3D.Point3D
 Imports LineSegment = Microsoft.VisualBasic.Drawing.DirectX.Scene3D.LineSegment
-Imports PaletteDesigner = Microsoft.VisualBasic.Imaging.Drawing2D.Colors.Designer
 Imports std = System.Math
 
 ''' <summary>
@@ -72,10 +71,16 @@ Public NotInheritable Class BoidsSceneRenderer
     Private ReadOnly m_predatorColor As Integer = Color.White.ToArgb()
 
     ''' <summary>
-    ''' the viridis color table that maps the normalized speed of a boid onto a
-    ''' color, exactly like the two dimensional renderer does
+    ''' the color table that maps the normalized speed of a boid onto a color,
+    ''' exactly like the two dimensional renderer does; it is rebuilt when the
+    ''' <see cref="Palette"/> changes
     ''' </summary>
-    Private ReadOnly m_lut As Integer()
+    Private m_lut As Integer()
+
+    ''' <summary>
+    ''' the color scale that the speed coloring of the arrows uses
+    ''' </summary>
+    Private m_palette As ScalerPalette = PaletteMenu.DefaultPalette
 
     Private m_lines As Single()
     Private m_capacity As Integer = 0
@@ -110,7 +115,7 @@ Public NotInheritable Class BoidsSceneRenderer
         End If
 
         m_backend = backend
-        m_lut = CreateColorTable(ColorLevels)
+        m_lut = PaletteMenu.ColorTable(m_palette, ColorLevels)
         m_arrowLength = std.Max(0, arrowLength)
 
         Call Configure(m_arrowLength)
@@ -203,6 +208,26 @@ Public NotInheritable Class BoidsSceneRenderer
     End Property
 
     ''' <summary>
+    ''' the color scale that maps the normalized speed of a boid onto the color of
+    ''' its arrow, selecting another scale rebuilds the lookup table that the next
+    ''' packed frame uses
+    ''' </summary>
+    Public Property Palette As ScalerPalette
+        Get
+            Return m_palette
+        End Get
+        Set(value As ScalerPalette)
+            m_palette = value
+            m_lut = PaletteMenu.ColorTable(value, ColorLevels)
+
+            ' the arrows travel through the line channel with their own vertex
+            ' colors, the option only keeps the scene state of the back end - and
+            ' with it the debug overlay - consistent with the selection
+            m_canvas.Options.ColorScheme = value
+        End Set
+    End Property
+
+    ''' <summary>
     ''' the length of the arrow of the fastest boid that the current field uses
     ''' </summary>
     ''' <param name="field">the field of the current frame</param>
@@ -247,7 +272,7 @@ Public NotInheritable Class BoidsSceneRenderer
                 ' palette and the point options do not apply to the line channel
                 .UseEmbeddedColor = True
                 .PointAlpha = 255
-                .ColorScheme = ScalerPalette.viridis
+                .ColorScheme = m_palette
                 .BackgroundColor = Color.Black
             End With
         End With
@@ -433,28 +458,4 @@ Public NotInheritable Class BoidsSceneRenderer
         Call m_backend.ClearLines()
     End Sub
 
-    ' /********************************************************************************/
-    '  private helpers
-    ' /********************************************************************************/
-
-    ''' <summary>
-    ''' build the packed ARGB table of the speed colormap, the very same palette
-    ''' and level count that the gdi+ renderer of the two dimensional demo uses
-    ''' </summary>
-    Private Shared Function CreateColorTable(levels As Integer) As Integer()
-        Dim lut As Color() = PaletteDesigner.GetColors(ScalerPalette.viridis.Description, levels)
-        Dim table As Integer()
-
-        If lut Is Nothing OrElse lut.Length = 0 Then
-            Return New Integer() {Color.Lime.ToArgb()}
-        End If
-
-        table = New Integer(lut.Length - 1) {}
-
-        For i As Integer = 0 To lut.Length - 1
-            table(i) = lut(i).ToArgb()
-        Next
-
-        Return table
-    End Function
 End Class

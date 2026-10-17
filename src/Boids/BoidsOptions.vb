@@ -54,7 +54,7 @@ Public Class BoidsOptions
     ''' <summary>
     ''' the number of the boids of the flock
     ''' </summary>
-    Public Property BoidCount As Integer = 120000
+    Public Property BoidCount As Integer = 20000
 
     ''' <summary>
     ''' the edge length of the cubic simulation field, zero asks for the size

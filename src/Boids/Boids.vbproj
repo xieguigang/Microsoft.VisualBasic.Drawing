@@ -22,6 +22,15 @@
     <RemoveIntegerChecks>true</RemoveIntegerChecks>
     <DebugType>portable</DebugType>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="arrows120k.png" />
+    <None Remove="arrows12k.png" />
+    <None Remove="arrows12k_small.png" />
+    <None Remove="arrows20k.png" />
+    <None Remove="arrows20k_small.png" />
+    <None Remove="arrows_sparse.png" />
+    <None Remove="boids-self-test.log" />
+  </ItemGroup>
 
   <ItemGroup>
     <Import Include="System.Data" />

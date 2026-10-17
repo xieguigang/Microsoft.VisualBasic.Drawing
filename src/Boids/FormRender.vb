@@ -65,8 +65,19 @@ Imports Microsoft.VisualBasic.Parallel
 Partial Public Class FormRender
     Inherits Form
     Private field As Field
+
+    ''' <summary>
+    ''' the right click menu that selects the color scale of the flock
+    ''' </summary>
+    Private ReadOnly m_palettes As PaletteMenu
+
     Public Sub New()
         InitializeComponent()
+
+        ' the menu is created by the designer, this helper fills it with the
+        ' color scales and forwards the selection onto the pixel renderer
+        m_palettes = New PaletteMenu(Me.m_paletteMenu)
+        AddHandler m_palettes.SelectionChanged, AddressOf Palette_SelectionChanged
 
         ' the parallel physics solve (VectorTask, n_threads = CPU core count) 
         ' runs on the .NET thread pool; without raising the pool's minimum the 
@@ -77,6 +88,13 @@ Partial Public Class FormRender
         Reset()
 
         Size = New Size(2000, 1200)
+    End Sub
+
+    ''' <summary>
+    ''' another color scale was picked in the context menu of the canvas
+    ''' </summary>
+    Private Sub Palette_SelectionChanged(sender As Object, e As EventArgs)
+        SDRender.Palette = m_palettes.SelectedPalette
     End Sub
 
     Private Sub pictureBox1_SizeChanged(sender As Object, e As EventArgs) Handles pictureBox1.SizeChanged

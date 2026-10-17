@@ -82,18 +82,27 @@ Partial Class FormRender
         Me.components = New System.ComponentModel.Container()
         Me.pictureBox1 = New System.Windows.Forms.PictureBox()
         Me.timer1 = New System.Windows.Forms.Timer(Me.components)
+        Me.m_paletteMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
         CType(Me.pictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'pictureBox1
         '
         Me.pictureBox1.BackColor = System.Drawing.Color.Purple
+        Me.pictureBox1.ContextMenuStrip = Me.m_paletteMenu
         Me.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.pictureBox1.Location = New System.Drawing.Point(0, 0)
         Me.pictureBox1.Name = "pictureBox1"
         Me.pictureBox1.Size = New System.Drawing.Size(1107, 665)
         Me.pictureBox1.TabIndex = 0
         Me.pictureBox1.TabStop = False
+        '
+        'm_paletteMenu
+        '
+        ' the right click menu of the canvas; the color scale entries are added at
+        ' run time by PaletteMenu, see the constructor of the form
+        Me.m_paletteMenu.Name = "m_paletteMenu"
+        Me.m_paletteMenu.Size = New System.Drawing.Size(180, 26)
         '
         'timer1
         '
@@ -118,5 +127,11 @@ Partial Class FormRender
 
     Private WithEvents pictureBox1 As PictureBox
     Private WithEvents timer1 As Timer
+
+    ''' <summary>
+    ''' the right click menu that selects the color scale of the flock, its items
+    ''' are filled in by <see cref="PaletteMenu"/>
+    ''' </summary>
+    Friend m_paletteMenu As ContextMenuStrip
 End Class
 

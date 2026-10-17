@@ -69,9 +69,16 @@ Imports std = System.Math
 
 Public Module SDRender
 
+    ' the packed ARGB table of the speed coloring, it is rebuilt whenever another
+    ' color scale is picked from the context menu of the window
     Dim colors As Integer()
-    Dim n As Integer = 30
+    Dim n As Integer = PaletteMenu.DefaultLevels
     Dim whiteArgb As Integer
+
+    ''' <summary>
+    ''' the color scale of the speed mapping, see <see cref="PaletteMenu"/>
+    ''' </summary>
+    Private m_palette As ScalerPalette = PaletteMenu.DefaultPalette
 
     ' persistent back buffer: one pinned managed Int32 array with the bitmap
     ' mapped directly over it; recreated only when the canvas size changes so a
@@ -99,15 +106,30 @@ Public Module SDRender
     Public Property CompactGlyphThreshold As Integer = 20000
 
     Sub New()
-        Dim lut = Designer.GetColors(ScalerPalette.viridis.Description, n)
-        colors = New Integer(lut.Length - 1) {}
-
-        For i As Integer = 0 To lut.Length - 1
-            colors(i) = lut(i).ToArgb()
-        Next
-
+        ' the lookup table of the speed mapping, it is rebuilt by the Palette
+        ' property when another color scale is picked from the context menu
+        colors = PaletteMenu.ColorTable(m_palette, n)
         whiteArgb = Color.White.ToArgb()
     End Sub
+
+    ''' <summary>
+    ''' the color scale that maps the normalized speed of a boid onto the color
+    ''' of its arrow
+    ''' </summary>
+    ''' <remarks>
+    ''' the lookup table is replaced in one assignment, which is what the next
+    ''' rendered frame of the timer picks up; a frame that is already inside the
+    ''' loop keeps the table that it captured
+    ''' </remarks>
+    Public Property Palette As ScalerPalette
+        Get
+            Return m_palette
+        End Get
+        Set(value As ScalerPalette)
+            m_palette = value
+            colors = PaletteMenu.ColorTable(value, n)
+        End Set
+    End Property
 
     ''' <summary>
     ''' Renders the whole field into the internal persistent bitmap and returns it.
@@ -191,7 +213,10 @@ Public Module SDRender
         Dim vy = state.vy
         Dim maxSpeed = field.MaxSpeed
         Dim predCount = field.PredatorCount
-        Dim ncolors = colors.Length
+        ' the table is captured once: the context menu may replace it while the
+        ' frame is being drawn, and a frame has to be drawn with one table only
+        Dim lut = colors
+        Dim ncolors = lut.Length
         Dim buffer = buf
 
         For i As Integer = start To ends
@@ -215,7 +240,7 @@ Public Module SDRender
                     lv = ncolors - 1
                 End If
 
-                c = colors(lv)
+                c = lut(lv)
             End If
 
             ' arrow scale, identical to RenderShape.RenderBoid(maxL := 8)
