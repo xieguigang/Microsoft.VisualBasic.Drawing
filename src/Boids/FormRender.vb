@@ -54,7 +54,7 @@
 #End Region
 
 Imports Microsoft.VisualBasic.ApplicationServices
-Imports Microsoft.VisualBasic.Imaging.Physics.Boids
+Imports Microsoft.VisualBasic.Engine.Particles.Boids
 Imports Microsoft.VisualBasic.Parallel
 
 ''' <summary>

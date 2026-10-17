@@ -60,16 +60,12 @@
 
 #End Region
 
-Imports System.Drawing
-Imports System.Drawing.Imaging
 Imports System.Runtime.CompilerServices
-Imports System.Windows.Forms
-Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Engine.Particles.Boids
 Imports Microsoft.VisualBasic.Imaging.Drawing2D.Colors
-Imports Microsoft.VisualBasic.Imaging.Physics.Boids
 Imports Bitmap = System.Drawing.Bitmap
-Imports std = System.Math
 Imports PixelFormat = System.Drawing.Imaging.PixelFormat
+Imports std = System.Math
 
 Public Module SDRender
 

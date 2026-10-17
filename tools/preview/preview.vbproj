@@ -23,7 +23,7 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="4.153.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.153.1" />
-    <PackageReference Include="System.Security.Permissions" Version="10.0.12" />
+    <PackageReference Include="System.Security.Permissions" Version="10.0.13" />
   </ItemGroup>
 
 
