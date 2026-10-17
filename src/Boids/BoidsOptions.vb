@@ -63,9 +63,10 @@ Public Class BoidsOptions
     Public Property DomainSize As Double = 0
 
     ''' <summary>
-    ''' the edge length in pixels of one boid
+    ''' the length of the arrow of the fastest boid, in world units, zero asks
+    ''' for the length that is derived from the size of the simulation box
     ''' </summary>
-    Public Property PointSize As Integer = 2
+    Public Property ArrowLength As Single = 0
 
     ''' <summary>
     ''' the sample count of the multi sample anti aliasing of the direct3d back
@@ -133,8 +134,8 @@ Public Class BoidsOptions
                     options.BoidCount = TakeInt(args, i, options.BoidCount, 1, 5000000)
                 Case "--domain"
                     options.DomainSize = TakeDouble(args, i, options.DomainSize, MinimumDomainSize)
-                Case "--point", "--pointsize"
-                    options.PointSize = TakeInt(args, i, options.PointSize, 1, 16)
+                Case "--arrow", "--arrowlength"
+                    options.ArrowLength = TakeSingle(args, i, options.ArrowLength, 0, 1000000)
                 Case "--msaa"
                     options.MultisampleCount = TakeInt(args, i, options.MultisampleCount, 1, 8)
                 Case Else
@@ -162,7 +163,8 @@ Public Class BoidsOptions
         Call text.AppendLine("  --3d              start the three dimensional directx window (default)")
         Call text.AppendLine("  --boids <n>       number of the simulated boids (default 120000)")
         Call text.AppendLine("  --domain <size>   edge length of the cubic field (default: derived from the count)")
-        Call text.AppendLine("  --point <n>       edge length in pixels of one boid (default 2)")
+        Call text.AppendLine("  --arrow <n>       length of the arrow of the fastest boid, in world units")
+        Call text.AppendLine("                    (default: 2.2% of the edge length of the box)")
         Call text.AppendLine("  --msaa <n>        multi sample anti aliasing of the direct3d pipeline (default 1)")
         Call text.AppendLine("  --selftest        run the numeric self test and exit")
         Call text.AppendLine("  --help            show this text")
@@ -189,6 +191,24 @@ Public Class BoidsOptions
         End If
 
         Call Console.Error.WriteLine($"boids: '{args(i)}' needs an integer value, {fallback} is kept.")
+
+        Return fallback
+    End Function
+
+    ''' <summary>
+    ''' read the single precision value that follows the argument at
+    ''' <paramref name="i"/> and advance the cursor past it
+    ''' </summary>
+    Private Shared Function TakeSingle(args As String(), ByRef i As Integer, fallback As Single,
+                                       minValue As Single, maxValue As Single) As Single
+        Dim value As Double
+
+        If i + 1 < args.Length AndAlso Double.TryParse(args(i + 1), value) Then
+            i += 1
+            Return CSng(std.Max(minValue, std.Min(maxValue, value)))
+        End If
+
+        Call Console.Error.WriteLine($"boids: '{args(i)}' needs a numeric value, {fallback} is kept.")
 
         Return fallback
     End Function

@@ -391,6 +391,40 @@ Namespace Scene3D
         End Sub
 
         ''' <summary>
+        ''' draw a line list that the host filled into its own buffer, using the
+        ''' very same shaders, color channel and depth state as
+        ''' <see cref="DrawLines"/>
+        ''' </summary>
+        ''' <param name="buffer">the vertex buffer, <c>Scene3DInputLayout.LineStride</c> per vertex</param>
+        ''' <param name="vertexCount">the number of the vertices of the line list</param>
+        ''' <remarks>
+        ''' A host that animates a graph or a vector field can not go through
+        ''' <see cref="Scene.LoadLineSegments"/>: every load raises the scene
+        ''' version and rebuilds the cached geometry (and re-measures the bounding
+        ''' sphere over every line). This entry point draws a buffer that the host
+        ''' refills per frame, so the animated lines stay outside of the scene.
+        ''' </remarks>
+        Friend Sub DrawLineVertices(buffer As IntPtr, vertexCount As Integer)
+            If buffer = IntPtr.Zero OrElse vertexCount <= 0 Then
+                Return
+            End If
+
+            Dim context As ID3D11DeviceContext = m_device.Context
+
+            Call UploadConstants()
+
+            Call context.IASetPrimitiveTopology(CInt(D3D11_PRIMITIVE_TOPOLOGY.LINELIST))
+            Call context.IASetInputLayout(m_lineLayout)
+            Call context.VSSetShader(m_lineVertex, IntPtr.Zero, 0UI)
+            Call context.PSSetShader(m_linePixel, IntPtr.Zero, 0UI)
+            Call context.RSSetState(m_rasterSolid)
+            Call context.OMSetDepthStencilState(m_depthWrite, 0UI)
+            Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
+            Call BindSingleBuffer(0, buffer, Scene3DInputLayout.LineStride)
+            Call context.Draw(CUInt(vertexCount), 0UI)
+        End Sub
+
+        ''' <summary>
         ''' draw the shaded faces of the model
         ''' </summary>
         Friend Sub DrawSurfaces(geometry As GpuSceneGeometry, options As SceneRenderOptions)

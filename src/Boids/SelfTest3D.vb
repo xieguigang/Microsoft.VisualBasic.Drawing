@@ -1,4 +1,6 @@
+Imports System.Drawing
 Imports System.IO
+Imports System.Numerics
 Imports Microsoft.VisualBasic.Engine.Particles.Boids
 Imports Microsoft.VisualBasic.Math.SIMD
 Imports Microsoft.VisualBasic.Parallel
@@ -29,7 +31,7 @@ Public Module SelfTest3D
 
     Private m_checks As Integer
     Private m_failures As Integer
-    Private m_log As Text.StringBuilder
+    Private m_log As System.Text.StringBuilder
 
     ''' <summary>
     ''' run every check of the three dimensional engine
@@ -38,7 +40,7 @@ Public Module SelfTest3D
     Public Function Run() As Integer
         m_checks = 0
         m_failures = 0
-        m_log = New Text.StringBuilder()
+        m_log = New System.Text.StringBuilder()
 
         Call Threading.ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount)
         VectorTask.n_threads = Environment.ProcessorCount
@@ -56,6 +58,7 @@ Public Module SelfTest3D
         Call TestDegeneratePositions()
         Call TestDomainSizing()
         Call TestTwoDimensionalRegression()
+        Call TestArrowGeometry()
 
         Call WriteLine(vbNullString)
         Call WriteLine("===========================================================")
@@ -89,7 +92,7 @@ Public Module SelfTest3D
     ''' </summary>
     Private Sub TestStateAndView()
         Call WriteLine(vbNullString)
-        Call WriteLine("[1/7] state and value view ...")
+        Call WriteLine("[1/8] state and value view ...")
 
         Dim empty As New FlockState3D(0)
         Call Check(empty.count = 0, "an empty state has no slots")
@@ -143,7 +146,7 @@ Public Module SelfTest3D
     ''' </remarks>
     Private Sub TestRulesAgainstReference()
         Call WriteLine(vbNullString)
-        Call WriteLine("[2/7] flocking rules against the brute force reference ...")
+        Call WriteLine("[2/8] flocking rules against the brute force reference ...")
 
         Const count As Integer = 64
         Dim field As New Field3D(20, 20, 20, count)
@@ -206,7 +209,7 @@ Public Module SelfTest3D
     ''' </summary>
     Private Sub TestIntegrationInvariants()
         Call WriteLine(vbNullString)
-        Call WriteLine("[3/7] integration invariants ...")
+        Call WriteLine("[3/8] integration invariants ...")
 
         Const count As Integer = 512
         Const box As Double = 400
@@ -305,7 +308,7 @@ Public Module SelfTest3D
     ''' </summary>
     Private Sub TestDeterminism()
         Call WriteLine(vbNullString)
-        Call WriteLine("[4/7] determinism ...")
+        Call WriteLine("[4/8] determinism ...")
 
         Dim first As FlockState3D = RunSeeded(4096, 300, 40)
         Dim second As FlockState3D = RunSeeded(4096, 300, 40)
@@ -349,7 +352,7 @@ Public Module SelfTest3D
     ''' </summary>
     Private Sub TestDegeneratePositions()
         Call WriteLine(vbNullString)
-        Call WriteLine("[5/7] degenerate positions ...")
+        Call WriteLine("[5/8] degenerate positions ...")
 
         Dim random As New Random(99)
 
@@ -418,7 +421,7 @@ Public Module SelfTest3D
     ''' </summary>
     Private Sub TestDomainSizing()
         Call WriteLine(vbNullString)
-        Call WriteLine("[6/7] domain sizing ...")
+        Call WriteLine("[6/8] domain sizing ...")
 
         Dim defaults As New BoidsOptions()
         Dim edge As Double = defaults.ResolveDomainSize()
@@ -440,7 +443,7 @@ Public Module SelfTest3D
     ''' </summary>
     Private Sub TestTwoDimensionalRegression()
         Call WriteLine(vbNullString)
-        Call WriteLine("[7/7] two dimensional regression ...")
+        Call WriteLine("[7/8] two dimensional regression ...")
 
         Dim field As New Field(800, 600, 2000)
 
@@ -472,6 +475,104 @@ Public Module SelfTest3D
         Call Check(bad = 0, "the two dimensional field still runs and keeps finite speeds")
         Call Check(field.Width = 800 AndAlso field.Height = 600, "the two dimensional field keeps its size")
     End Sub
+
+    ''' <summary>
+    ''' the geometry of the arrows of the vector field presentation
+    ''' </summary>
+    Private Sub TestArrowGeometry()
+        Call WriteLine(vbNullString)
+        Call WriteLine("[8/8] arrow geometry ...")
+
+        Const box As Double = 100
+        Dim field As New Field3D(box, box, box, 8)
+        Dim state As FlockState3D = field.State
+
+        field.PredatorCount = 1
+
+        For i As Integer = 0 To state.count - 1
+            state.px(i) = 50
+            state.py(i) = 50
+            state.pz(i) = 50
+            state.vx(i) = 0
+            state.vy(i) = 0
+            state.vz(i) = 0
+        Next
+
+        ' the first boid is the predator, the second one flies along +x at the
+        ' highest speed
+        state.vx(1) = field.MaxSpeed
+
+        Dim colors As Integer() = {
+            Color.FromArgb(255, 68, 1, 84).ToArgb(),
+            Color.FromArgb(255, 33, 145, 140).ToArgb(),
+            Color.FromArgb(255, 253, 231, 37).ToArgb()
+        }
+        Dim predatorColor As Integer = Color.White.ToArgb()
+        Dim forward As New Vector3(0, 0, 1)
+        Const arrowLength As Single = 10
+
+        Dim words As Integer = BoidArrows.VertexCount(state.count) * BoidArrows.FloatsPerVertex
+        Dim buffer As Single() = New Single(words - 1) {}
+        Dim vertices As Integer = BoidArrows.Build(field, colors, predatorColor, forward, arrowLength, buffer)
+
+        Call Check(vertices = state.count * BoidArrows.VerticesPerArrow, "one arrow writes three lines")
+        Call Check(BoidArrows.VertexCount(state.count) = words \ BoidArrows.FloatsPerVertex,
+                   "the vertex count helper matches the written vertices")
+
+        ' the fast boid: the arrow is centred on the boid, so it spans
+        ' [-length/2, +length/2] along the x axis of the model space
+        Dim shaft As Integer = BoidArrows.VerticesPerArrow * BoidArrows.FloatsPerVertex
+
+        Call Check(Near(buffer(shaft + 0), -arrowLength * 0.5) AndAlso
+                   Near(buffer(shaft + 1), 0) AndAlso Near(buffer(shaft + 2), 0),
+                   "the tail of the arrow is half a length behind the boid")
+        Call Check(Near(buffer(shaft + 4), arrowLength * 0.5),
+                   "the tip of the arrow is half a length ahead of the boid")
+        Call Check(BitConverter.SingleToInt32Bits(buffer(shaft + 3)) = colors(colors.Length - 1),
+                   "the fastest boid gets the top color of the speed table")
+
+        ' the wings: they are symmetric about the axis and they are opened in the
+        ' plane perpendicular to the view direction
+        ' vertex order: the tail, the tip, then the tip and the two wings,
+        ' four floats per vertex
+        Dim wingA As New Vector3(buffer(shaft + 12), buffer(shaft + 13), buffer(shaft + 14))
+        Dim wingB As New Vector3(buffer(shaft + 20), buffer(shaft + 21), buffer(shaft + 22))
+        Dim tip As New Vector3(buffer(shaft + 4), buffer(shaft + 5), buffer(shaft + 6))
+        Dim collar As Vector3 = (wingA + wingB) * 0.5F
+        Dim headLength As Single = arrowLength * BoidArrows.HeadLength
+        Dim headWidth As Single = arrowLength * BoidArrows.HeadWidth
+
+        Call Check(Near(Vector3.Distance(tip, collar), headLength), "the head is HeadLength deep")
+        Call Check(Near(Vector3.Distance(wingA, collar), headWidth), "the wings are HeadWidth wide")
+        Call Check(Near(Vector3.Dot(Vector3.Normalize(wingA - wingB), forward), 0),
+                   "the wings open perpendicular to the view direction")
+
+        ' the predator: white, a longer arrow and a degenerate velocity, which is
+        ' the case where the axis falls back to the z axis of the world
+        Dim predator As Single = arrowLength * BoidArrows.MinimumLengthFraction * BoidArrows.PredatorLengthScale
+
+        Call Check(BitConverter.SingleToInt32Bits(buffer(3)) = predatorColor, "the predator is white")
+        Call Check(Near(buffer(2), -predator * 0.5) AndAlso Near(buffer(6), predator * 0.5),
+                   "a boid at rest still gets a visible arrow along the fallback axis")
+
+        ' a buffer that is too small truncates the frame instead of overflowing it
+        Dim tiny As Single() = New Single(BoidArrows.VerticesPerArrow * BoidArrows.FloatsPerVertex - 1) {}
+        Dim truncated As Integer = BoidArrows.Build(field, colors, predatorColor, forward, arrowLength, tiny)
+
+        Call Check(truncated = BoidArrows.VerticesPerArrow, "a small buffer truncates the frame")
+
+        ' the default arrow length is a fraction of the box, an explicit one wins
+        Call Check(Near(BoidArrows.ResolveLength(field, 0), box * BoidArrows.DefaultLengthFraction),
+                   "the default arrow length follows the box")
+        Call Check(Near(BoidArrows.ResolveLength(field, 7), 7), "an explicit arrow length wins")
+    End Sub
+
+    ''' <summary>
+    ''' compare two single precision values with the tolerance of the arrow tests
+    ''' </summary>
+    Private Function Near(left As Single, right As Single) As Boolean
+        Return std.Abs(left - right) <= 1.0E-04 * std.Max(1.0F, std.Abs(right))
+    End Function
 
     ' /********************************************************************************/
     '  the brute force reference of the flocking rules

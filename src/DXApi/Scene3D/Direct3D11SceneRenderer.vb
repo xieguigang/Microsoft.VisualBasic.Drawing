@@ -252,6 +252,108 @@ Namespace Scene3D
             End Get
         End Property
 
+        ' the line list of an animated overlay that lives outside of the scene,
+        ' see UploadLines
+        Private m_lineBuffer As IntPtr = IntPtr.Zero
+        Private m_lineBytes As Integer = 0
+        Private m_lineCapacity As Integer = 0
+        Private m_lineVertexCount As Integer = 0
+        Private m_pendingLines As Single() = Nothing
+        Private m_pendingLineCount As Integer = 0
+        Private m_lineUploadMs As Double = 0
+
+        ''' <summary>
+        ''' reserve the line buffer of an animated overlay that lives outside of
+        ''' <see cref="Scene"/>
+        ''' </summary>
+        ''' <param name="vertexCount">
+        ''' the largest number of the line list vertices that
+        ''' <see cref="UploadLines"/> is going to submit, two vertices per line
+        ''' </param>
+        ''' <remarks>
+        ''' The counterpart of <see cref="EnsureInstanceCapacity"/> for the line
+        ''' channel: a graph or a vector field that changes every frame is handed
+        ''' in through <see cref="UploadLines"/> instead of
+        ''' <see cref="Scene.LoadLineSegments"/>, so the scene keeps its revision
+        ''' and the cached <see cref="GpuSceneGeometry"/> survives the frame.
+        ''' </remarks>
+        Public Sub EnsureLineCapacity(vertexCount As Integer)
+            If vertexCount < 0 Then
+                vertexCount = 0
+            End If
+
+            m_lineCapacity = vertexCount
+        End Sub
+
+        ''' <summary>
+        ''' hand the line list of the next frame over to this back end
+        ''' </summary>
+        ''' <param name="data">
+        ''' four <see cref="Single"/> per vertex, the layout of one line vertex:
+        ''' the position x/y/z plus one word that carries the packed RGBA color of
+        ''' the vertex, which is the 16 bytes of
+        ''' <c>Scene3DInputLayout.LineStride</c>. Every pair of vertices is one
+        ''' line of the list.
+        ''' </param>
+        ''' <param name="vertexCount">how many vertices of <paramref name="data"/> are valid</param>
+        ''' <remarks>
+        ''' The array is uploaded by the next <see cref="Render"/> and must stay
+        ''' untouched until that frame has been drawn. The lines are drawn with
+        ''' the very same state as the connection lines of the scene, on top of
+        ''' the scene geometry.
+        ''' </remarks>
+        Public Sub UploadLines(data As Single(), vertexCount As Integer)
+            If data Is Nothing OrElse vertexCount <= 0 Then
+                Call ClearLines()
+                Return
+            End If
+
+            If vertexCount * 4 > data.Length Then
+                vertexCount = data.Length \ 4
+            End If
+
+            m_pendingLines = data
+            m_pendingLineCount = vertexCount
+        End Sub
+
+        ''' <summary>
+        ''' drop the animated line list that was handed over by
+        ''' <see cref="UploadLines"/>, the scene keeps its own connection lines
+        ''' </summary>
+        Public Sub ClearLines()
+            m_pendingLines = Nothing
+            m_pendingLineCount = 0
+            m_lineVertexCount = 0
+        End Sub
+
+        ''' <summary>
+        ''' how many vertices the external line buffer can hold
+        ''' </summary>
+        Public ReadOnly Property ExternalLineCapacity As Integer
+            Get
+                Return m_lineCapacity
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' how many vertices of the external line list the last frame has drawn
+        ''' </summary>
+        Public ReadOnly Property ExternalLineCount As Integer
+            Get
+                Return m_lineVertexCount
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the wall clock time of the last upload of the external line list, in
+        ''' milliseconds
+        ''' </summary>
+        Public ReadOnly Property LastLineUploadMs As Double
+            Get
+                Return m_lineUploadMs
+            End Get
+        End Property
+
         ''' <summary>
         ''' fill the instance buffer of the external point cloud through
         ''' <c>Map(WRITE_DISCARD)</c> instead of <c>UpdateSubresource</c>
@@ -338,6 +440,58 @@ Namespace Scene3D
             m_pendingCount = 0
         End Sub
 
+        ''' <summary>
+        ''' upload the pending line list of the external overlay, the gpu device
+        ''' of the canvas is only known inside of a frame so the buffer is created
+        ''' here
+        ''' </summary>
+        ''' <remarks>
+        ''' A line list is rewritten every frame by definition, so the buffer is a
+        ''' dynamic one that is mapped with <c>WRITE_DISCARD</c>: the driver hands
+        ''' out a fresh block instead of copying the data twice.
+        ''' </remarks>
+        Private Sub SyncExternalLines()
+            Dim wanted As Integer = Global.System.Math.Max(m_lineCapacity, m_pendingLineCount)
+            Dim stride As Integer = CInt(Scene3DInputLayout.LineStride)
+            Dim bytes As Integer = wanted * stride
+
+            If bytes <> m_lineBytes Then
+                If m_lineBuffer <> IntPtr.Zero Then
+                    Call m_pipeline.ReleaseBuffer(m_lineBuffer)
+                End If
+
+                m_lineBytes = bytes
+            End If
+
+            If m_pendingLines Is Nothing OrElse m_pendingLineCount <= 0 Then
+                Return
+            End If
+
+            If m_lineBuffer = IntPtr.Zero Then
+                m_lineBuffer = m_pipeline.CreateBuffer(
+                    m_lineBytes,
+                    D3D11_BIND_FLAG.VERTEX_BUFFER,
+                    D3D11_USAGE.DYNAMIC,
+                    D3D11_CPU_ACCESS_FLAG.WRITE)
+            End If
+
+            If m_lineBuffer = IntPtr.Zero Then
+                m_lineVertexCount = 0
+                Return
+            End If
+
+            Dim clock As Stopwatch = Stopwatch.StartNew()
+
+            Call m_pipeline.FillDynamicBuffer(m_lineBuffer, m_pendingLines, m_pendingLineCount * 4)
+
+            clock.Stop()
+            m_lineUploadMs = clock.Elapsed.TotalMilliseconds
+
+            m_lineVertexCount = m_pendingLineCount
+            m_pendingLines = Nothing
+            m_pendingLineCount = 0
+        End Sub
+
         Public Sub Render(canvas As IGraphics,
                           scene As Scene,
                           camera As Camera,
@@ -402,6 +556,7 @@ Namespace Scene3D
             Call EnsurePipeline(surface.Device)
             Call EnsureTarget(size, options)
             Call SyncExternalCloud()
+            Call SyncExternalLines()
 
             Dim transform As SceneTransform = SceneTransform.Create(camera, scene, size)
             Dim geometry As GpuSceneGeometry = m_pipeline.GeometryOf(scene, options)
@@ -478,6 +633,12 @@ Namespace Scene3D
             ' see D3D11ScenePipeline.DrawPoints)
             If scene.LineCount > 0 AndAlso options.ShowConnections Then
                 Call m_pipeline.DrawLines(geometry)
+            End If
+
+            ' the animated lines of the host are the last overlay of the frame,
+            ' drawn exactly like the connection lines of the scene
+            If m_lineVertexCount > 0 AndAlso m_lineBuffer <> IntPtr.Zero Then
+                Call m_pipeline.DrawLineVertices(m_lineBuffer, m_lineVertexCount)
             End If
         End Sub
 
@@ -630,9 +791,24 @@ Namespace Scene3D
             m_cloudCount = 0
         End Sub
 
+        Private Sub ReleaseExternalLines()
+            If m_lineBuffer <> IntPtr.Zero Then
+                If m_pipeline IsNot Nothing Then
+                    Call m_pipeline.ReleaseBuffer(m_lineBuffer)
+                Else
+                    Call Marshal.Release(m_lineBuffer)
+                End If
+            End If
+
+            m_lineBuffer = IntPtr.Zero
+            m_lineBytes = 0
+            m_lineVertexCount = 0
+        End Sub
+
         Private Sub ReleaseGpu()
             Call ReleaseCanvasTarget()
             Call ReleaseExternalCloud()
+            Call ReleaseExternalLines()
 
             If m_target IsNot Nothing Then
                 m_target.Dispose()

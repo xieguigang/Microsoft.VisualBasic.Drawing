@@ -88,7 +88,7 @@ Partial Public Class FormRender
     Private Sub Reset()
         VectorTask.n_threads = App.CPUCoreNumbers
         pictureBox1.BackColor = Color.Black
-        field = New Field(pictureBox1.Width, pictureBox1.Height, 120000)
+        field = New Field(pictureBox1.Width, pictureBox1.Height, 12000)
 
         ' warm up the JIT and the thread pool so that the first timed frame is
         ' not dominated by one-off compilation costs

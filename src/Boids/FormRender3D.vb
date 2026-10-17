@@ -124,16 +124,16 @@ Partial Public Class FormRender3D
         Next
 
         If m_renderer Is Nothing Then
-            m_renderer = New BoidsSceneRenderer(m_canvas, Me.Settings.PointSize)
+            m_renderer = New BoidsSceneRenderer(m_canvas, Me.Settings.ArrowLength)
         Else
-            Call m_renderer.Configure(Me.Settings.PointSize)
+            Call m_renderer.Configure(Me.Settings.ArrowLength)
         End If
 
         Call m_renderer.EnsureCapacity(count)
 
-        ' the twelve edges of the box: they are the only geometry of the scene,
-        ' they define the view that the camera fits onto and the height of the
-        ' ground grid
+        ' the edges of the box and the floor grid inside of it: they are the only
+        ' geometry of the scene, and they define the view that the camera fits
+        ' onto
         Call m_renderer.LoadDomain(m_field)
 
         m_canvas.MultisampleCount = std.Max(1, Me.Settings.MultisampleCount)
@@ -166,13 +166,13 @@ Partial Public Class FormRender3D
         Call m_counter.Mark("physics simulation")
 
         Call m_renderer.Pack(m_field)
-        Call m_counter.Mark("instance packing")
+        Call m_counter.Mark("arrow packing")
 
         Call m_renderer.Upload()
-        Call m_counter.Mark("instance upload")
+        Call m_counter.Mark("arrow upload")
 
         ' the upload of the next frame is consumed by the paint that this
-        ' request schedules, so the instance array is not rewritten between the
+        ' request schedules, so the vertex array is not rewritten between the
         ' registration and the upload
         Call m_canvas.RequestRender()
         Call m_counter.Mark("present request")
@@ -217,16 +217,18 @@ Partial Public Class FormRender3D
             pipeline = $"Direct3D 11 {m_canvas.ActiveMultisampleCount}x"
         End If
 
-        Me.Text = $"Boids Algorithm 3D - {m_field.BoidCount:N0} boids, {m_fps:F1} fps, " &
-                  $"physics {PhaseMs("physics simulation"):F1} ms, pack {PhaseMs("instance packing"):F2} ms"
+        Me.Text = $"Boids Algorithm 3D - {m_field.BoidCount:N0} arrows, {m_fps:F1} fps, " &
+                  $"physics {PhaseMs("physics simulation"):F1} ms, pack {PhaseMs("arrow packing"):F2} ms"
 
         ' the debug overlay of the canvas already shows the camera; the extra
         ' text adds the frame statistics of the host
         m_canvas.ExtraDebugText =
             $"fps       : {m_fps:F1}" & Environment.NewLine &
             $"boids     : {m_field.BoidCount:N0} in {m_field.Width:F0}^3" & Environment.NewLine &
+            $"arrows    : {m_renderer.VertexCount \ BoidArrows.VerticesPerArrow:N0} x 3 lines, " &
+            $"length {m_renderer.ResolvedArrowLength(m_field):F1} units" & Environment.NewLine &
             $"physics   : {PhaseMs("physics simulation"):F1} ms" & Environment.NewLine &
-            $"packing   : {PhaseMs("instance packing"):F2} ms" & Environment.NewLine &
+            $"packing   : {PhaseMs("arrow packing"):F2} ms" & Environment.NewLine &
             $"upload    : {m_renderer.UploadMs:F2} ms" & Environment.NewLine &
             $"pipeline  : {pipeline}"
     End Sub

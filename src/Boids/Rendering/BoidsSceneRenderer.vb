@@ -1,4 +1,5 @@
 Imports System.Drawing
+Imports System.Numerics
 Imports Microsoft.VisualBasic.Drawing.DirectX
 Imports Microsoft.VisualBasic.Drawing.DirectX.Scene3D
 Imports Microsoft.VisualBasic.Engine.Particles.Boids
@@ -10,7 +11,8 @@ Imports PaletteDesigner = Microsoft.VisualBasic.Imaging.Drawing2D.Colors.Designe
 Imports std = System.Math
 
 ''' <summary>
-''' The directx presentation of a three dimensional boids field.
+''' The directx presentation of a three dimensional boids field: every boid is
+''' drawn as an arrow that points along its velocity.
 ''' </summary>
 ''' <remarks>
 ''' <para>
@@ -19,31 +21,27 @@ Imports std = System.Math
 ''' </para>
 ''' <para>
 ''' * the static reference geometry of the scene, the twelve edges of the
-'''   simulation box. The box is loaded once through
+'''   simulation box and the floor grid inside of it. It is loaded once through
 '''   <see cref="DxScene3DCanvas.LoadConnections"/>, which is also what makes
 '''   <see cref="Scene3D.Scene.HasData"/> true - the canvas only calls the render
 '''   back end for a scene that holds some geometry - and what gives
-'''   <see cref="Scene3D.Scene.FitView"/> the radius of the model and the ground
-'''   grid its height.
+'''   <see cref="DxScene3DCanvas.FitView"/> the radius of the model.
 ''' </para>
 ''' <para>
-''' * the per frame point instances of the boids. The moving flock can not be
-'''   loaded through <see cref="DxScene3DCanvas.LoadPointCloud"/>: every load
-'''   raises <see cref="Scene3D.Scene.Version"/>, and the back end answers that
-'''   by rebuilding the whole gpu geometry, which at 120000 points per frame is
-'''   not affordable. Instead the flock travels through the external instance
-'''   buffer of <see cref="Direct3D11SceneRenderer"/>: one 32 byte record per
-'''   boid is refilled in place and uploaded as a single
-'''   <c>DrawInstanced</c> call, without touching the scene revision.
+''' * the arrows of the flock. The moving vector field can not be loaded through
+'''   <see cref="DxScene3DCanvas.LoadConnections"/>: every load raises
+'''   <see cref="Scene3D.Scene.Version"/> and the back end answers that by
+'''   rebuilding the whole gpu geometry - and by re-measuring the bounding sphere
+'''   over every line, which at hundreds of thousands of lines per frame is not
+'''   affordable. Instead the arrows travel through the animated line channel of
+'''   <see cref="Direct3D11SceneRenderer"/>: the line vertices are refilled in
+'''   place and uploaded into one dynamic buffer per frame, exactly like the
+'''   external instance cloud of an animated point cloud.
 ''' </para>
 ''' <para>
-''' The colors are packed on the cpu and handed over through the embedded color
-''' channel (<see cref="SceneRenderOptions.UseEmbeddedColor"/>), because that is
-''' the only mode in which the palette is bypassed and every point keeps its own
-''' color: the palette mode would paint the white predators with the heat map
-''' color of their speed just like every other boid. The embedded color mode
-''' reads the per point size factor from the heat slot of the instance record,
-''' so the predators are simply packed a bit larger.
+''' The geometry of one arrow is built by <see cref="BoidArrows"/> on the cpu,
+''' the color of every arrow is packed into its vertices, so the white predators
+''' and the speed colormap of the flock coexist in one line list.
 ''' </para>
 ''' </remarks>
 Public NotInheritable Class BoidsSceneRenderer
@@ -55,25 +53,19 @@ Public NotInheritable Class BoidsSceneRenderer
     Public Const ColorLevels As Integer = 30
 
     ''' <summary>
-    ''' the size factor of a predator, relative to <see cref="PointSize"/>
+    ''' the number of the floor grid cells along one edge of the box
     ''' </summary>
-    Public Const PredatorScale As Single = 1.8F
-
-    ''' <summary>
-    ''' the number of the <see cref="Single"/> words of one point instance, this
-    ''' is <c>Scene3DInputLayout.PointInstanceStride / 4</c>
-    ''' </summary>
-    Public Const InstanceWords As Integer = 8
+    Public Const FloorGridCells As Integer = 10
 
     ''' <summary>
     ''' the color of the edges of the simulation box
     ''' </summary>
-    Public Shared ReadOnly BoxColor As Color = Color.FromArgb(255, 74, 96, 128)
+    Public Shared ReadOnly BoxColor As Color = Color.FromArgb(255, 104, 132, 178)
 
     ''' <summary>
-    ''' the color of the ground grid, dim enough to stay behind the flock
+    ''' the color of the floor grid, dim enough to stay behind the flock
     ''' </summary>
-    Public Shared ReadOnly GroundGridColor As Color = Color.FromArgb(255, 44, 52, 66)
+    Public Shared ReadOnly GroundGridColor As Color = Color.FromArgb(255, 58, 68, 90)
 
     Private ReadOnly m_canvas As DxScene3DCanvas
     Private ReadOnly m_backend As Direct3D11SceneRenderer
@@ -84,26 +76,32 @@ Public NotInheritable Class BoidsSceneRenderer
     ''' color, exactly like the two dimensional renderer does
     ''' </summary>
     Private ReadOnly m_lut As Integer()
-    Private m_instances As Single()
+
+    Private m_lines As Single()
     Private m_capacity As Integer = 0
-    Private m_packed As Integer = 0
-    Private m_uploadMs As Double = 0
+    Private m_boidCount As Integer = 0
+    Private m_vertexCount As Integer = 0
+    Private m_arrowLength As Single = 0
 
     ''' <summary>
     ''' create the presenter of the given canvas, the canvas is configured for the
     ''' boids presentation here
     ''' </summary>
     ''' <param name="canvas">the scene canvas that displays the flock</param>
-    ''' <param name="pointSize">the edge length in pixels of one boid</param>
-    Public Sub New(canvas As DxScene3DCanvas, Optional pointSize As Integer = 2)
+    ''' <param name="arrowLength">
+    ''' the length of the arrow of the fastest boid in world units, zero asks for
+    ''' the default length that <see cref="BoidArrows.ResolveLength"/> derives from
+    ''' the size of the box
+    ''' </param>
+    Public Sub New(canvas As DxScene3DCanvas, Optional arrowLength As Single = 0)
         If canvas Is Nothing Then
             Throw New ArgumentNullException(NameOf(canvas))
         End If
 
         m_canvas = canvas
 
-        ' the animated point cloud is only supported by the off screen back end,
-        ' the direct back end has no external instance buffer at all
+        ' the animated line list is only supported by the off screen back end,
+        ' the direct back end has no dynamic overlay buffer at all
         Dim backend As Direct3D11SceneRenderer = TryCast(canvas.Renderer, Direct3D11SceneRenderer)
 
         If backend Is Nothing Then
@@ -113,8 +111,9 @@ Public NotInheritable Class BoidsSceneRenderer
 
         m_backend = backend
         m_lut = CreateColorTable(ColorLevels)
+        m_arrowLength = std.Max(0, arrowLength)
 
-        Call Configure(pointSize)
+        Call Configure(m_arrowLength)
     End Sub
 
     ''' <summary>
@@ -127,7 +126,7 @@ Public NotInheritable Class BoidsSceneRenderer
     End Property
 
     ''' <summary>
-    ''' the number of the boids that fit into the current instance buffer
+    ''' the number of the boids that fit into the current line buffer
     ''' </summary>
     Public ReadOnly Property Capacity As Integer
         Get
@@ -136,11 +135,29 @@ Public NotInheritable Class BoidsSceneRenderer
     End Property
 
     ''' <summary>
-    ''' the wall clock time of the last instance upload, in milliseconds
+    ''' the number of the arrows of the last packed frame
+    ''' </summary>
+    Public ReadOnly Property ArrowCount As Integer
+        Get
+            Return m_boidCount
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' the number of the line vertices of the last packed frame
+    ''' </summary>
+    Public ReadOnly Property VertexCount As Integer
+        Get
+            Return m_vertexCount
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' the wall clock time of the last line upload, in milliseconds
     ''' </summary>
     Public ReadOnly Property UploadMs As Double
         Get
-            Return If(m_uploadMs > 0, m_uploadMs, m_backend.LastUploadMs)
+            Return m_backend.LastLineUploadMs
         End Get
     End Property
 
@@ -173,51 +190,65 @@ Public NotInheritable Class BoidsSceneRenderer
     End Property
 
     ''' <summary>
-    ''' the edge length in pixels of one boid
+    ''' the length of the arrow of the fastest boid in world units, zero asks for
+    ''' the default length
     ''' </summary>
-    Public Property PointSize As Integer
+    Public Property ArrowLength As Single
         Get
-            Return m_canvas.PointSize
+            Return m_arrowLength
         End Get
-        Set(value As Integer)
-            m_canvas.PointSize = std.Max(1, value)
+        Set(value As Single)
+            m_arrowLength = std.Max(0, value)
         End Set
     End Property
 
     ''' <summary>
+    ''' the length of the arrow of the fastest boid that the current field uses
+    ''' </summary>
+    ''' <param name="field">the field of the current frame</param>
+    Public Function ResolvedArrowLength(field As Field3D) As Single
+        Return BoidArrows.ResolveLength(field, m_arrowLength)
+    End Function
+
+    ''' <summary>
     ''' apply the presentation options of the boids demo onto the canvas
     ''' </summary>
-    ''' <param name="pointSize">the edge length in pixels of one boid</param>
-    Public Sub Configure(Optional pointSize As Integer = 2)
+    ''' <param name="arrowLength">
+    ''' the length of the arrow of the fastest boid in world units, zero asks for
+    ''' the default length
+    ''' </param>
+    Public Sub Configure(Optional arrowLength As Single = 0)
+        If arrowLength > 0 Then
+            m_arrowLength = arrowLength
+        End If
+
         With m_canvas
             ' the 3d back end clears the canvas itself, the background color of
             ' the canvas control is the single source of truth
             .AutoClear = False
             .BackgroundColor = Color.Black
-            .PointSize = std.Max(1, pointSize)
-            .ShowGround = True
             .ShowConnections = True
             .ShowDebugOverlay = False
             .EnableKeyboardShortcuts = True
 
-            ' a screen aligned two pixel square gains nothing from multi
-            ' sampling, and the resolve of the off screen target costs a full
-            ' frame copy on its own
+            ' the floor grid of the scene pipeline is only drawn by the passes
+            ' that draw a model; the demo draws the floor as a part of its own
+            ' reference geometry, so the option stays off
+            .ShowGround = False
+
+            ' the arrows are one pixel wide lines, a screen aligned two pixel
+            ' square gains nothing from multi sampling while the resolve of the
+            ' off screen target costs a full frame copy on its own
             .MultisampleCount = 1
             .CullBackFaces = False
 
             With .Options
-                ' the per point color is the only way to paint the predators
-                ' white while every other boid follows the speed colormap
+                ' the color of every arrow travels in its own vertices, the
+                ' palette and the point options do not apply to the line channel
                 .UseEmbeddedColor = True
                 .PointAlpha = 255
                 .ColorScheme = ScalerPalette.viridis
                 .BackgroundColor = Color.Black
-                ' the default gray of the ground grid outshines the flock on a
-                ' black background; a dim slate tone keeps the depth cue without
-                ' competing with the boids
-                .GroundColor = GroundGridColor
-                .ShowBackgroundGrid = False
             End With
         End With
     End Sub
@@ -227,13 +258,13 @@ Public NotInheritable Class BoidsSceneRenderer
     ' /********************************************************************************/
 
     ''' <summary>
-    ''' load the twelve edges of the simulation box and fit the view onto it
+    ''' load the reference geometry of the scene - the twelve edges of the box and
+    ''' the floor grid - and fit the view onto it
     ''' </summary>
     ''' <param name="field">the field whose box is drawn</param>
     ''' <remarks>
-    ''' the box is the only geometry of the <see cref="Scene3D.Scene"/>; the
-    ''' canvas resets the camera and fits the view onto the new geometry after the
-    ''' load, so this method is the right place to call after a resize of the
+    ''' the canvas resets the camera and fits the view onto the new geometry after
+    ''' the load, so this method is the right place to call after a resize of the
     ''' field as well
     ''' </remarks>
     Public Sub LoadDomain(field As Field3D)
@@ -241,7 +272,12 @@ Public NotInheritable Class BoidsSceneRenderer
             Throw New ArgumentNullException(NameOf(field))
         End If
 
-        Call m_canvas.LoadConnections(CreateBox(field.Width, field.Height, field.Depth))
+        Dim lines As New List(Of LineSegment)()
+
+        Call lines.AddRange(CreateBox(field.Width, field.Height, field.Depth))
+        Call lines.AddRange(CreateFloor(field.Width, field.Height, field.Depth, FloorGridCells))
+
+        Call m_canvas.LoadConnections(lines)
     End Sub
 
     ''' <summary>
@@ -254,9 +290,8 @@ Public NotInheritable Class BoidsSceneRenderer
     ''' <remarks>
     ''' the scene canvas frames and orbits the origin, so the reference geometry
     ''' of the scene has to be centred there; the simulation itself runs inside
-    ''' the <c>[0, size)</c> box and <see cref="Pack"/> shifts it by half of the
-    ''' edge length, which also puts the ground grid of the canvas on the bottom
-    ''' face of the box
+    ''' the <c>[0, size)</c> box and <see cref="BoidArrows.Build"/> shifts it by
+    ''' half of the edge length
     ''' </remarks>
     Public Shared Function CreateBox(width As Double, height As Double, depth As Double) As LineSegment()
         ' the eight corners of the box, the index bits are x = 1, y = 2, z = 4
@@ -290,6 +325,37 @@ Public NotInheritable Class BoidsSceneRenderer
     End Function
 
     ''' <summary>
+    ''' build the floor grid that lies on the bottom face of the box, it is the
+    ''' depth cue that tells how far into the box the flock has travelled
+    ''' </summary>
+    ''' <param name="width">the size of the box along x</param>
+    ''' <param name="height">the size of the box along y</param>
+    ''' <param name="depth">the size of the box along z</param>
+    ''' <param name="cells">the number of the cells along one edge</param>
+    Public Shared Function CreateFloor(width As Double, height As Double, depth As Double,
+                                       cells As Integer) As LineSegment()
+        If cells <= 0 Then
+            Return Array.Empty(Of LineSegment)()
+        End If
+
+        Dim halfX As Double = width * 0.5
+        Dim halfY As Double = height * 0.5
+        Dim z As Double = -depth * 0.5
+        Dim lines As New List(Of LineSegment)(cells * 4 + 4)
+
+        For i As Integer = 0 To cells
+            Dim t As Double = i / cells
+            Dim x As Double = -halfX + width * t
+            Dim y As Double = -halfY + height * t
+
+            Call lines.Add(New LineSegment(New Point3D(x, -halfY, z), New Point3D(x, halfY, z), GroundGridColor))
+            Call lines.Add(New LineSegment(New Point3D(-halfX, y, z), New Point3D(halfX, y, z), GroundGridColor))
+        Next
+
+        Return lines.ToArray()
+    End Function
+
+    ''' <summary>
     ''' fit the camera onto the loaded box again, the canvas size has to be known
     ''' for that so the host calls this once its window is shown
     ''' </summary>
@@ -298,11 +364,11 @@ Public NotInheritable Class BoidsSceneRenderer
     End Sub
 
     ' /********************************************************************************/
-    '  the animated point cloud
+    '  the animated arrows
     ' /********************************************************************************/
 
     ''' <summary>
-    ''' reserve the instance buffer for the given number of boids
+    ''' reserve the line buffer for the given number of boids
     ''' </summary>
     ''' <param name="count">the number of the boids of the flock</param>
     Public Sub EnsureCapacity(count As Integer)
@@ -310,105 +376,40 @@ Public NotInheritable Class BoidsSceneRenderer
             count = 0
         End If
 
-        If m_instances Is Nothing OrElse m_instances.Length < count * InstanceWords Then
-            m_instances = New Single(count * InstanceWords - 1) {}
+        Dim vertices As Integer = BoidArrows.VertexCount(count)
+        Dim words As Integer = vertices * BoidArrows.FloatsPerVertex
+
+        If m_lines Is Nothing OrElse m_lines.Length < words Then
+            m_lines = New Single(words - 1) {}
         End If
 
         m_capacity = count
-        m_packed = 0
+        m_boidCount = 0
+        m_vertexCount = 0
 
-        Call m_backend.EnsureInstanceCapacity(count)
+        Call m_backend.EnsureLineCapacity(vertices)
     End Sub
 
     ''' <summary>
-    ''' pack the current frame of the flock into the instance buffer
+    ''' pack the arrows of the current frame into the line buffer
     ''' </summary>
     ''' <param name="field">the field to present</param>
-    ''' <returns>the number of the packed instances</returns>
-    ''' <remarks>
-    ''' The layout of one instance is the 32 byte point instance record of the
-    ''' scene pipeline: the position, the normal (unused by the embedded color
-    ''' mode), the per point size factor and the packed RGBA color. No matrix is
-    ''' involved here, the color look up and the speed are the only per boid math
-    ''' besides the square root.
-    ''' </remarks>
+    ''' <returns>the number of the written line vertices</returns>
     Public Function Pack(field As Field3D) As Integer
-        If field Is Nothing Then
-            m_packed = 0
+        If field Is Nothing OrElse m_lines Is Nothing Then
+            m_boidCount = 0
+            m_vertexCount = 0
             Return 0
         End If
 
-        Dim state As FlockState3D = field.State
-        Dim n As Integer = std.Min(state.count, m_capacity)
+        ' the wings of the arrow heads are opened perpendicular to the view
+        ' direction, so they stay visible while the camera orbits
+        Dim forward As Vector3 = BoidArrows.ViewForward(m_canvas.Controller.Camera)
 
-        If n <= 0 Then
-            m_packed = 0
-            Return 0
-        End If
+        m_vertexCount = BoidArrows.Build(field, m_lut, m_predatorColor, forward, m_arrowLength, m_lines)
+        m_boidCount = m_vertexCount \ BoidArrows.VerticesPerArrow
 
-        Dim buffer As Single() = m_instances
-        Dim px As Double() = state.px
-        Dim py As Double() = state.py
-        Dim pz As Double() = state.pz
-        Dim vx As Double() = state.vx
-        Dim vy As Double() = state.vy
-        Dim vz As Double() = state.vz
-        Dim maxSpeed As Double = field.MaxSpeed
-        Dim predCount As Integer = std.Min(field.PredatorCount, n)
-        Dim levels As Integer = m_lut.Length
-        Dim white As Integer = m_predatorColor
-
-        ' the simulation space starts at the origin while the scene is centred on
-        ' it, so every position is shifted by half of the edge length
-        Dim halfX As Double = field.Width * 0.5
-        Dim halfY As Double = field.Height * 0.5
-        Dim halfZ As Double = field.Depth * 0.5
-
-        For i As Integer = 0 To n - 1
-            Dim vxv As Double = vx(i)
-            Dim vyv As Double = vy(i)
-            Dim vzv As Double = vz(i)
-            Dim speed As Double = std.Sqrt(vxv * vxv + vyv * vyv + vzv * vzv)
-
-            Dim argb As Integer
-            Dim sizeFactor As Single
-
-            If i < predCount Then
-                ' the predators are the white, slightly larger leaders of the
-                ' flock, exactly like in the two dimensional presentation
-                argb = white
-                sizeFactor = PredatorScale
-            Else
-                Dim level As Integer = BoidMath.Round(speed / maxSpeed * levels) - 1
-
-                If level < 0 Then
-                    level = 0
-                ElseIf level >= levels Then
-                    level = levels - 1
-                End If
-
-                argb = m_lut(level)
-                sizeFactor = 1.0F
-            End If
-
-            Dim o As Integer = i * InstanceWords
-
-            buffer(o + 0) = CSng(px(i) - halfX)
-            buffer(o + 1) = CSng(py(i) - halfY)
-            buffer(o + 2) = CSng(pz(i) - halfZ)
-            ' the embedded color mode reads the size factor from the heat slot,
-            ' the normal slot stays free and is kept at a unit length value so
-            ' that a future lit presentation of the same buffer stays sane
-            buffer(o + 3) = 1.0F
-            buffer(o + 4) = 0.0F
-            buffer(o + 5) = 0.0F
-            buffer(o + 6) = sizeFactor
-            buffer(o + 7) = BitConverter.Int32BitsToSingle(argb)
-        Next
-
-        m_packed = n
-
-        Return n
+        Return m_vertexCount
     End Function
 
     ''' <summary>
@@ -416,20 +417,20 @@ Public NotInheritable Class BoidsSceneRenderer
     ''' the next <see cref="DxScene3DCanvas.Render"/> of the canvas
     ''' </summary>
     Public Sub Upload()
-        If m_packed <= 0 Then
-            m_uploadMs = 0
+        If m_vertexCount <= 0 Then
             Return
         End If
 
-        Call m_backend.UploadInstances(m_instances, m_packed)
+        Call m_backend.UploadLines(m_lines, m_vertexCount)
     End Sub
 
     ''' <summary>
-    ''' drop the instances of the last frame, the next frame starts empty
+    ''' drop the arrows of the last frame, the next frame starts empty
     ''' </summary>
     Public Sub Clear()
-        m_packed = 0
-        Call m_backend.ClearInstances()
+        m_boidCount = 0
+        m_vertexCount = 0
+        Call m_backend.ClearLines()
     End Sub
 
     ' /********************************************************************************/
