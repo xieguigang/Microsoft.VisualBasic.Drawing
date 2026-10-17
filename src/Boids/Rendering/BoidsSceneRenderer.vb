@@ -70,6 +70,11 @@ Public NotInheritable Class BoidsSceneRenderer
     ''' </summary>
     Public Shared ReadOnly BoxColor As Color = Color.FromArgb(255, 74, 96, 128)
 
+    ''' <summary>
+    ''' the color of the ground grid, dim enough to stay behind the flock
+    ''' </summary>
+    Public Shared ReadOnly GroundGridColor As Color = Color.FromArgb(255, 44, 52, 66)
+
     Private ReadOnly m_canvas As DxScene3DCanvas
     Private ReadOnly m_backend As Direct3D11SceneRenderer
     Private ReadOnly m_predatorColor As Integer = Color.White.ToArgb()
@@ -208,6 +213,11 @@ Public NotInheritable Class BoidsSceneRenderer
                 .PointAlpha = 255
                 .ColorScheme = ScalerPalette.viridis
                 .BackgroundColor = Color.Black
+                ' the default gray of the ground grid outshines the flock on a
+                ' black background; a dim slate tone keeps the depth cue without
+                ' competing with the boids
+                .GroundColor = GroundGridColor
+                .ShowBackgroundGrid = False
             End With
         End With
     End Sub
@@ -235,21 +245,31 @@ Public NotInheritable Class BoidsSceneRenderer
     End Sub
 
     ''' <summary>
-    ''' build the twelve edges of the box that spans
-    ''' <c>[0, width] x [0, height] x [0, depth]</c>
+    ''' build the twelve edges of the box that is centred on the origin and
+    ''' spans <c>[-width/2, width/2]</c> on every axis
     ''' </summary>
     ''' <param name="width">the size of the box along x</param>
     ''' <param name="height">the size of the box along y</param>
     ''' <param name="depth">the size of the box along z</param>
+    ''' <remarks>
+    ''' the scene canvas frames and orbits the origin, so the reference geometry
+    ''' of the scene has to be centred there; the simulation itself runs inside
+    ''' the <c>[0, size)</c> box and <see cref="Pack"/> shifts it by half of the
+    ''' edge length, which also puts the ground grid of the canvas on the bottom
+    ''' face of the box
+    ''' </remarks>
     Public Shared Function CreateBox(width As Double, height As Double, depth As Double) As LineSegment()
         ' the eight corners of the box, the index bits are x = 1, y = 2, z = 4
         Dim corners(7) As Point3D
+        Dim halfX As Double = width * 0.5
+        Dim halfY As Double = height * 0.5
+        Dim halfZ As Double = depth * 0.5
 
         For i As Integer = 0 To 7
             corners(i) = New Point3D(
-                If((i And 1) <> 0, width, 0),
-                If((i And 2) <> 0, height, 0),
-                If((i And 4) <> 0, depth, 0))
+                If((i And 1) <> 0, halfX, -halfX),
+                If((i And 2) <> 0, halfY, -halfY),
+                If((i And 4) <> 0, halfZ, -halfZ))
         Next
 
         ' the four edges of the bottom face, the four edges of the top face and
@@ -338,6 +358,12 @@ Public NotInheritable Class BoidsSceneRenderer
         Dim levels As Integer = m_lut.Length
         Dim white As Integer = m_predatorColor
 
+        ' the simulation space starts at the origin while the scene is centred on
+        ' it, so every position is shifted by half of the edge length
+        Dim halfX As Double = field.Width * 0.5
+        Dim halfY As Double = field.Height * 0.5
+        Dim halfZ As Double = field.Depth * 0.5
+
         For i As Integer = 0 To n - 1
             Dim vxv As Double = vx(i)
             Dim vyv As Double = vy(i)
@@ -367,9 +393,9 @@ Public NotInheritable Class BoidsSceneRenderer
 
             Dim o As Integer = i * InstanceWords
 
-            buffer(o + 0) = CSng(px(i))
-            buffer(o + 1) = CSng(py(i))
-            buffer(o + 2) = CSng(pz(i))
+            buffer(o + 0) = CSng(px(i) - halfX)
+            buffer(o + 1) = CSng(py(i) - halfY)
+            buffer(o + 2) = CSng(pz(i) - halfZ)
             ' the embedded color mode reads the size factor from the heat slot,
             ' the normal slot stays free and is kept at a unit length value so
             ' that a future lit presentation of the same buffer stays sane

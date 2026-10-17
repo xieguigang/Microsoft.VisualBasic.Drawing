@@ -3,7 +3,10 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <StartupObject>Boids.My.MyApplication</StartupObject>
+    <!-- the executable owns its entry point: it has to choose between the two
+         dimensional gdi+ window and the three dimensional directx window, which
+         the application framework entry point can not do -->
+    <StartupObject>Boids.Program</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
     <Platforms>AnyCPU;x64</Platforms>
