@@ -236,10 +236,25 @@ Public Module SkiaInterop
         Return SKShader.CreateImage(skImg)
     End Function
 
+    ''' <summary>
+    ''' <see cref="Font.Size"/> 换算到 Skia 使用的像素字号。
+    '''
+    ''' <para>
+    ''' GDI+ 侧把 <c>Font.Size</c> 当作"点"传给 <c>System.Drawing.Font</c>（96 DPI 下 1pt = 4/3 px），
+    ''' 而 Skia 的 <c>SKFont</c> 直接按像素处理。若这里不做换算，
+    ''' 同一个字体在 Skia 下会比 GDI+ 小 25%，两种后端的排版就永远对不上。
+    ''' </para>
+    ''' </summary>
+    ''' <param name="font">绘图字体</param>
+    <Extension>
+    Public Function SkiaFontPixels(font As Font) As Single
+        Return font.Size * 96.0F / 72.0F
+    End Function
+
     <Extension>
     Public Function CreateSkiaFont(font As Font) As SKFont
         Dim typeface = font.CreateSkiaTypeface
-        Dim skfont As New SKFont(typeface, font.Size)
+        Dim skfont As New SKFont(typeface, font.SkiaFontPixels)
         Return skfont
     End Function
 

@@ -60,7 +60,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
            .Color = color.AsSKColor
         }
             Dim textBounds As New SKRect
-            Dim skfont As New SKFont(SKTypeface.FromFamilyName(fontName), fontSize)
+            ' 与 Font 重载保持一致：字号按 pt -> px 换算
+            Dim skfont As New SKFont(SKTypeface.FromFamilyName(fontName), fontSize * 96.0F / 72.0F)
             Dim text As SKTextBlob = SKTextBlob.Create(s, skfont)
 
             If s Is Nothing Then
@@ -73,12 +74,41 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         End Using
     End Sub
 
+    ''' <summary>
+    ''' 以 <see cref="Font"/> 的全部样式信息绘制文本，并让 <paramref name="x"/>/<paramref name="y"/>
+    ''' 表示"文本行框的左上角"（与 GDI+ 的 <c>Graphics.DrawString(s, font, brush, x, y)</c> 一致）。
+    ''' </summary>
+    ''' <param name="s">文本</param>
+    ''' <param name="font">字体（含粗体/斜体等样式）</param>
+    ''' <param name="color">文字颜色</param>
+    ''' <param name="x">行框左上角 x</param>
+    ''' <param name="y">行框左上角 y</param>
+    Public Overloads Sub DrawString(s As String, font As Font, color As Color, x As Single, y As Single)
+        Using paint As New SKPaint With {
+                .Color = color.AsSKColor,
+                .IsAntialias = True,
+                .Style = SKPaintStyle.Fill
+            }, skfont As SKFont = font.CreateSkiaFont
+
+            Dim metrics As SKFontMetrics = skfont.Metrics
+            Dim blob As SKTextBlob = SKTextBlob.Create(If(s, ""), skfont)
+
+            ' GDI+ 的 y 是行框顶部，Skia 的 DrawText 需要基线 => 基线 = y - ascent（ascent 为负值）
+            Call m_canvas.DrawText(blob, x, y - metrics.Ascent, paint)
+        End Using
+    End Sub
+
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, ByRef point As PointF)
-        Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, point.X, point.Y)
+        Call DrawString(s, font, DirectCast(brush, SolidBrush).Color, point.X, point.Y)
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, layoutRectangle As RectangleF)
-        Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, layoutRectangle.Left, layoutRectangle.Top)
+        ' GDI+ 会按布局矩形换行并裁剪；这里至少保证不会溢出矩形
+        Dim state As Integer = m_canvas.Save()
+
+        Call m_canvas.ClipRect(layoutRectangle.AsRectangle, SKClipOperation.Intersect, True)
+        Call DrawString(s, font, DirectCast(brush, SolidBrush).Color, layoutRectangle.Left, layoutRectangle.Top)
+        Call m_canvas.RestoreToCount(state)
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush,
@@ -89,24 +119,23 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
                 .Color = DirectCast(brush, SolidBrush).Color.AsSKColor,
                 .IsAntialias = True,
                 .Style = SKPaintStyle.Fill
-            }, skfont As New SKFont(SKTypeface.FromFamilyName(font.Name), font.Size)
+            }, skfont As SKFont = font.CreateSkiaFont
 
-            Dim textBounds As New SKRect
-            Dim txt = SKTextBlob.Create(s, skfont)
+            Dim metrics As SKFontMetrics = skfont.Metrics
+            Dim blob As SKTextBlob = SKTextBlob.Create(If(s, ""), skfont)
+            Dim state As Integer = m_canvas.Save()
 
-            ' get text bounds size
-            Call skfont.MeasureText(s, textBounds, paint)
-
-            m_canvas.Translate(x, y)
-            m_canvas.RotateDegrees(angle)
-            m_canvas.DrawText(txt, -textBounds.MidX, -textBounds.MidY, paint)
-            m_canvas.RotateDegrees(-angle)
-            m_canvas.Translate(-x, -y)
+            ' 与 GDI+ 的 RotateAt(angle, point) + Near/Near 对齐保持一致：
+            ' 锚点是文本行框的左上角，绕左上角旋转
+            Call m_canvas.Translate(x, y)
+            Call m_canvas.RotateDegrees(angle)
+            Call m_canvas.DrawText(blob, 0, -metrics.Ascent, paint)
+            Call m_canvas.RestoreToCount(state)
         End Using
     End Sub
 
     Public Overrides Sub DrawString(s As String, font As Font, brush As Brush, x As Single, y As Single)
-        Call DrawString(s, font.Name, font.Size, DirectCast(brush, SolidBrush).Color, x, y)
+        Call DrawString(s, font, DirectCast(brush, SolidBrush).Color, x, y)
     End Sub
 
     Public Overloads Sub DrawLine(x1 As Single, y1 As Single, x2 As Single, y2 As Single,
@@ -118,6 +147,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             .Color = color.AsSKColor,
             .StrokeWidth = width,
             .Style = SKPaintStyle.Stroke,
+            .IsAntialias = True,
             .PathEffect = dash
         }
             Call m_canvas.DrawLine(x1, y1, x2, y2, paint)
@@ -159,6 +189,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             If Not fill Is Nothing Then
                 Using paint As New SKPaint With {
                     .Style = SKPaintStyle.Fill,
+                    .IsAntialias = True,
                     .Color = CType(fill, Color).AsSKColor
                 }
                     Call m_canvas.DrawPath(skpath, paint)
@@ -168,6 +199,7 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             Using paint As New SKPaint With {
                 .Color = color.AsSKColor,
                 .StrokeWidth = width,
+                .IsAntialias = True,
                 .Style = SKPaintStyle.Stroke
             }
                 If Not dash.IsNullOrEmpty Then
@@ -470,16 +502,29 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawLines(pen As Pen, points() As PointF)
-        Dim pt1 As PointF
-        Dim pt2 As PointF
-        Dim stroke As SKPathEffect = pen.LineDashStyle
+        If points.TryCount <= 1 Then
+            Return
+        End If
 
-        For Each line As SlideWindow(Of PointF) In points.SlideWindows(2)
-            pt1 = line(0)
-            pt2 = line(1)
+        ' 逐段 DrawLine 会让拐点被重复绘制、没有 join、虚线相位每段重置；
+        ' 这里走一条连续的折线路径，与 GDI+ 的 Graphics.DrawLines 语义一致
+        Using path As New SKPath
+            Call path.MoveTo(points(0).X, points(0).Y)
 
-            Call DrawLine(pt1.X, pt1.Y, pt2.X, pt2.Y, pen.Color, pen.Width, stroke)
-        Next
+            For i As Integer = 1 To points.Length - 1
+                Call path.LineTo(points(i).X, points(i).Y)
+            Next
+
+            Using paint As New SKPaint With {
+                .Color = pen.Color.AsSKColor,
+                .StrokeWidth = pen.Width,
+                .Style = SKPaintStyle.Stroke,
+                .IsAntialias = True,
+                .PathEffect = pen.LineDashStyle
+            }
+                Call m_canvas.DrawPath(path, paint)
+            End Using
+        End Using
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>
@@ -507,10 +552,14 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Sub
 
     Public Overrides Sub DrawCircle(center As PointF, fill As Color, stroke As Pen, radius As Single)
-        Call FillEllipse(New SolidBrush(fill), New RectangleF(center.X - radius, center.Y - radius, radius, radius))
+        ' 外接矩形的宽高是直径（2 * radius），与 GDI+ 侧的 DrawCircle 扩展保持一致
+        Dim size! = radius * 2
+        Dim rect As New RectangleF(center.X - radius, center.Y - radius, size, size)
+
+        Call FillEllipse(New SolidBrush(fill), rect)
 
         If stroke IsNot Nothing Then
-            Call DrawEllipse(stroke, New RectangleF(center.X - radius, center.Y - radius, radius, radius))
+            Call DrawEllipse(stroke, rect)
         End If
     End Sub
 
@@ -531,7 +580,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
             Using paint As New SKPaint With {
                 .Color = pen.Color.AsSKColor,
                 .Style = SKPaintStyle.Stroke,
-                .StrokeWidth = pen.Width
+                .StrokeWidth = pen.Width,
+                .IsAntialias = True
             }
                 Call m_canvas.DrawPath(path, paint)
             End Using
@@ -556,7 +606,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         Using paint As New SKPaint With {
             .Color = pen.Color.AsSKColor,
             .StrokeWidth = pen.Width,
-            .Style = SKPaintStyle.Stroke
+            .Style = SKPaintStyle.Stroke,
+            .IsAntialias = True
         }
             Call m_canvas.DrawRect(x, y, width, height, paint)
         End Using
@@ -616,7 +667,9 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     Public Overrides Sub FillEllipse(brush As Brush, x As Single, y As Single, width As Single, height As Single)
         Using paint As SKPaint = brush.CreatePaint()
-            Call m_canvas.DrawOval(x, y, width, height, paint)
+            ' 注意：SKCanvas.DrawOval(cx, cy, rx, ry) 是"中心 + 半径"，
+            ' 而 IGraphics.FillEllipse 的语义是"左上角 + 宽高"，这里必须换算成外接矩形
+            Call m_canvas.DrawOval(New SKRect(x, y, x + width, y + height), paint)
         End Using
     End Sub
 
@@ -660,10 +713,14 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
 
     Public Overrides Sub FillPolygon(brush As Brush, points() As PointF)
         If points.TryCount <= 2 Then
-            Return
+            Throw New ArgumentException("FillPolygon requires at least 3 points.", NameOf(points))
         End If
 
         Using path As New SKPath
+            ' GDI+ 的 FillPolygon 使用奇偶（Alternate）填充规则，SKPath 默认是 Winding，
+            ' 自交多边形（星形、凹多边形）会得到完全不同的填充结果，这里显式对齐
+            path.FillType = SKPathFillType.EvenOdd
+
             Call path.MoveTo(points(0).X, points(0).Y)
 
             For i As Integer = 1 To points.Length - 1
@@ -747,7 +804,8 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
         End If
 
         m_clipSaveCount = m_canvas.Save()
-        Call m_canvas.ClipRect(rect.AsRectangle, SKClipOperation.Difference, True)
+        ' GDI+ 的 SetClip 语义是"只保留该区域"，对应 Intersect 而不是 Difference
+        Call m_canvas.ClipRect(rect.AsRectangle, SKClipOperation.Intersect, True)
         m_lastClipRect = rect
     End Sub
 
@@ -791,11 +849,11 @@ Public MustInherit Class SkiaGraphics : Inherits IGraphics
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font, width As Integer) As SizeF
-        Return SkiaDriver.MeasureString(text, font)
+        Return SkiaDriver.MeasureString(text, font, CSng(width))
     End Function
 
     Public Overrides Function MeasureString(text As String, font As Font, layoutArea As SizeF) As SizeF
-        Return SkiaDriver.MeasureString(text, font)
+        Return SkiaDriver.MeasureString(text, font, layoutArea.Width)
     End Function
 
     Public Overrides Function GetContextInfo() As GraphicsContextInfo
