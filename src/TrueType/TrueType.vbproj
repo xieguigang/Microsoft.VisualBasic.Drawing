@@ -3,7 +3,7 @@
     <OptionInfer>On</OptionInfer>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>16.9</LangVersion>
-    <Version>10.7.9791.26955</Version>
+    <Version>10.8.9796.18903</Version>
     <Authors>Roy Triesscheijn, Wouter de Vries</Authors>
     <Company />
     <Product />
@@ -16,8 +16,8 @@
     <RepositoryUrl>https://github.com/roy-t/TrueType</RepositoryUrl>
     <RepositoryType />
     <PackageTags>truetype, ttf, opentype, font, fonts, parser</PackageTags>
-    <AssemblyVersion>0.2.9791.26955</AssemblyVersion>
-    <FileVersion>0.2.9791.26955</FileVersion>
+    <AssemblyVersion>0.2.9796.18903</AssemblyVersion>
+    <FileVersion>0.2.9796.18903</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   
     <AssemblyName>Microsoft.VisualBasic.Drawing.Fonts.TrueType</AssemblyName>
