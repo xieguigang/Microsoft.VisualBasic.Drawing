@@ -18,6 +18,8 @@ cbuffer SceneConstants : register(b0)
     float4   unlitColor;
     float4   heatParams;
     float4   pointParams;   // xyz = the world space edge lengths of one voxel cube (the cube mode of the point cloud), w = reserved
+    float4x4 worldMatrix;   // the world matrix of the mesh instance that is drawn, identity for the scene geometry
+    float4   dynamicParams; // x = the world space height of the materialization plane, y = the clipping switch, z = the instance opacity, w = reserved
 };
 
 Texture2D    sceneTexture : register(t0);
@@ -148,6 +150,69 @@ float4 VS_Position(PositionInput input) : SV_POSITION
 float4 PS_Unlit(float4 position : SV_POSITION) : SV_TARGET
 {
     return unlitColor;
+}
+
+// ---------------------------------------------------------------------------
+// One mesh instance: a rigid part that the host places with its own world
+// matrix (a robot link, a wheel, a prop). The world matrix is folded into the
+// camera matrices by the host, so the vertex stage is the very same one as
+// VS_Surface plus the world space height that the materialization effect needs.
+// ---------------------------------------------------------------------------
+
+struct SurfaceInstanceOutput
+{
+    float4 position : SV_POSITION;
+    float3 normal   : TEXCOORD0;
+    float4 color    : COLOR;
+    float  worldY   : TEXCOORD1;
+};
+
+SurfaceInstanceOutput VS_SurfaceInstance(SurfaceInput input)
+{
+    SurfaceInstanceOutput output;
+    float4 local = float4(input.position, 1);
+
+    output.position = mul(worldViewProj, local);
+    output.normal = input.normal;
+    output.color = input.color;
+    output.worldY = mul(worldMatrix, local).y;
+    return output;
+}
+
+float4 PS_SurfaceInstance(SurfaceInstanceOutput input) : SV_TARGET
+{
+    // the materialization scan of the entrance: everything below the plane is
+    // still wire frame only, so the solid fragments are dropped there
+    if (dynamicParams.y > 0.5f)
+    {
+        if (input.worldY < dynamicParams.x)
+        {
+            discard;
+        }
+    }
+
+    float4 baseColor = input.color;
+    baseColor.a *= saturate(dynamicParams.z);
+
+    float3 n = input.normal;
+
+    if (dot(n, n) < 1e-8f)
+    {
+        return baseColor;
+    }
+
+    float3 lit = mul(worldRotation, float4(n, 0)).xyz;
+
+    if (lit.z < 0)
+    {
+        lit = -lit;
+    }
+
+    float diffuse = max(0, dot(normalize(lit), normalize(lightDirection.xyz)));
+    float ambient = lightColor.a;
+    float factor = ambient + (1 - ambient) * diffuse;
+
+    return float4(lerp(baseColor.rgb, lightColor.rgb, factor), baseColor.a);
 }
 
 LineOutput VS_Line(LineInput input)

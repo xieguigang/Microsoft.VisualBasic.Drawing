@@ -492,6 +492,257 @@ Namespace Scene3D
             m_pendingLineCount = 0
         End Sub
 
+        ' ------------------------------------------------------------------
+        ' the mesh instance channel: immutable rigid parts that the host keeps
+        ' outside of the scene and places per frame with its own world matrices
+        ' (a robot link chain, a vehicle, an animated prop)
+        ' ------------------------------------------------------------------
+
+        ''' <summary>
+        ''' one uploaded mesh of the host: the vertex buffer, its vertex count
+        ''' and the managed copy that survives a device loss
+        ''' </summary>
+        Private NotInheritable Class MeshEntry
+            Public Buffer As IntPtr
+            Public VertexCount As Integer
+            Public Data As SceneMeshVertex()
+            Public Dirty As Boolean
+        End Class
+
+        Private ReadOnly m_meshes As New Dictionary(Of String, MeshEntry)(StringComparer.Ordinal)
+        Private ReadOnly m_meshInstances As New List(Of MeshInstance)
+        Private m_meshUploadMs As Double = 0
+        Private m_meshDrawCount As Integer = 0
+
+        ''' <summary>
+        ''' upload one immutable mesh that the host places per frame
+        ''' </summary>
+        ''' <param name="key">the name of the mesh, the key of every <see cref="MeshInstance"/></param>
+        ''' <param name="vertices">
+        ''' the triangle list of the part in its own local space, three corners
+        ''' per face that repeat the face normal and the face color
+        ''' </param>
+        ''' <remarks>
+        ''' The data is uploaded by the next <see cref="Render"/> (the gpu device
+        ''' of the canvas is only known inside of a frame) and is kept afterwards,
+        ''' so the mesh is rebuilt automatically after a device loss. Uploading a
+        ''' key twice replaces the mesh. A mesh does not raise
+        ''' <see cref="Scene.Version"/>: it is outside of the scene, exactly like
+        ''' the animated line list of <see cref="UploadLines"/>.
+        ''' </remarks>
+        Public Sub UploadMesh(key As String, vertices As SceneMeshVertex())
+            If String.IsNullOrEmpty(key) Then
+                Throw New ArgumentException("the key of a mesh can not be empty", NameOf(key))
+            End If
+
+            If vertices Is Nothing OrElse vertices.Length < 3 Then
+                Call RemoveMesh(key)
+
+                Return
+            End If
+
+            Dim entry As MeshEntry = Nothing
+
+            If Not m_meshes.TryGetValue(key, entry) Then
+                entry = New MeshEntry()
+                m_meshes(key) = entry
+            End If
+
+            entry.Data = vertices
+            entry.VertexCount = vertices.Length
+            entry.Dirty = True
+        End Sub
+
+        ''' <summary>
+        ''' drop one uploaded mesh, its gpu buffer is released
+        ''' </summary>
+        Public Sub RemoveMesh(key As String)
+            If String.IsNullOrEmpty(key) Then
+                Return
+            End If
+
+            Dim entry As MeshEntry = Nothing
+
+            If m_meshes.TryGetValue(key, entry) Then
+                Call ReleaseMeshEntry(entry)
+                Call m_meshes.Remove(key)
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' drop every uploaded mesh of the host
+        ''' </summary>
+        Public Sub ClearMeshes()
+            For Each entry As MeshEntry In m_meshes.Values
+                Call ReleaseMeshEntry(entry)
+            Next
+
+            Call m_meshes.Clear()
+            Call m_meshInstances.Clear()
+        End Sub
+
+        ''' <summary>
+        ''' how many meshes the host has uploaded
+        ''' </summary>
+        Public ReadOnly Property MeshCount As Integer
+            Get
+                Return m_meshes.Count
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' how many instances the last frame has drawn
+        ''' </summary>
+        Public ReadOnly Property MeshInstanceCount As Integer
+            Get
+                Return m_meshDrawCount
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' the wall clock time of the last mesh upload, in milliseconds
+        ''' </summary>
+        Public ReadOnly Property LastMeshUploadMs As Double
+            Get
+                Return m_meshUploadMs
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' queue one placement of an uploaded mesh for the next frame
+        ''' </summary>
+        ''' <param name="key">the key that the mesh was uploaded with</param>
+        ''' <param name="world">the world matrix of the part, row vector convention</param>
+        ''' <param name="alpha">the opacity, 1 is opaque</param>
+        ''' <param name="clipY">the world space height of the materialization plane</param>
+        ''' <param name="clip">drop the fragments below <paramref name="clipY"/></param>
+        ''' <remarks>
+        ''' The queue is cleared at the beginning of every frame: a host submits
+        ''' its parts from inside the render event of the canvas, once per frame.
+        ''' </remarks>
+        Public Sub SubmitMesh(key As String, world As Matrix4x4,
+                              Optional alpha As Single = 1.0F,
+                              Optional clipY As Single = 0.0F,
+                              Optional clip As Boolean = False)
+            If String.IsNullOrEmpty(key) Then
+                Return
+            End If
+
+            Call m_meshInstances.Add(New MeshInstance With {
+                .Key = key,
+                .World = world,
+                .Alpha = alpha,
+                .ClipY = clipY,
+                .Clip = clip
+            })
+        End Sub
+
+        ''' <summary>
+        ''' drop the instances that were submitted for the frame that is about to
+        ''' be drawn
+        ''' </summary>
+        Public Sub ClearMeshSubmissions()
+            Call m_meshInstances.Clear()
+        End Sub
+
+        ''' <summary>
+        ''' create the gpu buffers of the meshes that were uploaded or that lost
+        ''' their buffer to a device reset
+        ''' </summary>
+        Private Sub SyncMeshes()
+            Dim clock As Stopwatch = Nothing
+
+            For Each entry As MeshEntry In m_meshes.Values
+                If Not entry.Dirty AndAlso entry.Buffer <> IntPtr.Zero Then
+                    Continue For
+                End If
+
+                If clock Is Nothing Then clock = Stopwatch.StartNew()
+
+                If entry.Buffer <> IntPtr.Zero Then
+                    Call m_pipeline.ReleaseBuffer(entry.Buffer)
+                End If
+
+                Dim bytes As Integer = entry.VertexCount * SceneMeshVertex.Stride
+
+                entry.Buffer = m_pipeline.CreateBuffer(bytes, D3D11_BIND_FLAG.VERTEX_BUFFER)
+                Call m_pipeline.FillBuffer(entry.Buffer, entry.Data)
+                entry.Dirty = False
+            Next
+
+            If clock IsNot Nothing Then
+                clock.Stop()
+                m_meshUploadMs = clock.Elapsed.TotalMilliseconds
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' draw the mesh instances of the frame: the opaque parts first, so that
+        ''' the depth buffer of the scene is complete before the translucent ones
+        ''' blend over it
+        ''' </summary>
+        Private Sub DrawMeshInstances(cull As Boolean)
+            m_meshDrawCount = 0
+
+            If m_meshInstances.Count = 0 Then
+                Return
+            End If
+
+            For pass As Integer = 0 To 1
+                Dim translucent As Boolean = pass = 1
+
+                For i As Integer = 0 To m_meshInstances.Count - 1
+                    Dim instance As MeshInstance = m_meshInstances(i)
+
+                    If (instance.Alpha < 0.999F) <> translucent Then
+                        Continue For
+                    End If
+
+                    Dim entry As MeshEntry = Nothing
+
+                    If Not m_meshes.TryGetValue(instance.Key, entry) Then
+                        Continue For
+                    End If
+
+                    If entry.Buffer = IntPtr.Zero OrElse entry.VertexCount <= 0 Then
+                        Continue For
+                    End If
+
+                    Call m_pipeline.DrawSurfaceInstance(entry.Buffer, entry.VertexCount, instance.World,
+                                                        instance.Alpha, instance.ClipY, instance.Clip, cull)
+
+                    m_meshDrawCount += 1
+                Next
+            Next
+        End Sub
+
+        Private Sub ReleaseMeshEntry(entry As MeshEntry)
+            If entry Is Nothing Then
+                Return
+            End If
+
+            If entry.Buffer <> IntPtr.Zero Then
+                If m_pipeline IsNot Nothing Then
+                    Call m_pipeline.ReleaseBuffer(entry.Buffer)
+                Else
+                    Call Marshal.Release(entry.Buffer)
+                End If
+
+                entry.Buffer = IntPtr.Zero
+            End If
+
+            entry.Dirty = True
+        End Sub
+
+        Private Sub ReleaseMeshes()
+            For Each entry As MeshEntry In m_meshes.Values
+                Call ReleaseMeshEntry(entry)
+            Next
+
+            Call m_meshInstances.Clear()
+            m_meshDrawCount = 0
+        End Sub
+
         Public Sub Render(canvas As IGraphics,
                           scene As Scene,
                           camera As Camera,
@@ -557,6 +808,7 @@ Namespace Scene3D
             Call EnsureTarget(size, options)
             Call SyncExternalCloud()
             Call SyncExternalLines()
+            Call SyncMeshes()
 
             Dim transform As SceneTransform = SceneTransform.Create(camera, scene, size)
             Dim geometry As GpuSceneGeometry = m_pipeline.GeometryOf(scene, options)
@@ -625,6 +877,14 @@ Namespace Scene3D
                 End If
 
                 Call DrawPointCloud(scene, geometry, options)
+            End If
+
+            ' the mesh instances of the host are the animated parts of the scene
+            ' (a robot link chain): they are drawn after the static geometry so
+            ' that the depth buffer of the scene already occludes them, and before
+            ' the line overlay so that a marker stays visible on top of a part
+            If m_meshInstances.Count > 0 Then
+                Call DrawMeshInstances(options.CullBackFaces)
             End If
 
             ' the connection lines are an overlay of the scene: they are drawn last
@@ -809,6 +1069,7 @@ Namespace Scene3D
             Call ReleaseCanvasTarget()
             Call ReleaseExternalCloud()
             Call ReleaseExternalLines()
+            Call ReleaseMeshes()
 
             If m_target IsNot Nothing Then
                 m_target.Dispose()

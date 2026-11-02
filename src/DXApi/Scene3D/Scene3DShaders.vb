@@ -17,7 +17,7 @@ Namespace Scene3D
     ''' vector matrix correctly through the ``mul(matrix, vector)`` form of the
     ''' shader: the two conventions cancel out. Do not transpose the matrices on
     ''' the way in, that would only swap the w row with the depth row.
-    ''' The size of this structure is 240 bytes, a multiple of the 16 byte
+    ''' The size of this structure is 320 bytes, a multiple of the 16 byte
     ''' alignment that a constant buffer requires.
     ''' </remarks>
     <StructLayout(LayoutKind.Sequential)>
@@ -40,6 +40,16 @@ Namespace Scene3D
         Public HeatParams As Vector4
         ''' <summary>xyz = the world space edge lengths of one voxel cube (the cube mode of the point cloud), w = reserved</summary>
         Public PointParams As Vector4
+        ''' <summary>
+        ''' the world matrix of the mesh instance that is drawn, the identity
+        ''' for the geometry of the scene
+        ''' </summary>
+        Public WorldMatrix As Matrix4x4
+        ''' <summary>
+        ''' x = the world space height of the materialization plane, y = the
+        ''' clipping switch, z = the opacity of the instance, w = reserved
+        ''' </summary>
+        Public DynamicParams As Vector4
     End Structure
 
     ''' <summary>
@@ -76,6 +86,18 @@ Namespace Scene3D
 
         Friend Const EntrySurfaceVertex As String = "VS_Surface"
         Friend Const EntrySurfacePixel As String = "PS_Surface"
+        ''' <summary>
+        ''' the vertex shader of one mesh instance: it applies the world matrix
+        ''' of the instance before the camera transform and hands the world space
+        ''' height to the materialization pixel shader
+        ''' </summary>
+        Friend Const EntrySurfaceInstanceVertex As String = "VS_SurfaceInstance"
+        ''' <summary>
+        ''' the pixel shader of one mesh instance: lambert shading, the world
+        ''' space clipping plane of the materialization effect and the opacity of
+        ''' the instance
+        ''' </summary>
+        Friend Const EntrySurfaceInstancePixel As String = "PS_SurfaceInstance"
         Friend Const EntryPositionVertex As String = "VS_Position"
         Friend Const EntryUnlitPixel As String = "PS_Unlit"
         Friend Const EntryPointVertex As String = "VS_Point"

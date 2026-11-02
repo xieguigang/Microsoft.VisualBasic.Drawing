@@ -43,6 +43,11 @@ Namespace Scene3D
         Private ReadOnly m_blitVertex As IntPtr
         Private ReadOnly m_blitPixel As IntPtr
 
+        ' the pass of one mesh instance: a rigid part that is placed by its own
+        ' world matrix, see Direct3D11SceneRenderer.SubmitMesh
+        Private ReadOnly m_surfaceInstanceVertex As IntPtr
+        Private ReadOnly m_surfaceInstancePixel As IntPtr
+
         Private ReadOnly m_constantBuffer As IntPtr
         Private ReadOnly m_sampler As IntPtr
 
@@ -111,6 +116,8 @@ Namespace Scene3D
             Dim linePixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryLinePixel, Scene3DShaders.PixelProfile)
             Dim blitVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryBlitVertex, Scene3DShaders.VertexProfile)
             Dim blitPixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntryBlitPixel, Scene3DShaders.PixelProfile)
+            Dim instanceVertexCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntrySurfaceInstanceVertex, Scene3DShaders.VertexProfile)
+            Dim instancePixelCode As Byte() = Scene3DShaders.Compile(Scene3DShaders.EntrySurfaceInstancePixel, Scene3DShaders.PixelProfile)
 
             m_surfaceVertex = CreateVertexShader(surfaceVertexCode)
             m_surfacePixel = CreatePixelShader(surfacePixelCode)
@@ -124,6 +131,8 @@ Namespace Scene3D
             m_linePixel = CreatePixelShader(linePixelCode)
             m_blitVertex = CreateVertexShader(blitVertexCode)
             m_blitPixel = CreatePixelShader(blitPixelCode)
+            m_surfaceInstanceVertex = CreateVertexShader(instanceVertexCode)
+            m_surfaceInstancePixel = CreatePixelShader(instancePixelCode)
 
             m_surfaceLayout = CreateInputLayout(Scene3DInputLayout.SurfaceElements, surfaceVertexCode)
             m_positionLayout = CreateInputLayout(Scene3DInputLayout.PositionElements, positionVertexCode)
@@ -308,6 +317,12 @@ Namespace Scene3D
             Dim edge As Vector3 = options.CubeEdge
 
             m_constants.PointParams = New Vector4(edge.X, edge.Y, edge.Z, options.PointOpacity)
+
+            ' the scene geometry has no instance placement of its own and is
+            ' always fully opaque: every instance draw overrides these two
+            ' members and restores them right after its own draw call
+            m_constants.WorldMatrix = Matrix4x4.Identity
+            m_constants.DynamicParams = New Vector4(0, 0, 1, 0)
         End Sub
 
         ''' <summary>
@@ -445,6 +460,66 @@ Namespace Scene3D
             Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
             Call BindSingleBuffer(0, geometry.SurfaceBuffer, Scene3DInputLayout.SurfaceStride)
             Call context.Draw(CUInt(geometry.SurfaceVertexCount), 0UI)
+        End Sub
+
+        ''' <summary>
+        ''' draw one mesh instance: an immutable vertex buffer of a rigid part
+        ''' that is placed by its own world matrix
+        ''' </summary>
+        ''' <param name="buffer">the vertex buffer, <c>Scene3DInputLayout.SurfaceStride</c> per vertex</param>
+        ''' <param name="vertexCount">the number of the triangle list vertices</param>
+        ''' <param name="world">the world matrix of the part, row vector convention</param>
+        ''' <param name="alpha">the opacity of the instance, one for opaque</param>
+        ''' <param name="clipY">the world space height of the materialization plane</param>
+        ''' <param name="clip">drop the fragments below <paramref name="clipY"/></param>
+        ''' <param name="cull">cull the back faces of the part</param>
+        ''' <remarks>
+        ''' The world matrix is folded into the cached camera matrices of the
+        ''' frame and the result is uploaded as the constant buffer of this single
+        ''' draw call, so the geometry of the scene keeps its own constants
+        ''' untouched. Both members are restored right after the draw: the next
+        ''' batch of the frame uploads its own constants anyway, and the caller
+        ''' never sees the instance state leak into the scene.
+        ''' </remarks>
+        Friend Sub DrawSurfaceInstance(buffer As IntPtr, vertexCount As Integer, world As Matrix4x4,
+                                       alpha As Single, clipY As Single, clip As Boolean, cull As Boolean)
+            If buffer = IntPtr.Zero OrElse vertexCount <= 0 Then
+                Return
+            End If
+
+            Dim context As ID3D11DeviceContext = m_device.Context
+            Dim sceneViewProjection As Matrix4x4 = m_constants.WorldViewProjection
+            Dim sceneRotation As Matrix4x4 = m_constants.WorldRotation
+            Dim sceneWorld As Matrix4x4 = m_constants.WorldMatrix
+            Dim sceneDynamic As Vector4 = m_constants.DynamicParams
+            Dim opacity As Single = If(alpha < 0.0F, 0.0F, If(alpha > 1.0F, 1.0F, alpha))
+
+            ' the row vector composition: v * world * camera, and the normal
+            ' travels through the rotation part of the world matrix first
+            m_constants.WorldViewProjection = Matrix4x4.Multiply(world, sceneViewProjection)
+            m_constants.WorldRotation = Matrix4x4.Multiply(world, sceneRotation)
+            m_constants.WorldMatrix = world
+            m_constants.DynamicParams = New Vector4(clipY, If(clip, 1.0F, 0.0F), opacity, 0)
+
+            Call UploadConstants()
+
+            Call context.IASetPrimitiveTopology(CInt(D3D11_PRIMITIVE_TOPOLOGY.TRIANGLELIST))
+            Call context.IASetInputLayout(m_surfaceLayout)
+            Call context.VSSetShader(m_surfaceInstanceVertex, IntPtr.Zero, 0UI)
+            Call context.PSSetShader(m_surfaceInstancePixel, IntPtr.Zero, 0UI)
+            Call context.RSSetState(If(cull, m_rasterSolidCulled, m_rasterSolid))
+
+            ' a translucent instance must not hide the instances behind it, so it
+            ' keeps the depth test but stops writing depth
+            Call context.OMSetDepthStencilState(If(opacity < 0.999F, m_depthTestNoWrite, m_depthWrite), 0UI)
+            Call context.OMSetBlendState(m_blendAlpha, IntPtr.Zero, &HFFFFFFFFUI)
+            Call BindSingleBuffer(0, buffer, Scene3DInputLayout.SurfaceStride)
+            Call context.Draw(CUInt(vertexCount), 0UI)
+
+            m_constants.WorldViewProjection = sceneViewProjection
+            m_constants.WorldRotation = sceneRotation
+            m_constants.WorldMatrix = sceneWorld
+            m_constants.DynamicParams = sceneDynamic
         End Sub
 
         ''' <summary>
